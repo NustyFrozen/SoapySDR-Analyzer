@@ -1,0 +1,252 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "ClickableTransparentOverlay/10.2.0": {
+        "dependencies": {
+          "ImGui.NET": "1.90.6.1",
+          "SixLabors.ImageSharp": "3.1.4",
+          "Vortice.D3DCompiler": "3.5.0",
+          "Vortice.Direct3D11": "3.5.0"
+        },
+        "runtime": {
+          "lib/net7.0/ClickableTransparentOverlay.dll": {
+            "assemblyVersion": "10.2.0.0",
+            "fileVersion": "10.2.0.0"
+          }
+        }
+      },
+      "ImGui.NET/1.90.6.1": {
+        "dependencies": {
+          "System.Buffers": "4.4.0",
+          "System.Numerics.Vectors": "4.4.0",
+          "System.Runtime.CompilerServices.Unsafe": "4.4.0"
+        },
+        "runtime": {
+          "lib/net6.0/ImGui.NET.dll": {
+            "assemblyVersion": "1.90.6.1",
+            "fileVersion": "1.90.6.1"
+          }
+        },
+        "runtimeTargets": {
+          "runtimes/linux-x64/native/libcimgui.so": {
+            "rid": "linux-x64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/osx/native/libcimgui.dylib": {
+            "rid": "osx",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/win-arm64/native/cimgui.dll": {
+            "rid": "win-arm64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/win-x64/native/cimgui.dll": {
+            "rid": "win-x64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/win-x86/native/cimgui.dll": {
+            "rid": "win-x86",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          }
+        }
+      },
+      "SharpGen.Runtime/2.1.2-beta": {
+        "runtime": {
+          "lib/net8.0/SharpGen.Runtime.dll": {
+            "assemblyVersion": "2.1.2.0",
+            "fileVersion": "2.1.2.0"
+          }
+        }
+      },
+      "SharpGen.Runtime.COM/2.1.2-beta": {
+        "dependencies": {
+          "SharpGen.Runtime": "2.1.2-beta"
+        },
+        "runtime": {
+          "lib/net8.0/SharpGen.Runtime.COM.dll": {
+            "assemblyVersion": "2.1.2.0",
+            "fileVersion": "2.1.2.0"
+          }
+        }
+      },
+      "SixLabors.ImageSharp/3.1.4": {
+        "runtime": {
+          "lib/net6.0/SixLabors.ImageSharp.dll": {
+            "assemblyVersion": "3.0.0.0",
+            "fileVersion": "3.1.4.0"
+          }
+        }
+      },
+      "System.Buffers/4.4.0": {},
+      "System.Numerics.Vectors/4.4.0": {},
+      "System.Runtime.CompilerServices.Unsafe/4.4.0": {
+        "runtime": {
+          "lib/netstandard2.0/System.Runtime.CompilerServices.Unsafe.dll": {
+            "assemblyVersion": "4.0.3.0",
+            "fileVersion": "0.0.0.0"
+          }
+        }
+      },
+      "Vortice.D3DCompiler/3.5.0": {
+        "dependencies": {
+          "SharpGen.Runtime": "2.1.2-beta",
+          "Vortice.DirectX": "3.5.0"
+        },
+        "runtime": {
+          "lib/net8.0/Vortice.D3DCompiler.dll": {
+            "assemblyVersion": "3.5.0.0",
+            "fileVersion": "3.5.0.0"
+          }
+        }
+      },
+      "Vortice.Direct3D11/3.5.0": {
+        "dependencies": {
+          "SharpGen.Runtime": "2.1.2-beta",
+          "Vortice.DXGI": "3.5.0"
+        },
+        "runtime": {
+          "lib/net8.0/Vortice.Direct3D11.dll": {
+            "assemblyVersion": "3.5.0.0",
+            "fileVersion": "3.5.0.0"
+          }
+        }
+      },
+      "Vortice.DirectX/3.5.0": {
+        "dependencies": {
+          "SharpGen.Runtime": "2.1.2-beta",
+          "SharpGen.Runtime.COM": "2.1.2-beta",
+          "Vortice.Mathematics": "1.7.8"
+        },
+        "runtime": {
+          "lib/net8.0/Vortice.DirectX.dll": {
+            "assemblyVersion": "3.5.0.0",
+            "fileVersion": "3.5.0.0"
+          }
+        }
+      },
+      "Vortice.DXGI/3.5.0": {
+        "dependencies": {
+          "SharpGen.Runtime": "2.1.2-beta",
+          "Vortice.DirectX": "3.5.0"
+        },
+        "runtime": {
+          "lib/net8.0/Vortice.DXGI.dll": {
+            "assemblyVersion": "3.5.0.0",
+            "fileVersion": "3.5.0.0"
+          }
+        }
+      },
+      "Vortice.Mathematics/1.7.8": {
+        "runtime": {
+          "lib/net8.0/Vortice.Mathematics.dll": {
+            "assemblyVersion": "1.7.8.0",
+            "fileVersion": "1.7.8.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "ClickableTransparentOverlay/10.2.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Atc9COHwtLAvzRy5olgNf2wqZypfDNtcvnxUZ2m4Y5ThwI8t8FyFYVOOqxm7QI8tIEYo58G+K6faWW95KnUPow==",
+      "path": "clickabletransparentoverlay/10.2.0",
+      "hashPath": "clickabletransparentoverlay.10.2.0.nupkg.sha512"
+    },
+    "ImGui.NET/1.90.6.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Nr3KVv1hCdyTJ4ojvZtW11nTHXzSOtk3h+0OwqjMt3Qxpz3ivcnc3KdUKceeiFWP4PyzxIQiY7ccL7raitVbPg==",
+      "path": "imgui.net/1.90.6.1",
+      "hashPath": "imgui.net.1.90.6.1.nupkg.sha512"
+    },
+    "SharpGen.Runtime/2.1.2-beta": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-nqZAjfEG1jX1ivvdZLsi6Pkt0DiOJyuOgRgldNFsmjXFPhxUbXQibofLSwuDZidL2kkmtTF8qLoRIeqeVdXgYw==",
+      "path": "sharpgen.runtime/2.1.2-beta",
+      "hashPath": "sharpgen.runtime.2.1.2-beta.nupkg.sha512"
+    },
+    "SharpGen.Runtime.COM/2.1.2-beta": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-HBCrb6HfnUWx9v5/GjJeBr5DuodZLnHlFQQYXPrQs1Hbe1c6Wd0uCXf+SJp4hW8fQNxjXEu0FgiyHGlA/SRzRw==",
+      "path": "sharpgen.runtime.com/2.1.2-beta",
+      "hashPath": "sharpgen.runtime.com.2.1.2-beta.nupkg.sha512"
+    },
+    "SixLabors.ImageSharp/3.1.4": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-lFIdxgGDA5iYkUMRFOze7BGLcdpoLFbR+a20kc1W7NepvzU7ejtxtWOg9RvgG7kb9tBoJ3ONYOK6kLil/dgF1w==",
+      "path": "sixlabors.imagesharp/3.1.4",
+      "hashPath": "sixlabors.imagesharp.3.1.4.nupkg.sha512"
+    },
+    "System.Buffers/4.4.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-AwarXzzoDwX6BgrhjoJsk6tUezZEozOT5Y9QKF94Gl4JK91I4PIIBkBco9068Y9/Dra8Dkbie99kXB8+1BaYKw==",
+      "path": "system.buffers/4.4.0",
+      "hashPath": "system.buffers.4.4.0.nupkg.sha512"
+    },
+    "System.Numerics.Vectors/4.4.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-UiLzLW+Lw6HLed1Hcg+8jSRttrbuXv7DANVj0DkL9g6EnnzbL75EB7EWsw5uRbhxd/4YdG8li5XizGWepmG3PQ==",
+      "path": "system.numerics.vectors/4.4.0",
+      "hashPath": "system.numerics.vectors.4.4.0.nupkg.sha512"
+    },
+    "System.Runtime.CompilerServices.Unsafe/4.4.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-9dLLuBxr5GNmOfl2jSMcsHuteEg32BEfUotmmUkmZjpR3RpVHE8YQwt0ow3p6prwA1ME8WqDVZqrr8z6H8G+Kw==",
+      "path": "system.runtime.compilerservices.unsafe/4.4.0",
+      "hashPath": "system.runtime.compilerservices.unsafe.4.4.0.nupkg.sha512"
+    },
+    "Vortice.D3DCompiler/3.5.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-zPo545NXqrKbQf0EDK4jKmxe1KS4v9c+04eycFrfsokX/h0sZKkfmqcluXYzUh/F+5dv6kN9kUf7OTRO2mLqqQ==",
+      "path": "vortice.d3dcompiler/3.5.0",
+      "hashPath": "vortice.d3dcompiler.3.5.0.nupkg.sha512"
+    },
+    "Vortice.Direct3D11/3.5.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-TUVz5tml5tTlk1UpQgh/0cj74ehmlyzvQeGdVkdQGACth2v2t1d+/f84dqT/Trs/5O2WdIvXfYQe2yxALLR5mQ==",
+      "path": "vortice.direct3d11/3.5.0",
+      "hashPath": "vortice.direct3d11.3.5.0.nupkg.sha512"
+    },
+    "Vortice.DirectX/3.5.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-LwyojEqRCaYgMoEqKsLnHWJ85wM237wFzZy/w57kvQPDsEd+zcqdwDYswOCEdizcLtDBzX/Xt4bbUPgFi8Kp4w==",
+      "path": "vortice.directx/3.5.0",
+      "hashPath": "vortice.directx.3.5.0.nupkg.sha512"
+    },
+    "Vortice.DXGI/3.5.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-W1dHY13DbitLJDVAAD8+YiGddqzBP1m3wN3pfEmxYrrE+dGEV/31aaw8EV74GXYnJQZ2vWJCnc7LCFPR2YkBnw==",
+      "path": "vortice.dxgi/3.5.0",
+      "hashPath": "vortice.dxgi.3.5.0.nupkg.sha512"
+    },
+    "Vortice.Mathematics/1.7.8": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-hpVlfej54yC6Qaq9AYXWgTgF8SDz2dtKbDNZGO8msjn3NjdkUBnFcIzYfOWyvwvpr3aqZPKh4WSSnJ78GxyIWg==",
+      "path": "vortice.mathematics/1.7.8",
+      "hashPath": "vortice.mathematics.1.7.8.nupkg.sha512"
+    }
+  }
+}
