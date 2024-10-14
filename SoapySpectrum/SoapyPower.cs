@@ -14,6 +14,7 @@ namespace SoapySpectrum
         public static Process soapyPowerPROC;
         public static bool keepStream = false,flashing = false;
         public static Thread soapyProcThread;
+        public static double RBW;
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
         #region Cntrl C
         internal const int CTRL_C_EVENT = 0;
@@ -100,8 +101,10 @@ namespace SoapySpectrum
             }
         }
         public static void changeFrequency() => sendPipeCommand($"change_frequency@{Configuration.config["freqStart"]}@{Configuration.config["freqStop"]}");
-        public static void changeGain(string gainName,float value) =>  sendPipeCommand($"change_gain@{gainName}@{value}");
-        
+        public static void changeGain(string gainName, float value) => sendPipeCommand($"change_gain@{gainName}@{value}");
+        public static void changeAverage(int value) => sendPipeCommand($"change_average@{value}");
+
+
         static NamedPipeServerStream PipeCommunication;
         public static void beginStream(int FFTSize = 512, string driver = "uhd", string additionalArgs = "-g 0")
         {
@@ -118,7 +121,7 @@ namespace SoapySpectrum
             {
                 soapyPowerPROC = new Process();
                 soapyPowerPROC.StartInfo.FileName = "python.exe";
-                soapyPowerPROC.StartInfo.Arguments = $"{Path.Combine(System.IO.Path.GetDirectoryName(Application.ExecutablePath), "soapypower\\__main__.py")} -r 52e6 -w 56e6 -b {FFTSize} -f {Configuration.config["freqStart"]}:{Configuration.config["freqStop"]} --pow2 -d driver=uhd,master_clock_rate=52e6,recv_frame_size=4096 -c {additionalArgs} -C 0 -q --reset-stream --crop 50 -R --fft-window boxcar";
+                soapyPowerPROC.StartInfo.Arguments = $"{Path.Combine(System.IO.Path.GetDirectoryName(Application.ExecutablePath), "soapypower\\__main__.py")} -r 52e6 -b {FFTSize} -f {Configuration.config["freqStart"]}:{Configuration.config["freqStop"]} --pow2 -d driver=uhd,master_clock_rate=52e6 -c {additionalArgs} -C 0 -q --reset-stream --crop 30 -n 400 -D constant --fft-window hamming";
                 Logger.Debug($"executing --> {soapyPowerPROC.StartInfo.Arguments}");
                 soapyPowerPROC.StartInfo.UseShellExecute = false;
                 soapyPowerPROC.StartInfo.RedirectStandardOutput = true;
@@ -166,6 +169,7 @@ namespace SoapySpectrum
                 //required for freqRange initialization
                 double startFreq = Convert.ToDouble(data[2]),
                        stopFreq = Convert.ToDouble(data[3]);
+                RBW = Convert.ToDouble(data[4]);
                 var dB = Array.ConvertAll(data.Skip(6).ToArray(), Convert.ToDouble);
                 double delimiter = (stopFreq - startFreq) / dB.Length;
                 //get all dB data of the sample

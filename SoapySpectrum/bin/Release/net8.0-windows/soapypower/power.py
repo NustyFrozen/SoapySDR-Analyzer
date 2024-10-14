@@ -10,7 +10,6 @@ import SoapySDR
 
 logger = logging.getLogger(__name__)
 _shutdown = False
-
 def _shutdown_handler(sig, frame):
     """Set global _shutdown flag when receiving SIGTERM or SIGINT signals"""
     global _shutdown
@@ -26,6 +25,7 @@ if sys.platform == 'win32':
 
 
 class SoapyPower:
+    
     """SoapySDR spectrum analyzer"""
     def __init__(self, soapy_args='', sample_rate=2.00e6, bandwidth=0, corr=0, gain=20.7,
                  auto_gain=False, channel=0, antenna='', settings=None,
@@ -38,8 +38,8 @@ class SoapyPower:
         )
         
         self.device.device.setDCOffsetMode(SoapySDR.SOAPY_SDR_RX,0,False)
-
-        
+        self._lock = threading.Lock()
+        self._pipedata = {}
         self._output = output
         self._output_format = output_format
         self._buffer = None
@@ -196,6 +196,7 @@ class SoapyPower:
                             crop_factor=crop_factor, log_scale=log_scale, remove_dc=remove_dc, detrend=detrend,
                             lnb_lo=lnb_lo, max_threads=max_threads, max_queue_size=max_queue_size)
         self._writer = writer.formats[self._output_format](self._output)
+        self._pipedata = {}
         if RL:
             self.tx_stream = self.device.device.setupStream(SoapySDR.SOAPY_SDR_TX, SoapySDR.SOAPY_SDR_CF32, [0],{})
             self.device.device.activateStream(self.tx_stream)
@@ -210,8 +211,25 @@ class SoapyPower:
             phases = numpy.linspace(phase_acc, phase_acc_next, stream_mtu)
             self.samps_chan = ampl*numpy.exp(1j * phases).astype(numpy.complex64)
             phase_acc = phase_acc_next
-
-            
+    def addPIPEAsync(self,key,value):
+        with self._lock:
+            self._pipedata[key] = value
+    def updatePIPEAsync(self):
+        with self._lock:
+            for key, value in self._pipedata.items():
+                if(key == "change_average"):
+                    self.device.device.deactivateStream(self.device.stream)
+                    self.device.stop_stream()
+                    base_buffer = self.device.start_stream(buffer_size=0)
+                    self._repeats = value
+                    self._base_buffer_size = len(base_buffer)
+                    self._max_buffer_size = 0
+                    self._buffer_repeats, self._buffer = self.create_buffer(
+                         self._bins, self._repeats, self._base_buffer_size, self._max_buffer_size
+                    )
+                del self._pipedata[key]
+                
+                
 
     def stop(self):
         """Stop streaming samples from device and delete samples buffer"""
@@ -231,6 +249,7 @@ class SoapyPower:
         self._reset_stream = None
         self._psd = None
         self._writer = None
+    _shutdown = False
     def siggen(self,freq):
             self.device.device.deactivateStream(self.tx_stream)
             self.device.device.setFrequency(SoapySDR.SOAPY_SDR_TX, 0,freq)
@@ -315,6 +334,7 @@ class SoapyPower:
             t_start = time.time()
             run = 0
             while not _shutdown and (runs == 0 or run < runs):
+                self.updatePIPEAsync()
                 run += 1
                 t_run_start = time.time()
                 logger.debug('Run: {}'.format(run))

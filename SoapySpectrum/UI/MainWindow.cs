@@ -89,9 +89,8 @@ namespace SoapySpectrum.UI
             //IconFont = io.Fonts.AddFontFromFileTTF(@"Fonts\fa-solid-900.ttf", 16,, new ushort[] { 0xe005,
             //0xf8ff,0});
         }
-        static int tabID,selectedFFTWINDOW = 2,gain = 0;
-        static string[] FFTWindow = new string[]{ "256", "512", "1024", "2048", "4096", "8192", "16384", "32768 "};
-        string[] availableTabs = new string[] { $"\ue473 Amplitude", $"{FontAwesome5.WaveSquare} Frequency", $"\uf3c5 Trace & Marker", $"\uf085 Calibration" , $"{FontAwesome5.Microchip} Device" };
+        static int tabID = 2,gain = 0;
+        string[] availableTabs = new string[] { $"\ue473 Amplitude", $"\uf1fe BW" , $"{FontAwesome5.WaveSquare} Frequency", $"\uf3c5 Trace & Marker", $"\uf085 Calibration" , $"{FontAwesome5.Microchip} Device" };
         static string RBW = "0.1M";
         bool visble = true;
         public void scaleEverything()
@@ -113,14 +112,7 @@ namespace SoapySpectrum.UI
                 buttonTheme.text = "Flashing USRP, Please Wait..";
                 buttonTheme.bgcolor = Color.Red.ToUint();
             }
-            ImGui.Text($"\uf1fb Sample Rate (RBW):");
-            inputTheme.prefix = "FFT Window";
-            inputTheme.size = new Vector2(262, 35);
-            if (ImGuiTheme.glowingCombo("fft window",ref selectedFFTWINDOW, FFTWindow, inputTheme))
-            {
-                refreshConfiguration();
-            }
-            ImGui.NewLine();
+            
             ImGui.NewLine();
             ImGui.Text($"\uf519 PGA Amplifier (WARNING MAX DB INPUT -20):");
             if (ImGui.SliderInt("Gain", ref gain, 0, 60))
@@ -184,16 +176,19 @@ namespace SoapySpectrum.UI
                 case 0:
                     renderAmplitude();
                     break;
-                case 1:
-                    renderFrequency();
+                    case 1:
+                    renderVideo();
                     break;
                 case 2:
-                    renderTrace();
+                    renderFrequency();
                     break;
                 case 3:
-                    renderCalibration();
+                    renderTrace();
                     break;
                 case 4:
+                    renderCalibration();
+                    break;
+                case 5:
 
                     break;
             }

@@ -1,6 +1,7 @@
 import win32file
 import win32pipe
 import time,re,logging,threading
+from time import sleep
 import power
 # Python 2 pipe server (ReadThenWrite)
 logger = logging.getLogger(__name__)
@@ -24,6 +25,22 @@ def processEvent(args,device,event):
         device.freq_list = device.freq_plan(min_freq, max_freq,args.bins,args.overlap)
         device._min_freq = min_freq
         device._max_freq = max_freq
+    if str(event[0]) == 'change_average':
+        args.repeats = int(event[1])
+        power._shutdown = True
+        while(power._shutdown):
+            sleep(100) 
+        sdr = power.SoapyPower(
+            soapy_args=args.device, sample_rate=args.rate, bandwidth=args.bandwidth, corr=args.ppm,
+            gain=args.specific_gains if args.specific_gains else args.gain, auto_gain=args.agc,
+            channel=args.channel, antenna=args.antenna, settings=args.device_settings,
+            force_sample_rate=args.force_rate, force_bandwidth=args.force_bandwidth,
+            output=args.output_fd if args.output_fd is not None else args.output,
+            output_format=args.format
+        )
+        sdr.device = device.device
+        resweep(args,sdr)
+    
         
 
 def startPipe(device,args):

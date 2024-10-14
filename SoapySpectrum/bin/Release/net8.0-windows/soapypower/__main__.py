@@ -183,7 +183,7 @@ def setup_argument_parser():
 
     spectra_title = parser.add_argument_group('Averaging')
     spectra_group = spectra_title.add_mutually_exclusive_group()
-    spectra_group.add_argument('-n', '--repeats', type=int, default=300, #1600
+    spectra_group.add_argument('-n', '--repeats', type=int, default=400, #1600
                                help='number of spectra to average (incompatible with -t and -T, default: %(default)s)')
     spectra_group.add_argument('-t', '--time', metavar='SECONDS', type=float,
                                help='integration time (incompatible with -T and -n)')
