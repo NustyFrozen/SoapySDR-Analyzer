@@ -1,0 +1,9 @@
+*.suo
+*.user
+_ReSharper.*
+*.git
+.git
+bin
+obj
+packages
+.vs

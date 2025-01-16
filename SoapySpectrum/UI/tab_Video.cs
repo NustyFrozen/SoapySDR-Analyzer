@@ -1,6 +1,7 @@
 ﻿using ClickableTransparentOverlay;
 using Design_imGUINET;
 using ImGuiNET;
+using SoapySpectrum.soapypower;
 using System.Numerics;
 
 namespace SoapySpectrum.UI
@@ -18,18 +19,20 @@ namespace SoapySpectrum.UI
             inputTheme.size = new Vector2(262, 35);
             if (ImGuiTheme.glowingCombo("fft window", ref selectedFFTWINDOW, FFTWindow, inputTheme))
             {
+                Configuration.config["FFTSize"] = int.Parse(FFTWindow[selectedFFTWINDOW]);
                 refreshConfiguration();
             }
             ImGui.NewLine();
-            ImGui.Text($"\uf1fb Welch Averaging (Affects VBW)");
+            ImGui.Text($"\uf1fb Welch Averaging:");
             inputTheme.prefix = $"Spectral Average";
             ImGui.Text($"{FontAwesome5.ArrowLeft} Left Band:");
             if (ImGuiTheme.glowingInput("InputSelectortext", ref spectralAverage, inputTheme))
             {
                 int average = 0;
-                if(int.TryParse(spectralAverage,out average))
+                if (int.TryParse(spectralAverage, out average))
                     if (average > 0)
-                    SoapyPower.changeAverage(average);
+                        Configuration.config["weleching"] = average;
+                    SoapyPower.updateAverage();
             }
 
         }

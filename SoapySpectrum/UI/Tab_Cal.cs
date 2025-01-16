@@ -2,6 +2,7 @@
 using Design_imGUINET;
 using ImGuiNET;
 using SharpGen.Runtime;
+using SoapySpectrum.soapypower;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -39,7 +40,7 @@ namespace SoapySpectrum.UI
             calibrating = true;
                         SoapyPower.stopStream();
                         refreshConfiguration();
-                        SoapyPower.beginStream(Convert.ToInt32(FFTWindow[selectedFFTWINDOW]), "uhd", "-g 0");
+                        SoapyPower.beginStream();
         }
         public static KeyValuePair<float, float> findMaxHoldRange(SortedDictionary<float,float> range,float start, float stop)
         {

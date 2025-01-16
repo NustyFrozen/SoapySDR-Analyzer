@@ -189,3 +189,14 @@ C:\Users\Administrator\Documents\projects\SoapySpectrum\SoapySpectrum\obj\Releas
 C:\Users\Administrator\Documents\projects\SoapySpectrum\SoapySpectrum\obj\Release\net8.0-windows\ref\SoapySpectrum.dll
 C:\Users\Administrator\Documents\projects\SoapySpectrum\SoapySpectrum\bin\Release\net8.0-windows\nlog.config
 C:\Users\Administrator\Documents\projects\SoapySpectrum\SoapySpectrum\obj\Release\net8.0-windows\SoapySpectrum.sourcelink.json
+C:\Users\Administrator\Documents\projects\SoapySpectrum\SoapySpectrum\bin\Release\net8.0-windows\soapypower\convertors.py
+C:\Users\Administrator\Documents\projects\SoapySpectrum\SoapySpectrum\bin\Release\net8.0-windows\soapypower\pipe.py
+C:\Users\Administrator\Documents\projects\SoapySpectrum\SoapySpectrum\bin\Release\net8.0-windows\soapypower\power.py
+C:\Users\Administrator\Documents\projects\SoapySpectrum\SoapySpectrum\bin\Release\net8.0-windows\soapypower\psd.py
+C:\Users\Administrator\Documents\projects\SoapySpectrum\SoapySpectrum\bin\Release\net8.0-windows\soapypower\siggen.py
+C:\Users\Administrator\Documents\projects\SoapySpectrum\SoapySpectrum\bin\Release\net8.0-windows\soapypower\simplesoapy.py
+C:\Users\Administrator\Documents\projects\SoapySpectrum\SoapySpectrum\bin\Release\net8.0-windows\soapypower\threadpool.py
+C:\Users\Administrator\Documents\projects\SoapySpectrum\SoapySpectrum\bin\Release\net8.0-windows\soapypower\version.py
+C:\Users\Administrator\Documents\projects\SoapySpectrum\SoapySpectrum\bin\Release\net8.0-windows\soapypower\writer.py
+C:\Users\Administrator\Documents\projects\SoapySpectrum\SoapySpectrum\bin\Release\net8.0-windows\soapypower\__init__.py
+C:\Users\Administrator\Documents\projects\SoapySpectrum\SoapySpectrum\bin\Release\net8.0-windows\soapypower\__main__.py

@@ -1,4 +1,5 @@
 ﻿using ImGuiNET;
+using SoapySpectrum.soapypower;
 using System.DirectoryServices.ActiveDirectory;
 using System.Numerics;
 namespace SoapySpectrum
@@ -48,6 +49,10 @@ namespace SoapySpectrum
             Configuration.config.Add("graph_startDB", (double)-136);
             Configuration.config.Add("graph_endDB", (double)0);
             Configuration.config.Add("graph_OffsetDB", (double)0);
+            Configuration.config["FFTSize"] = 512;
+            Configuration.config["weleching"] = 400;
+            Configuration.config["driver"] = "uhd";
+            Configuration.config["additional"] = "-g 0";
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using ClickableTransparentOverlay;
 using Design_imGUINET;
 using ImGuiNET;
+using SoapySpectrum.soapypower;
 
 namespace SoapySpectrum.UI
 {
@@ -15,20 +16,17 @@ namespace SoapySpectrum.UI
             inputTheme.prefix = $" left Frequency";
             ImGui.Text($"{FontAwesome5.ArrowLeft} Left Band:");
             if (ImGuiTheme.glowingInput("InputSelectortext", ref display_FreqStart, inputTheme))
-            {
-                refreshConfiguration();
-                SoapyPower.changeFrequency();
-            }
+                if (refreshConfiguration())
+                    SoapyPower.updateFrequency();
+            
             ImGui.NewLine();
             ImGui.NewLine();
             ImGui.Text($"{FontAwesome5.ArrowRight} Right Band:");
             inputTheme.prefix = "End Frequency";
             if (ImGuiTheme.glowingInput("InputSelectortext2", ref display_FreqStop, inputTheme))
-            {
-                
-                refreshConfiguration();
-                SoapyPower.changeFrequency();
-            }
+                if (refreshConfiguration())
+                 SoapyPower.updateFrequency();
+            
         }
         public static double formatFreq(string input)
         {

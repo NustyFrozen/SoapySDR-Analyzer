@@ -3,6 +3,7 @@ using Design_imGUINET;
 using ImGuiNET;
 using SoapySpectrum.Extentions;
 using SoapySpectrum.Extentions.Design_imGUINET;
+using SoapySpectrum.soapypower;
 using System.Numerics;
 namespace SoapySpectrum.UI
 {
@@ -30,7 +31,7 @@ namespace SoapySpectrum.UI
         }
 
         private static ushort[] iconRange = new ushort[] { 0xe005, 0xf8ff, 0 };
-        public static void refreshConfiguration()
+        public static bool refreshConfiguration()
         {
             Logger.Debug("Refreshing Configuration called by User");
             try
@@ -45,7 +46,9 @@ namespace SoapySpectrum.UI
             catch (Exception ex)
             {
                 Logger.Error($"Exception Called in refreshing configuration -> {ex.Message}");
+                return false;
             }
+            
             //rounding it to sample rate so we wont get samples outside specified bounds
             traces[selectedTrace].marker.bandPowerSpan = formatFreq(traces[selectedTrace].marker.bandPower_Span_str);
 
@@ -55,10 +58,11 @@ namespace SoapySpectrum.UI
             }
             catch (Exception ex)
             {
-
+                
                 Logger.Error($"Exception Called in refreshing configuration -> {ex.Message}");
+                return false;
             }
-
+            return true;
         }
         static ImFontPtr PoppinsFont, IconFont;
         public bool initializedResources = false;
@@ -118,7 +122,7 @@ namespace SoapySpectrum.UI
             if (ImGui.SliderInt("Gain", ref gain, 0, 60))
             {
                 refreshConfiguration();
-                SoapyPower.changeGain("PGA", gain);
+                SoapyPower.updateGain("PGA", gain);
             }
            // ImGui.Checkbox($"Enable CFF", ref CCF);
         }
@@ -151,7 +155,7 @@ namespace SoapySpectrum.UI
                 initializedResources = true;
                 SoapyPower.flashing = false;
                 SoapyPower.stopStream();
-                SoapyPower.beginStream(Convert.ToInt32(FFTWindow[selectedFFTWINDOW]), "uhd", $"-g {gain}");
+                SoapyPower.beginStream();
             }
             ImGui.Begin("Spectrum Analyzer", Configuration.mainWindow_flags);
             scaleEverything();

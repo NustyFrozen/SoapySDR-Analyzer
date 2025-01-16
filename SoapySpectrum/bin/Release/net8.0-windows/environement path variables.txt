@@ -1,6 +1,0 @@
-%PATH%
-C:\Program Files\PothosSDR\bin
-C:\Program Files (x86)\UHD\lib
-
-%UHD_IMAGES_DIR%
-C:\Program Files (x86)\UHD\share\uhd\images
