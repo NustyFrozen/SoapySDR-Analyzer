@@ -25,7 +25,6 @@ namespace SoapySpectrum.UI
             ImGui.NewLine();
             ImGui.Text($"\uf1fb Welch Averaging:");
             inputTheme.prefix = $"Spectral Average";
-            ImGui.Text($"{FontAwesome5.ArrowLeft} Left Band:");
             if (ImGuiTheme.glowingInput("InputSelectortext", ref spectralAverage, inputTheme))
             {
                 int average = 0;

@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "C:\\Users\\Administrator\\Documents\\projects\\SoapySpectrum\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{1DB4D707-AC54-43E2-BADF-FCDB3BBC3A3D}|SoapySpectrum\\SoapySpectrum.csproj|c:\\users\\administrator\\documents\\projects\\soapyspectrum\\soapyspectrum\\ui\\graph.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1DB4D707-AC54-43E2-BADF-FCDB3BBC3A3D}|SoapySpectrum\\SoapySpectrum.csproj|solutionrelative:soapyspectrum\\ui\\graph.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{1DB4D707-AC54-43E2-BADF-FCDB3BBC3A3D}|SoapySpectrum\\SoapySpectrum.csproj|c:\\users\\administrator\\documents\\projects\\soapyspectrum\\soapyspectrum\\ui\\tab_video.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{1DB4D707-AC54-43E2-BADF-FCDB3BBC3A3D}|SoapySpectrum\\SoapySpectrum.csproj|solutionrelative:soapyspectrum\\ui\\tab_video.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -31,19 +35,32 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "Graph.cs",
+              "DocumentMoniker": "C:\\Users\\Administrator\\Documents\\projects\\SoapySpectrum\\SoapySpectrum\\UI\\Graph.cs",
+              "RelativeDocumentMoniker": "SoapySpectrum\\UI\\Graph.cs",
+              "ToolTip": "C:\\Users\\Administrator\\Documents\\projects\\SoapySpectrum\\SoapySpectrum\\UI\\Graph.cs",
+              "RelativeToolTip": "SoapySpectrum\\UI\\Graph.cs",
+              "ViewState": "AQIAAKkAAAAAAAAAAAAiwL8AAABgAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-02T17:13:17.458Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
               "Title": "tab_Video.cs",
               "DocumentMoniker": "C:\\Users\\Administrator\\Documents\\projects\\SoapySpectrum\\SoapySpectrum\\UI\\tab_Video.cs",
               "RelativeDocumentMoniker": "SoapySpectrum\\UI\\tab_Video.cs",
               "ToolTip": "C:\\Users\\Administrator\\Documents\\projects\\SoapySpectrum\\SoapySpectrum\\UI\\tab_Video.cs",
               "RelativeToolTip": "SoapySpectrum\\UI\\tab_Video.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAqwBUAAABaAAAA",
+              "ViewState": "AQIAAAkAAAAAAAAAAAAAABgAAAAcAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-01-16T10:02:43.52Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "tab_Frequency.cs",
               "DocumentMoniker": "C:\\Users\\Administrator\\Documents\\projects\\SoapySpectrum\\SoapySpectrum\\UI\\tab_Frequency.cs",
               "RelativeDocumentMoniker": "SoapySpectrum\\UI\\tab_Frequency.cs",
@@ -51,12 +68,11 @@
               "RelativeToolTip": "SoapySpectrum\\UI\\tab_Frequency.cs",
               "ViewState": "AQIAAAEAAAAAAAAAAAAowBsAAAArAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-01-16T10:02:35.498Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-01-16T10:02:35.498Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 4,
               "Title": "Tab_Cal.cs",
               "DocumentMoniker": "C:\\Users\\Administrator\\Documents\\projects\\SoapySpectrum\\SoapySpectrum\\UI\\Tab_Cal.cs",
               "RelativeDocumentMoniker": "SoapySpectrum\\UI\\Tab_Cal.cs",
@@ -64,12 +80,11 @@
               "RelativeToolTip": "SoapySpectrum\\UI\\Tab_Cal.cs",
               "ViewState": "AQIAABcAAAAAAAAAAAAwwCoAAAAvAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-01-16T10:02:27.894Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-01-16T10:02:27.894Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "MainWindow.cs",
               "DocumentMoniker": "C:\\Users\\Administrator\\Documents\\projects\\SoapySpectrum\\SoapySpectrum\\UI\\MainWindow.cs",
               "RelativeDocumentMoniker": "SoapySpectrum\\UI\\MainWindow.cs",
@@ -77,8 +92,7 @@
               "RelativeToolTip": "SoapySpectrum\\UI\\MainWindow.cs",
               "ViewState": "AQIAAKYAAAAAAAAAAAAmwLcAAAAfAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-01-16T10:02:13.994Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-01-16T10:02:13.994Z"
             }
           ]
         }
