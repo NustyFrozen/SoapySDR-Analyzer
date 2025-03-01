@@ -201,9 +201,9 @@ namespace SoapySpectrum.UI
         {
             var draw = ImGui.GetForegroundDrawList();
             var dbOffset = (double)Configuration.config["graph_OffsetDB"];
-            float left = ImGui.GetWindowPos().X + 50;
+            float left = ImGui.GetWindowPos().X + 50 * Configuration.scale_Size.X;
             float right = left + Configuration.graph_Size.X;
-            float top = ImGui.GetWindowPos().Y + 10;
+            float top = ImGui.GetWindowPos().Y + 10 * Configuration.scale_Size.Y;
             float bottom = top + Configuration.graph_Size.Y;
 
             float graphLabelIdx = 20;

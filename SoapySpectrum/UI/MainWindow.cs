@@ -96,15 +96,6 @@ namespace SoapySpectrum.UI
             //0xf8ff,0});
         }
 
-        public void scaleEverything()
-        {
-            Configuration.mainWindow_Size = ImGui.GetWindowSize();
-            var mainWindow_Size = Configuration.mainWindow_Size;
-            Configuration.graph_Size = new Vector2(Convert.ToInt16(mainWindow_Size.X * .8), Convert.ToInt16(mainWindow_Size.Y * .95));
-            Configuration.option_Size = new Vector2(Convert.ToInt16(mainWindow_Size.X * .2), Convert.ToInt16(mainWindow_Size.Y));
-            Configuration.input_Size = new Vector2(mainWindow_Size.X / 4, mainWindow_Size.X / 4); //square on purpose
-        }
-
         public static void drawCursor()
         {
             ImGui.SetMouseCursor(ImGuiMouseCursor.None);
@@ -135,7 +126,6 @@ namespace SoapySpectrum.UI
                 initializedResources = true;
             }
             ImGui.Begin("Spectrum Analyzer", Configuration.mainWindow_flags);
-            scaleEverything();
             ImGuiTheme.drawExitButton(15, Color.Gray, Color.White);
 
             ImGui.BeginChild("Spectrum Graph", Configuration.graph_Size);
@@ -143,7 +133,7 @@ namespace SoapySpectrum.UI
             ImGui.EndChild();
 
 
-            ImGui.SetCursorPos(new Vector2(Configuration.graph_Size.X + 60, 10));
+            ImGui.SetCursorPos(new Vector2(Configuration.graph_Size.X + 60 * Configuration.scale_Size.X, 10));
             ImGui.BeginChild("Spectrum Options", Configuration.option_Size);
             ImGuiTheme.newLine();
             ImGuiTheme.newLine();

@@ -828,7 +828,7 @@ namespace SoapySpectrum.UI
             ImGui.SetCursorPos(new Vector2(ImGui.GetCursorPosX() + style.FramePadding.X,
                 ImGui.GetCursorPosY() + cfg.size.Y / 2.0f - ImGui.CalcTextSize(cfg.prefix).Y / 2.0f
                 ));
-            ImGui.SetNextItemWidth(cfg.size.X - 5);
+            ImGui.SetNextItemWidth((cfg.size.X - 3 * Configuration.scale_Size.X));
             bool results = ImGui.Combo(label, ref selectedIndx, items, items.Length);
             if (ImGui.IsItemActive())
             {
@@ -899,7 +899,7 @@ namespace SoapySpectrum.UI
         public static glowingInputConfigurator getTextTheme()
         {
             glowingInputConfigurator textboxTheme = new glowingInputConfigurator();
-            textboxTheme.size = new Vector2(335 * Configuration.scale_Size.X, 25f * Configuration.scale_Size.Y);
+            textboxTheme.size = new Vector2(320 * Configuration.scale_Size.X, 25f * Configuration.scale_Size.Y);
             textboxTheme.roundCorners = 5;
             textboxTheme.prefix = "Username";
             textboxTheme.borderThickness = 3f;
@@ -913,7 +913,7 @@ namespace SoapySpectrum.UI
         public static SliderInputConfigurator getSliderTheme()
         {
             SliderInputConfigurator textboxTheme = new SliderInputConfigurator();
-            textboxTheme.size = new Vector2(335 * Configuration.scale_Size.X, 10.0f * Configuration.scale_Size.Y);
+            textboxTheme.size = new Vector2(320 * Configuration.scale_Size.X, 10.0f * Configuration.scale_Size.Y);
             textboxTheme.roundCorners = 5;
             textboxTheme.borderThickness = 3f;
             textboxTheme.bgcolor = Color.FromArgb(28, 28, 32).ToUint();
@@ -927,7 +927,7 @@ namespace SoapySpectrum.UI
         public static ButtonConfigurator getButtonTheme()
         {
             ButtonConfigurator textboxTheme = new ButtonConfigurator();
-            textboxTheme.size = new Vector2(335 * Configuration.scale_Size.X, 25f * Configuration.scale_Size.Y);
+            textboxTheme.size = new Vector2(320 * Configuration.scale_Size.X, 25f * Configuration.scale_Size.Y);
             textboxTheme.roundCorners = 5;
             textboxTheme.text = "NULL";
             textboxTheme.bgcolor = Color.FromArgb(91, 36, 221).ToUint();

@@ -63,14 +63,12 @@ namespace SoapySpectrum.UI
                     traces[selectedTrace].marker.position = peakSearch(selectedTrace);
                 }
                 ImGuiTheme.newLine();
-                ImGuiTheme.newLine();
                 buttonTheme.text = $"{Design_imGUINET.FontAwesome5.Mountain} Set Delta";
                 if (ImGuiTheme.button("markerDelta", buttonTheme) || Imports.GetAsyncKeyState(Keys.Enter))
                 {
                     traces[selectedTrace].marker.delta = true;
                     markerSetDelta(selectedTrace);
                 }
-                ImGuiTheme.newLine();
                 ImGuiTheme.newLine();
                 buttonTheme.text = $"{Design_imGUINET.FontAwesome5.Eraser} Clear Delta";
                 if (ImGuiTheme.button("markerDelta", buttonTheme) || Imports.GetAsyncKeyState(Keys.Enter))
