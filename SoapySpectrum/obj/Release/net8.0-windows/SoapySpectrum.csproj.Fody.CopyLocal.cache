@@ -1,6 +1,8 @@
-C:\Users\Administrator\.nuget\packages\imgui.net\1.90.6.1\runtimes\linux-x64\native\libcimgui.so
-C:\Users\Administrator\.nuget\packages\imgui.net\1.90.6.1\runtimes\osx\native\libcimgui.dylib
-C:\Users\Administrator\.nuget\packages\imgui.net\1.90.6.1\runtimes\win-arm64\native\cimgui.dll
-C:\Users\Administrator\.nuget\packages\imgui.net\1.90.6.1\runtimes\win-x64\native\cimgui.dll
-C:\Users\Administrator\.nuget\packages\imgui.net\1.90.6.1\runtimes\win-x86\native\cimgui.dll
-C:\Users\Administrator\.nuget\packages\system.management\8.0.0\runtimes\win\lib\net8.0\System.Management.dll
+C:\Users\NU\.nuget\packages\imgui.net\1.90.6.1\runtimes\linux-x64\native\libcimgui.so
+C:\Users\NU\.nuget\packages\imgui.net\1.90.6.1\runtimes\osx\native\libcimgui.dylib
+C:\Users\NU\.nuget\packages\imgui.net\1.90.6.1\runtimes\win-arm64\native\cimgui.dll
+C:\Users\NU\.nuget\packages\imgui.net\1.90.6.1\runtimes\win-x64\native\cimgui.dll
+C:\Users\NU\.nuget\packages\imgui.net\1.90.6.1\runtimes\win-x86\native\cimgui.dll
+C:\Users\NU\.nuget\packages\mathnet.numerics.mkl.win-x64\3.0.0\runtimes\win-x64\native\libMathNetNumericsMKL.dll
+C:\Users\NU\.nuget\packages\mathnet.numerics.mkl.win-x64\3.0.0\runtimes\win-x64\native\libiomp5md.dll
+C:\Users\NU\.nuget\packages\system.management\8.0.0\runtimes\win\lib\net8.0\System.Management.dll

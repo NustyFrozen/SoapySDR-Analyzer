@@ -4,9 +4,6 @@ using SoapySpectrum.Extentions;
 using SoapySpectrum.Extentions.Design_imGUINET;
 using System.Diagnostics;
 using System.Numerics;
-using System.Runtime.CompilerServices;
-using static SoapySpectrum.ImGuiTheme;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace SoapySpectrum.UI
 {
@@ -171,7 +168,7 @@ namespace SoapySpectrum.UI
             double scaledY = bottom - Configuration.graph_Size.Y * (Math.Abs(scale2) / Math.Abs(scale)); // 
             return new Vector2((float)scaledX, (float)scaledY);
         }
-        public static void calculateBandPower(int traceID,List<float> dBArray)
+        public static void calculateBandPower(int traceID, List<float> dBArray)
         {
             /*
             calculating band power require to change db values to watt and calculate with high significant digits (in this case decimal 26-27~ significant)
@@ -184,7 +181,7 @@ namespace SoapySpectrum.UI
             new Thread(() =>
             {
                 decimal tempMarkerBandPowerDecimal = 0;
-                foreach(float b in dBArray)
+                foreach (float b in dBArray)
                 {
                     tempMarkerBandPowerDecimal = tempMarkerBandPowerDecimal + ((decimal)b).toMW();
                     Thread.Sleep(1); //this thread is not important, telling system to focus more on stuff like rendering
@@ -197,7 +194,7 @@ namespace SoapySpectrum.UI
                 traces[traceID].marker.bandPowerValue = tempMarkerBandPowerDecimal.toDBm();
                 traces[traceID].marker.calculatingBandPower = false; //allowing to recalculate that trace
             })
-            { Priority = ThreadPriority.Lowest}.Start();
+            { Priority = ThreadPriority.Lowest }.Start();
         }
         static Stopwatch waitForMouseClick = new Stopwatch();
         public static void drawGraph()
@@ -221,7 +218,7 @@ namespace SoapySpectrum.UI
             Vector2 graphStatus = new Vector2();
             draw.AddRectFilled(new Vector2(left, top), new Vector2(right, bottom), ToUint(Color.FromArgb(16, 16, 16)));
             Vector2 mouseRange = new Vector2();
-            float mousePosFreq = 0,mousePosdB;
+            float mousePosFreq = 0, mousePosdB;
             for (float i = 0; i <= graphLabelIdx; i++)
             {
                 //draw X axis
@@ -229,18 +226,18 @@ namespace SoapySpectrum.UI
                 text += "M";
                 float posX = left + i / graphLabelIdx * Configuration.graph_Size.X - ImGui.CalcTextSize(text).X / 2;
                 draw.AddText(new Vector2(posX, bottom), ToUint(Color.LightGray), text);
-                if (ImGui.IsMouseHoveringRect(new Vector2(posX + ImGui.CalcTextSize(text).X / 2, top), new Vector2((left + (i + 1) / graphLabelIdx * Configuration.graph_Size.X),bottom)))
+                if (ImGui.IsMouseHoveringRect(new Vector2(posX + ImGui.CalcTextSize(text).X / 2, top), new Vector2((left + (i + 1) / graphLabelIdx * Configuration.graph_Size.X), bottom)))
                 {
                     draw.AddLine(new Vector2(left, ImGui.GetMousePos().Y), new Vector2(right, ImGui.GetMousePos().Y), Color.FromArgb(100, 100, 100).ToUint());
-                    draw.AddLine(new Vector2(ImGui.GetMousePos().X,top), new Vector2(ImGui.GetMousePos().X, bottom), Color.FromArgb(100, 100, 100).ToUint());
-                    
+                    draw.AddLine(new Vector2(ImGui.GetMousePos().X, top), new Vector2(ImGui.GetMousePos().X, bottom), Color.FromArgb(100, 100, 100).ToUint());
+
                     mousePosFreq = (float)((freqStart + ((ImGui.GetMousePos().X - left) / (Configuration.graph_Size.X)) * (freqStop - freqStart)));
-                    mousePosdB = (float)((graph_startDB -  (bottom - ImGui.GetMousePos().Y + top) / bottom  * (Math.Abs(graph_endDB) - Math.Abs(graph_startDB))) + dbOffset);
+                    mousePosdB = (float)((graph_startDB - (bottom - ImGui.GetMousePos().Y + top) / bottom * (Math.Abs(graph_endDB) - Math.Abs(graph_startDB))) + dbOffset);
                     mouseRange.X = (float)(freqStart + i / graphLabelIdx * (freqStop - freqStart));
                     mouseRange.Y = (float)(freqStart + (i + 1) / graphLabelIdx * (freqStop - freqStart));
                     draw.AddText(new Vector2(ImGui.GetMousePos().X + 5, ImGui.GetMousePos().Y + 5), Color.FromArgb(100, 100, 100).ToUint(), $"Freq {(mousePosFreq / 1e6).ToString().TruncateLongString(5)}M\ndBm {mousePosdB}");
                 }
-                        draw.AddLine(new Vector2(posX + ImGui.CalcTextSize(text).X / 2, bottom), new Vector2(posX + ImGui.CalcTextSize(text).X / 2, top), ToUint(Color.FromArgb(100, Color.Gray)));
+                draw.AddLine(new Vector2(posX + ImGui.CalcTextSize(text).X / 2, bottom), new Vector2(posX + ImGui.CalcTextSize(text).X / 2, top), ToUint(Color.FromArgb(100, Color.Gray)));
 
                 //draw Y axis
                 text = ((graph_startDB - (graphLabelIdx - i) / graphLabelIdx * (Math.Abs(graph_endDB) - Math.Abs(graph_startDB))) + dbOffset).ToString().TruncateLongString(5);
@@ -268,10 +265,10 @@ namespace SoapySpectrum.UI
 
                     for (int i = 1; i < plotData.Length; i++)
                     {
-                        
+
                         var sample1 = plotData[i - 1];
                         var sample2 = plotData[i];
-                        
+
                         Vector2 firstPoint = scaleToGraph(left, top, right, bottom, sample1.Key, sample1.Value, freqStart, freqStop, graph_startDB, graph_endDB);
                         Vector2 secondPoint = scaleToGraph(left, top, right, bottom, sample2.Key, sample2.Value, freqStart, freqStop, graph_startDB, graph_endDB);
                         if (secondPoint.X > right || firstPoint.X < left) continue; //out of bounds
@@ -342,8 +339,8 @@ namespace SoapySpectrum.UI
             }
             catch (Exception ex)
             {
-                if(!ex.Message.Contains("Sequence"))
-                Logger.Trace($"Render Error -> {ex.Message}");
+                if (!ex.Message.Contains("Sequence"))
+                    Logger.Trace($"Render Error -> {ex.Message}");
             }
         }
     }

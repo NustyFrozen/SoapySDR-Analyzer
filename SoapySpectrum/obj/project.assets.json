@@ -97,6 +97,54 @@
           }
         }
       },
+      "MathNet.Numerics/5.0.0": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/MathNet.Numerics.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/MathNet.Numerics.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "MathNet.Numerics.MKL.Win-x64/3.0.0": {
+        "type": "package",
+        "dependencies": {
+          "MathNet.Numerics.Providers.MKL": "5.0.0"
+        },
+        "build": {
+          "buildTransitive/net5.0/_._": {}
+        },
+        "runtimeTargets": {
+          "runtimes/win-x64/native/libMathNetNumericsMKL.dll": {
+            "assetType": "native",
+            "rid": "win-x64"
+          },
+          "runtimes/win-x64/native/libiomp5md.dll": {
+            "assetType": "native",
+            "rid": "win-x64"
+          }
+        }
+      },
+      "MathNet.Numerics.Providers.MKL/5.0.0": {
+        "type": "package",
+        "dependencies": {
+          "MathNet.Numerics": "5.0.0"
+        },
+        "compile": {
+          "lib/net6.0/MathNet.Numerics.Providers.MKL.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/MathNet.Numerics.Providers.MKL.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "Microsoft.Extensions.Configuration.Abstractions/8.0.0": {
         "type": "package",
         "dependencies": {
@@ -1854,6 +1902,73 @@
         "runtimes/win-arm64/native/cimgui.dll",
         "runtimes/win-x64/native/cimgui.dll",
         "runtimes/win-x86/native/cimgui.dll"
+      ]
+    },
+    "MathNet.Numerics/5.0.0": {
+      "sha512": "pg1W2VwaEQMAiTpGK840hZgzavnqjlCMTVSbtVCXVyT+7AX4mc1o89SPv4TBlAjhgCOo9c1Y+jZ5m3ti2YgGgA==",
+      "type": "package",
+      "path": "mathnet.numerics/5.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "icon.png",
+        "lib/net461/MathNet.Numerics.dll",
+        "lib/net461/MathNet.Numerics.xml",
+        "lib/net48/MathNet.Numerics.dll",
+        "lib/net48/MathNet.Numerics.xml",
+        "lib/net5.0/MathNet.Numerics.dll",
+        "lib/net5.0/MathNet.Numerics.xml",
+        "lib/net6.0/MathNet.Numerics.dll",
+        "lib/net6.0/MathNet.Numerics.xml",
+        "lib/netstandard2.0/MathNet.Numerics.dll",
+        "lib/netstandard2.0/MathNet.Numerics.xml",
+        "mathnet.numerics.5.0.0.nupkg.sha512",
+        "mathnet.numerics.nuspec"
+      ]
+    },
+    "MathNet.Numerics.MKL.Win-x64/3.0.0": {
+      "sha512": "tgp9xQlPCiIqZ+VWJo2/c7GalV+1ucJkiaV7XEh9uNFt7KkG+rKN/7J2dhdiNxAAejD0MFeMkQy08cgQhHQc+Q==",
+      "type": "package",
+      "path": "mathnet.numerics.mkl.win-x64/3.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "build/net461/MathNet.Numerics.MKL.Win-x64.targets",
+        "build/net48/MathNet.Numerics.MKL.Win-x64.targets",
+        "build/net5.0/_._",
+        "build/netstandard2.0/_._",
+        "buildTransitive/net461/MathNet.Numerics.MKL.Win-x64.targets",
+        "buildTransitive/net48/MathNet.Numerics.MKL.Win-x64.targets",
+        "buildTransitive/net5.0/_._",
+        "buildTransitive/netstandard2.0/_._",
+        "icon.png",
+        "license.txt",
+        "mathnet.numerics.mkl.win-x64.3.0.0.nupkg.sha512",
+        "mathnet.numerics.mkl.win-x64.nuspec",
+        "runtimes/win-x64/native/libMathNetNumericsMKL.dll",
+        "runtimes/win-x64/native/libiomp5md.dll"
+      ]
+    },
+    "MathNet.Numerics.Providers.MKL/5.0.0": {
+      "sha512": "cCOM4ImHjdbpD2iR4/6mVFq+sD0sI5hXlAYJXIKmob+20OiA7QQ259vY4GLXYOLBhy35D2QjGmBlgdzNNkuepw==",
+      "type": "package",
+      "path": "mathnet.numerics.providers.mkl/5.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "icon.png",
+        "lib/net461/MathNet.Numerics.Providers.MKL.dll",
+        "lib/net461/MathNet.Numerics.Providers.MKL.xml",
+        "lib/net48/MathNet.Numerics.Providers.MKL.dll",
+        "lib/net48/MathNet.Numerics.Providers.MKL.xml",
+        "lib/net5.0/MathNet.Numerics.Providers.MKL.dll",
+        "lib/net5.0/MathNet.Numerics.Providers.MKL.xml",
+        "lib/net6.0/MathNet.Numerics.Providers.MKL.dll",
+        "lib/net6.0/MathNet.Numerics.Providers.MKL.xml",
+        "lib/netstandard2.0/MathNet.Numerics.Providers.MKL.dll",
+        "lib/netstandard2.0/MathNet.Numerics.Providers.MKL.xml",
+        "mathnet.numerics.providers.mkl.5.0.0.nupkg.sha512",
+        "mathnet.numerics.providers.mkl.nuspec"
       ]
     },
     "Microsoft.Extensions.Configuration.Abstractions/8.0.0": {
@@ -5748,24 +5863,31 @@
       "ClickableTransparentOverlay >= 10.2.0",
       "Costura.Fody >= 5.7.0",
       "DecimalMath.DecimalEx >= 1.0.2",
+      "MathNet.Numerics >= 5.0.0",
+      "MathNet.Numerics.MKL.Win-x64 >= 3.0.0",
       "NLog.Extensions.Logging >= 5.3.12",
       "System.Management >= 8.0.0"
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Administrator\\.nuget\\packages\\": {}
+    "C:\\Users\\NU\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Administrator\\Documents\\projects\\SoapySpectrum\\SoapySpectrum\\SoapySpectrum.csproj",
+      "projectUniqueName": "C:\\Users\\NU\\Documents\\GitHub\\Soapy-.NET-Spectrum-Analayzer\\SoapySpectrum\\SoapySpectrum.csproj",
       "projectName": "SoapySpectrum",
-      "projectPath": "C:\\Users\\Administrator\\Documents\\projects\\SoapySpectrum\\SoapySpectrum\\SoapySpectrum.csproj",
-      "packagesPath": "C:\\Users\\Administrator\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Administrator\\Documents\\projects\\SoapySpectrum\\SoapySpectrum\\obj\\",
+      "projectPath": "C:\\Users\\NU\\Documents\\GitHub\\Soapy-.NET-Spectrum-Analayzer\\SoapySpectrum\\SoapySpectrum.csproj",
+      "packagesPath": "C:\\Users\\NU\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\NU\\Documents\\GitHub\\Soapy-.NET-Spectrum-Analayzer\\SoapySpectrum\\obj\\",
       "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+      ],
       "configFilePaths": [
-        "C:\\Users\\Administrator\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\NU\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -5773,6 +5895,7 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -5810,6 +5933,14 @@
             "target": "Package",
             "version": "[1.0.2, )"
           },
+          "MathNet.Numerics": {
+            "target": "Package",
+            "version": "[5.0.0, )"
+          },
+          "MathNet.Numerics.MKL.Win-x64": {
+            "target": "Package",
+            "version": "[3.0.0, )"
+          },
           "NLog.Extensions.Logging": {
             "target": "Package",
             "version": "[5.3.12, )"
@@ -5838,7 +5969,7 @@
             "privateAssets": "none"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.303/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.302/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

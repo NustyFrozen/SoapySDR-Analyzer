@@ -3,7 +3,6 @@ using Design_imGUINET;
 using ImGuiNET;
 using SoapySpectrum.Extentions;
 using System.Diagnostics;
-using System.Numerics;
 
 namespace SoapySpectrum.UI
 {
@@ -17,9 +16,8 @@ namespace SoapySpectrum.UI
         {
             var inputTheme = ImGuiTheme.getTextTheme();
             inputTheme.prefix = "RBW";
-            inputTheme.size = new Vector2(262, 35);
             ImGuiTheme.glowingCombo("InputSelectortext3", ref selectedTrace, Combotraces, inputTheme);
-            ImGui.NewLine();
+            ImGuiTheme.newLine();
             ImGui.Text($"{Design_imGUINET.FontAwesome5.Eye} View:");
             if (ImGui.RadioButton($"{Design_imGUINET.FontAwesome5.PersonRunning} Active", traces[selectedTrace].viewStatus == traceViewStatus.active))
                 traces[selectedTrace].viewStatus = traceViewStatus.active;
@@ -28,8 +26,8 @@ namespace SoapySpectrum.UI
             if (ImGui.RadioButton($"{Design_imGUINET.FontAwesome5.Eraser} Clear", traces[selectedTrace].viewStatus == traceViewStatus.clear))
                 traces[selectedTrace].viewStatus = traceViewStatus.clear;
 
-            ImGui.NewLine();
-            ImGui.NewLine();
+            ImGuiTheme.newLine();
+            ImGuiTheme.newLine();
             ImGui.Text($"{Design_imGUINET.FontAwesome5.StreetView} Trace Function:");
             if (ImGui.RadioButton($"{Design_imGUINET.FontAwesome5.Equal} Normal", traces[selectedTrace].dataStatus == traceDataStatus.normal))
                 traces[selectedTrace].dataStatus = traceDataStatus.normal;
@@ -39,7 +37,7 @@ namespace SoapySpectrum.UI
                 traces[selectedTrace].dataStatus = traceDataStatus.minHold;
             if (ImGui.RadioButton($"{Design_imGUINET.FontAwesome5.Microscope} Average", traces[selectedTrace].dataStatus == traceDataStatus.Average))
                 traces[selectedTrace].dataStatus = traceDataStatus.Average;
-            ImGui.NewLine();
+            ImGuiTheme.newLine();
 
             ImGui.Text($"\uf041 Marker:");
             ImGui.Text("use arrow keys <-A D-> to move the Marker position");
@@ -56,7 +54,7 @@ namespace SoapySpectrum.UI
                     markerMoveKeys.Restart();
                 }
 
-                ImGui.NewLine();
+                ImGuiTheme.newLine();
                 //In Case marker is enabled we show marker features
                 var buttonTheme = ImGuiTheme.getButtonTheme();
                 buttonTheme.text = $"{Design_imGUINET.FontAwesome5.ArrowUp} Peak Search (Press Enter)";
@@ -64,27 +62,27 @@ namespace SoapySpectrum.UI
                 {
                     traces[selectedTrace].marker.position = peakSearch(selectedTrace);
                 }
-                ImGui.NewLine();
-                ImGui.NewLine();
+                ImGuiTheme.newLine();
+                ImGuiTheme.newLine();
                 buttonTheme.text = $"{Design_imGUINET.FontAwesome5.Mountain} Set Delta";
                 if (ImGuiTheme.button("markerDelta", buttonTheme) || Imports.GetAsyncKeyState(Keys.Enter))
                 {
                     traces[selectedTrace].marker.delta = true;
                     markerSetDelta(selectedTrace);
                 }
-                ImGui.NewLine();
-                ImGui.NewLine();
+                ImGuiTheme.newLine();
+                ImGuiTheme.newLine();
                 buttonTheme.text = $"{Design_imGUINET.FontAwesome5.Eraser} Clear Delta";
                 if (ImGuiTheme.button("markerDelta", buttonTheme) || Imports.GetAsyncKeyState(Keys.Enter))
                 {
                     traces[selectedTrace].marker.delta = false;
                 }
-                ImGui.NewLine();
-                ImGui.NewLine();
+                ImGuiTheme.newLine();
+                ImGuiTheme.newLine();
                 ImGui.Checkbox($"Enable Band Power", ref traces[selectedTrace].marker.bandPower);
                 if (traces[selectedTrace].marker.bandPower)
                 {
-                    ImGui.NewLine();
+                    ImGuiTheme.newLine();
                     ImGui.Text($"{FontAwesome5.ArrowLeft} Span {FontAwesome5.ArrowRight}:");
                     if (ImGuiTheme.glowingInput("InputSelectortext11", ref traces[selectedTrace].marker.bandPower_Span_str, inputTheme))
                     {

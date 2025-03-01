@@ -12,7 +12,8 @@
           "Costura.Fody": "5.7.0",
           "DecimalMath.DecimalEx": "1.0.2",
           "NLog.Extensions.Logging": "5.3.12",
-          "System.Management": "8.0.0"
+          "System.Management": "8.0.0",
+          "Pothosware.SoapySDR": "0.8.1.0"
         },
         "runtime": {
           "SoapySpectrum.dll": {}
@@ -951,6 +952,14 @@
             "fileVersion": "1.7.8.0"
           }
         }
+      },
+      "Pothosware.SoapySDR/0.8.1.0": {
+        "runtime": {
+          "Pothosware.SoapySDR.dll": {
+            "assemblyVersion": "0.8.1.0",
+            "fileVersion": "0.8.1.0"
+          }
+        }
       }
     }
   },
@@ -1652,6 +1661,11 @@
       "sha512": "sha512-hpVlfej54yC6Qaq9AYXWgTgF8SDz2dtKbDNZGO8msjn3NjdkUBnFcIzYfOWyvwvpr3aqZPKh4WSSnJ78GxyIWg==",
       "path": "vortice.mathematics/1.7.8",
       "hashPath": "vortice.mathematics.1.7.8.nupkg.sha512"
+    },
+    "Pothosware.SoapySDR/0.8.1.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
     }
   }
 }

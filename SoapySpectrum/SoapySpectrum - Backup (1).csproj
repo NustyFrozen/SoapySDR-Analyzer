@@ -21,8 +21,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="DecimalMath.DecimalEx" Version="1.0.2" />
-    <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
-    <PackageReference Include="MathNet.Numerics.MKL.Win-x64" Version="3.0.0" />
     <PackageReference Include="NLog.Extensions.Logging" Version="5.3.12" />
     <PackageReference Include="System.Management" Version="8.0.0" />
   </ItemGroup>
@@ -112,7 +110,6 @@
     <None Update="SoapySDRCSharpSWIG.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-
-  </ItemGroup>
+	
 
 </Project>

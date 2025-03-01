@@ -1,6 +1,4 @@
 ﻿using ImGuiNET;
-using SoapySpectrum.soapypower;
-using System.DirectoryServices.ActiveDirectory;
 using System.Numerics;
 namespace SoapySpectrum
 {
@@ -20,6 +18,7 @@ namespace SoapySpectrum
         graph_Size = new Vector2(Convert.ToInt16(mainWindow_Size.X * .8), Convert.ToInt16(mainWindow_Size.Y * .9)),
         option_Size = new Vector2(Convert.ToInt16(mainWindow_Size.X * .2), Convert.ToInt16(mainWindow_Size.Y)),
         input_Size = new Vector2(mainWindow_Size.X / 4, mainWindow_Size.X / 4); //square on purpose
+        public static Vector2 scale_Size = new Vector2(((float)Screen.PrimaryScreen.Bounds.Size.Width) / 1920.0f, ((float)Screen.PrimaryScreen.Bounds.Size.Height) / 1080.0f);
         public static Dictionary<string, object> config = new Dictionary<string, object>();
         public static Dictionary<float, float> calibrationData = new Dictionary<float, float>();
         public static bool hasCalibration = false;
@@ -33,11 +32,10 @@ namespace SoapySpectrum
                 string[] tempLine = data[i].Split(',');
                 calibrationData.Add((float)Convert.ToDouble(tempLine[0]), (float)Convert.ToDouble(tempLine[2]));
             }
-            SoapyPower.initializeMinDB();
         }
         public static void initDefaultConfig()
         {
-            if(File.Exists("cal.csv"))
+            if (File.Exists("cal.csv"))
             {
                 loadCalibrationData();
             }

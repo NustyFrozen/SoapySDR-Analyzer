@@ -3,7 +3,7 @@ using SoapySpectrum.Extentions;
 using SoapySpectrum.Extentions.Design_imGUINET;
 using System.Numerics;
 
-namespace SoapySpectrum
+namespace SoapySpectrum.UI
 {
     internal class ImGuiTheme
     {
@@ -114,7 +114,7 @@ namespace SoapySpectrum
             bool flag = frameData.TryGetValue(label, out obj);
             if (flag)
             {
-                frameTickData = ((circleButtonFrame)obj);
+                frameTickData = (circleButtonFrame)obj;
                 borderColorActive = frameTickData.color;
                 Fadestep = frameTickData.waitFade;
                 status = frameTickData.status;
@@ -234,7 +234,7 @@ namespace SoapySpectrum
             bool flag = frameData.TryGetValue(label, out obj);
             if (flag)
             {
-                frameTickData = ((circleButtonFrame)obj);
+                frameTickData = (circleButtonFrame)obj;
                 borderColorActive = frameTickData.color;
                 Fadestep = frameTickData.waitFade;
                 status = frameTickData.status;
@@ -588,7 +588,7 @@ namespace SoapySpectrum
             bool flag = frameData.TryGetValue(label, out obj);
             if (flag)
             {
-                var frameData = ((SliderInputFrame)obj);
+                var frameData = (SliderInputFrame)obj;
                 borderColorActive = frameData.color;
                 BorderThicknessActive = frameData.borderThickness;
                 sliderColorActive = frameData.sliderColorActive;
@@ -610,7 +610,7 @@ namespace SoapySpectrum
             var style = ImGui.GetStyle();
             var draw = ImGui.GetWindowDrawList();
             var cursorPos = ImGui.GetCursorPos();
-            System.Drawing.Point mousePos = new System.Drawing.Point(0, 0);
+            Point mousePos = new Point(0, 0);
             Imports.GetCursorPos(ref mousePos);
             var startDrawBg = new Vector2(windowpos.X + cursorPos.X, windowpos.Y + cursorPos.Y);
             var endDrawBg = new Vector2(windowpos.X + cursorPos.X + cfg.size.X, windowpos.Y + cursorPos.Y + cfg.size.Y);
@@ -824,13 +824,12 @@ namespace SoapySpectrum
             style.Colors[ImGuiCol.FrameBgHovered.toInt()] = cfg.bgcolor.toColor().toVec4();
             style.Colors[ImGuiCol.Button.toInt()] = cfg.bgcolor.toColor().toVec4();
             style.Colors[ImGuiCol.ButtonHovered.toInt()] = cfg.bgcolor.toColor().toVec4();
-
             var currentCursor = ImGui.GetCursorPos();
             ImGui.SetCursorPos(new Vector2(ImGui.GetCursorPosX() + style.FramePadding.X,
                 ImGui.GetCursorPosY() + cfg.size.Y / 2.0f - ImGui.CalcTextSize(cfg.prefix).Y / 2.0f
                 ));
+            ImGui.SetNextItemWidth(cfg.size.X - 5);
             bool results = ImGui.Combo(label, ref selectedIndx, items, items.Length);
-
             if (ImGui.IsItemActive())
             {
 
@@ -882,7 +881,7 @@ namespace SoapySpectrum
             Color bg = style.Colors[ImGuiCol.WindowBg.toInt()].toColor();
 
             angle += speed;
-            float lim = 2.0f * ((float)Math.PI) * (progress);
+            float lim = 2.0f * (float)Math.PI * progress;
             for (float i = 0; i < lim; i += 0.01f)
             {
                 Vector2 unDiscover = new Vector2(radius * (float)Math.Sin(angle + i), radius * (float)Math.Cos(angle + i));
@@ -893,10 +892,14 @@ namespace SoapySpectrum
             if (angle >= 2 * Math.PI) angle = 0;
             frameData[label] = angle;
         }
-        public static ImGuiTheme.glowingInputConfigurator getTextTheme()
+        public static void newLine()
         {
-            ImGuiTheme.glowingInputConfigurator textboxTheme = new ImGuiTheme.glowingInputConfigurator();
-            textboxTheme.size = new Vector2(262, 50);
+            ImGui.Dummy(new Vector2(0, 25.0f * Configuration.scale_Size.Y)); // Adds 20px vertical space
+        }
+        public static glowingInputConfigurator getTextTheme()
+        {
+            glowingInputConfigurator textboxTheme = new glowingInputConfigurator();
+            textboxTheme.size = new Vector2(335 * Configuration.scale_Size.X, 25f * Configuration.scale_Size.Y);
             textboxTheme.roundCorners = 5;
             textboxTheme.prefix = "Username";
             textboxTheme.borderThickness = 3f;
@@ -907,10 +910,10 @@ namespace SoapySpectrum
             textboxTheme.fontScale = 16f;
             return textboxTheme;
         }
-        public static ImGuiTheme.SliderInputConfigurator getSliderTheme()
+        public static SliderInputConfigurator getSliderTheme()
         {
-            ImGuiTheme.SliderInputConfigurator textboxTheme = new ImGuiTheme.SliderInputConfigurator();
-            textboxTheme.size = new Vector2(400, 10);
+            SliderInputConfigurator textboxTheme = new SliderInputConfigurator();
+            textboxTheme.size = new Vector2(335 * Configuration.scale_Size.X, 10.0f * Configuration.scale_Size.Y);
             textboxTheme.roundCorners = 5;
             textboxTheme.borderThickness = 3f;
             textboxTheme.bgcolor = Color.FromArgb(28, 28, 32).ToUint();
@@ -921,10 +924,10 @@ namespace SoapySpectrum
             textboxTheme.YoffsetLabel = -20;
             return textboxTheme;
         }
-        public static ImGuiTheme.ButtonConfigurator getButtonTheme()
+        public static ButtonConfigurator getButtonTheme()
         {
-            ImGuiTheme.ButtonConfigurator textboxTheme = new ImGuiTheme.ButtonConfigurator();
-            textboxTheme.size = new Vector2(214, 50);
+            ButtonConfigurator textboxTheme = new ButtonConfigurator();
+            textboxTheme.size = new Vector2(335 * Configuration.scale_Size.X, 25f * Configuration.scale_Size.Y);
             textboxTheme.roundCorners = 5;
             textboxTheme.text = "NULL";
             textboxTheme.bgcolor = Color.FromArgb(91, 36, 221).ToUint();
