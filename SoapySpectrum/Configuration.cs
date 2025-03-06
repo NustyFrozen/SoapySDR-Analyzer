@@ -1,4 +1,5 @@
 ﻿using ImGuiNET;
+using MathNet.Numerics;
 using System.Numerics;
 namespace SoapySpectrum
 {
@@ -43,18 +44,20 @@ namespace SoapySpectrum
             {
                 loadCalibrationData();
             }
-            Configuration.config.Add("freqStart", 930e6);
-            Configuration.config.Add("freqStop", 960e6);
+            Configuration.config.Add("freqStart", 80e6);
+            Configuration.config.Add("freqStop", 120e6);
+            Func<int, double[]> windowFunction = length => Window.Hamming(length);
+            Configuration.config.Add("FFTWINDOW", windowFunction);
             Configuration.config.Add("sampleRate", (double)20e6);
             Configuration.config.Add("sampleRateOptions", new string[] { });
             Configuration.config.Add("devicesOptions", new string[] { });
             Configuration.config.Add("graph_startDB", (double)-136);
             Configuration.config.Add("graph_endDB", (double)0);
             Configuration.config.Add("graph_OffsetDB", (double)0);
-            Configuration.config["FFTSize"] = 512;
-            Configuration.config["weleching"] = 400;
-            Configuration.config["driver"] = "uhd";
-            Configuration.config["additional"] = "-g 0";
+
+            Configuration.config["FFT_Size"] = 512;
+            Configuration.config["FFT_segments"] = 2;
+            Configuration.config["FFT_overlap"] = 0.5;
         }
     }
 }

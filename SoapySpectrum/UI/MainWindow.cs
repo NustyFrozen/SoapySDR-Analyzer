@@ -33,39 +33,7 @@ namespace SoapySpectrum.UI
         }
 
         private static ushort[] iconRange = new ushort[] { 0xe005, 0xf8ff, 0 };
-        public static bool refreshConfiguration()
-        {
-            Logger.Debug("Refreshing Configuration called by User");
-            try
-            {
-                if (formatFreq(display_FreqStop) - formatFreq(display_FreqStart) < 0)
-                {
-                    throw new Exception("Left band cannot be higher than Right band");
-                }
-                Configuration.config["freqStart"] = formatFreq(display_FreqStart);
-                Configuration.config["freqStop"] = formatFreq(display_FreqStop);
-            }
-            catch (Exception ex)
-            {
-                Logger.Error($"Exception Called in refreshing configuration -> {ex.Message}");
-                return false;
-            }
 
-            //rounding it to sample rate so we wont get samples outside specified bounds
-            traces[selectedTrace].marker.bandPowerSpan = formatFreq(traces[selectedTrace].marker.bandPower_Span_str);
-
-            try
-            {
-                Configuration.config["graph_OffsetDB"] = Convert.ToDouble(display_Offset);
-            }
-            catch (Exception ex)
-            {
-
-                Logger.Error($"Exception Called in refreshing configuration -> {ex.Message}");
-                return false;
-            }
-            return true;
-        }
         static ImFontPtr PoppinsFont, IconFont;
         public bool initializedResources = false;
 

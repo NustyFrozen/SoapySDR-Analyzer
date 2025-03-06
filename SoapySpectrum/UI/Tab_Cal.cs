@@ -30,9 +30,6 @@ namespace SoapySpectrum.UI
             traces[0].viewStatus = traceViewStatus.active;
             traces[0].dataStatus = traceDataStatus.maxHold;
             calibrating = true;
-
-            refreshConfiguration();
-            ;
         }
         public static KeyValuePair<float, float> findMaxHoldRange(SortedDictionary<float, float> range, float start, float stop)
         {

@@ -84,7 +84,15 @@ namespace SoapySpectrum.UI
                     ImGui.Text($"{FontAwesome5.ArrowLeft} Span {FontAwesome5.ArrowRight}:");
                     if (ImGuiTheme.glowingInput("InputSelectortext11", ref traces[selectedTrace].marker.bandPower_Span_str, inputTheme))
                     {
-                        refreshConfiguration();
+                        double results = 0;
+                        if (TryFormatFreq(traces[selectedTrace].marker.bandPower_Span_str, out results))
+                        {
+                            traces[selectedTrace].marker.bandPowerSpan = results;
+                        }
+                        else
+                        {
+                            Logger.Error("couldn't change bandPowerSpan Invalid Double exponent Value");
+                        }
                     }
                 }
             }

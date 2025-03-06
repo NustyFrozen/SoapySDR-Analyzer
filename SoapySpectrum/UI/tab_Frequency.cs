@@ -7,31 +7,53 @@ namespace SoapySpectrum.UI
     public partial class UI : Overlay
     {
         static string display_FreqStart = "930M", display_FreqStop = "960M";
-
+        static string display_center = "945M", display_span = "30M";
         public void renderFrequency()
         {
             var childSize = Configuration.option_Size;
             var inputTheme = ImGuiTheme.getTextTheme();
-            inputTheme.prefix = $" left Frequency";
-            ImGui.Text($"{FontAwesome5.ArrowLeft} Left Band:");
-            if (ImGuiTheme.glowingInput("InputSelectortext", ref display_FreqStart, inputTheme))
-                if (refreshConfiguration())
+
+            ImGui.Text($"Center Frequency:");
+            inputTheme.prefix = $"Center Frequency";
+            bool changedFrequencyBySpan = ImGuiTheme.glowingInput("frequency_center", ref display_center, inputTheme);
+            bool changedFrequencyByBand = false;
+            ImGui.Text($"Span:");
+            inputTheme.prefix = $"span";
+            changedFrequencyBySpan |= ImGuiTheme.glowingInput("frequency_span", ref display_span, inputTheme);
+            if (changedFrequencyBySpan)
+            {
+                double center_frequency = 0, span = 0;
+                if (TryFormatFreq(display_center, out center_frequency) && TryFormatFreq(display_center, out span))
                 {
-
+                    changedFrequencyByBand = true;
+                    display_FreqStart = (center_frequency - (span / 2.0)).ToString();
+                    display_FreqStart = (center_frequency + (span / 2.0)).ToString();
                 }
+            }
 
-            ImGuiTheme.newLine();
+            ImGui.Text($"{FontAwesome5.ArrowLeft} Left Band:");
+            inputTheme.prefix = $" start Frequency";
+            changedFrequencyByBand |= ImGuiTheme.glowingInput("InputSelectortext", ref display_FreqStart, inputTheme);
+
             ImGuiTheme.newLine();
             ImGui.Text($"{FontAwesome5.ArrowRight} Right Band:");
             inputTheme.prefix = "End Frequency";
-            if (ImGuiTheme.glowingInput("InputSelectortext2", ref display_FreqStop, inputTheme))
-                if (refreshConfiguration())
-                {
+            changedFrequencyByBand |= ImGuiTheme.glowingInput("InputSelectortext2", ref display_FreqStop, inputTheme);
 
+            if (changedFrequencyByBand)
+                if (formatFreq(display_FreqStop) - formatFreq(display_FreqStart) < 0)
+                {
+                    Logger.Error("Left band cannot be higher than Right band");
+
+                }
+                else
+                {
+                    Configuration.config["freqStart"] = formatFreq(display_FreqStart);
+                    Configuration.config["freqStop"] = formatFreq(display_FreqStop);
                 }
 
         }
-        public static double formatFreq(string input)
+        public static bool TryFormatFreq(string input, out double value)
         {
             input = input.ToUpper();
             double exponent = 1;
@@ -44,9 +66,11 @@ namespace SoapySpectrum.UI
             double results = 80000000;
             if (!double.TryParse(input.Replace("K", "").Replace("M", "").Replace("G", ""), out results))
             {
-                Logger.Error("Invalid Frequency Format, changing to 80000000");
+                value = 0;
+                return false;
             }
-            return results * exponent;
+            value = results * exponent;
+            return true;
         }
     }
 }

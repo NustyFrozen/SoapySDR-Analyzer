@@ -14,9 +14,15 @@ namespace SoapySpectrum.UI
             inputTheme.prefix = $"{FontAwesome5.Plus} Amplitude Offset";
             if (ImGuiTheme.glowingInput("Amplitude Offset", ref display_Offset, inputTheme))
             {
-
-                refreshConfiguration();
-
+                double results;
+                if (double.TryParse(display_Offset, out results))
+                {
+                    Configuration.config["graph_OffsetDB"] = results;
+                }
+                else
+                {
+                    Logger.Error("couldn't change Graph Offset Invalid integer Value");
+                }
             }
         }
     }

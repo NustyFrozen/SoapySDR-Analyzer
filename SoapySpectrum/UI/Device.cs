@@ -1,6 +1,8 @@
 ﻿using ClickableTransparentOverlay;
 using ImGuiNET;
 using Pothosware.SoapySDR;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 namespace SoapySpectrum.UI
 {
     public partial class UI : Overlay
@@ -9,7 +11,7 @@ namespace SoapySpectrum.UI
         string[] available_Devices = new string[] { "No Devices Found" };
         public static Device sdr_device;
         uint selectedChannel = 0;
-        string selectedAntennas = "RX";
+        string selectedAntennas = "TX/RX";
         public static void setupSoapyEnvironment()
         {
             Environment.SetEnvironmentVariable("SOAPY_SDR_PLUGIN_PATH", @"C:\Program Files (x86)\SoapySDR\lib\SoapySDR\modules0.8-3");
@@ -54,6 +56,11 @@ namespace SoapySpectrum.UI
             }
 
         }
+        Dictionary<string, float> gains = new Dictionary<string, float>();
+        static ref float GetDictionaryValueRef(Dictionary<string, float> dict, string key)
+        {
+            return ref CollectionsMarshal.GetValueRefOrNullRef(dict, key);
+        }
         void renderDeviceData()
         {
             if (sdr_device == null) return;
@@ -72,15 +79,28 @@ namespace SoapySpectrum.UI
                 foreach (var gain in sdr_device.ListGains(Direction.Rx, selectedChannel))
                 {
                     var range = sdr_device.GetGainRange(Direction.Rx, selectedChannel, gain);
-                    var gainValue = (float)sdr_device.GetGain(Direction.Rx, selectedChannel, gain);
+                    if (!gains.ContainsKey($"GAINS_{gain}"))
+                        gains[$"GAINS_{gain}"] = (float)sdr_device.GetGain(Direction.Rx, selectedChannel, gain);
+                    ref float gainValue = ref GetDictionaryValueRef(gains, $"GAINS_{gain}");
+                    if (!Unsafe.IsNullRef(ref gainValue))  // Check if key exists
+                    {
+                        gainValue = (float)sdr_device.GetGain(Direction.Rx, selectedChannel, gain);  // Modify the dictionary value directly
+                    }
                     if (ImGui.SliderFloat($"{gain} - {gainValue}", ref gainValue, (float)range.Minimum, (float)range.Maximum, "%.3f", ImGuiSliderFlags.AlwaysClamp))
+                    {
+                        gains[$"GAINS_{gain}"] = gainValue;
                         sdr_device.SetGain(Direction.Rx, selectedChannel, gain, Math.Round(gainValue / range.Step) * range.Step);
+                    }
 
                 }
                 ImGui.Text($"Sensors Data:");
                 foreach (var sensor in sdr_device.ListSensors())
                 {
                     ImGui.Text($"{sensor}: {sdr_device.ReadSensor(sensor)}");
+                }
+                if (ImGui.Button("LETS GO"))
+                {
+                    PerformFFT.beginFFT();
                 }
             }
             catch (Exception ex)

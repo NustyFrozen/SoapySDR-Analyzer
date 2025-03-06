@@ -18,7 +18,7 @@ namespace SoapySpectrum.UI
             if (ImGuiTheme.glowingCombo("fft window", ref selectedFFTWINDOW, FFTWindow, inputTheme))
             {
                 Configuration.config["FFTSize"] = int.Parse(FFTWindow[selectedFFTWINDOW]);
-                refreshConfiguration();
+
             }
             ImGuiTheme.newLine();
             ImGui.Text($"\uf1fb Welch Averaging:");
