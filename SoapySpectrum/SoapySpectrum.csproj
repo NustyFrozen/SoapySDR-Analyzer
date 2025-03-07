@@ -21,6 +21,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="DecimalMath.DecimalEx" Version="1.0.2" />
+    <PackageReference Include="FFTW.NET" Version="1.0.1" />
     <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
     <PackageReference Include="MathNet.Numerics.MKL.Win-x64" Version="3.0.0" />
     <PackageReference Include="NLog.Extensions.Logging" Version="5.3.12" />
@@ -94,13 +95,7 @@
     <None Update="hackrf.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="libfftw3-3.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Update="libfftw3f-3.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="libfftw3l-3.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="libiio.dll">
@@ -109,10 +104,22 @@
     <None Update="libusb-1.0.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="LimeSuite.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="LMS7Support.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="nlog.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="pthreadVC2.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="rtlsdr.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="rtlsdrSupport.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="SoapySDR.dll">
@@ -122,6 +129,46 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
 
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="C:\Users\NU\.nuget\packages\fftw.net\1.0.1\build\netstandard1.3\libfftw3-3-x64.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="C:\Users\NU\.nuget\packages\fftw.net\1.0.1\build\netstandard1.3\libfftw3-3-x86.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="C:\Users\NU\.nuget\packages\fftw.net\1.0.1\build\netstandard1.3\libfftw3-3-x64.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="C:\Users\NU\.nuget\packages\fftw.net\1.0.1\build\netstandard1.3\libfftw3-3-x86.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="C:\Users\NU\.nuget\packages\fftw.net\1.0.1\build\netstandard1.3\libfftw3-3-x64.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="C:\Users\NU\.nuget\packages\fftw.net\1.0.1\build\netstandard1.3\libfftw3-3-x86.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="C:\Users\NU\.nuget\packages\fftw.net\1.0.1\build\netstandard1.3\libfftw3-3-x64.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="C:\Users\NU\.nuget\packages\fftw.net\1.0.1\build\netstandard1.3\libfftw3-3-x86.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="C:\Users\NU\.nuget\packages\fftw.net\1.0.1\build\netstandard1.3\libfftw3-3-x64.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="C:\Users\NU\.nuget\packages\fftw.net\1.0.1\build\netstandard1.3\libfftw3-3-x86.dll" />
   </ItemGroup>
 
 </Project>

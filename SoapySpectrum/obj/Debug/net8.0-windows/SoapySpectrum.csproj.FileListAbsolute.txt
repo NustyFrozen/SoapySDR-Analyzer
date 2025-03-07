@@ -197,6 +197,9 @@ C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\obj\Deb
 C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\obj\Debug\net8.0-windows\ref\SoapySpectrum.dll
 C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\runtimes\win-x64\native\libMathNetNumericsMKL.dll
 C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\runtimes\win-x64\native\libiomp5md.dll
-C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\libfftw3-3.dll
-C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\libfftw3f-3.dll
-C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\libfftw3l-3.dll
+C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\LMS7Support.dll
+C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\LimeSuite.dll
+C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\libfftw3-3-x64.dll
+C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\libfftw3-3-x86.dll
+C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\rtlsdr.dll
+C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\rtlsdrSupport.dll

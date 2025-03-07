@@ -11,7 +11,6 @@ namespace SoapySpectrum.UI
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
         static int tabID = 0;
         string[] availableTabs = new string[] { $"\uf2db Device", $"\ue473 Amplitude", $"\uf1fe BW", $"{FontAwesome5.WaveSquare} Frequency", $"\uf3c5 Trace & Marker", $"\uf085 Calibration" };
-        static string RBW = "0.1M";
         bool visble = true;
         public UI() : base(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height)
         {

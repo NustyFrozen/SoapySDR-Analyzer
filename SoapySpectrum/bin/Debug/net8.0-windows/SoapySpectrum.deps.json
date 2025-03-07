@@ -11,6 +11,7 @@
           "ClickableTransparentOverlay": "10.2.0",
           "Costura.Fody": "5.7.0",
           "DecimalMath.DecimalEx": "1.0.2",
+          "FFTW.NET": "1.0.1",
           "MathNet.Numerics": "5.0.0",
           "MathNet.Numerics.MKL.Win-x64": "3.0.0",
           "NLog.Extensions.Logging": "5.3.12",
@@ -52,6 +53,17 @@
           "lib/netstandard2.0/DecimalEx.dll": {
             "assemblyVersion": "1.0.2.0",
             "fileVersion": "1.0.2.0"
+          }
+        }
+      },
+      "FFTW.NET/1.0.1": {
+        "dependencies": {
+          "NETStandard.Library": "1.6.1"
+        },
+        "runtime": {
+          "lib/netstandard1.3/FFTW.NET.dll": {
+            "assemblyVersion": "1.0.1.0",
+            "fileVersion": "1.0.1.0"
           }
         }
       },
@@ -1027,6 +1039,13 @@
       "sha512": "sha512-BCii/IxT7Tx7BPZ7MtrpqVlEii/iaHi4OOXpgaPi+zrphnkbe251KKI3S+pgnTzobfn0jS/SF7bgidqOMj1oGw==",
       "path": "decimalmath.decimalex/1.0.2",
       "hashPath": "decimalmath.decimalex.1.0.2.nupkg.sha512"
+    },
+    "FFTW.NET/1.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-xLe3nwiEFeW60dP5RzrwkCbGzwOj4fi4ePv2plbjH8hkIKrfVUaMo8m1e6I15lo08DfbzRObUjOkAQjL6BavgA==",
+      "path": "fftw.net/1.0.1",
+      "hashPath": "fftw.net.1.0.1.nupkg.sha512"
     },
     "Fody/6.5.5": {
       "type": "package",

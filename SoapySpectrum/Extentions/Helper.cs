@@ -3,7 +3,6 @@ namespace SoapySpectrum.Extentions
 {
     using ImGuiNET;
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.Numerics;
     using Color = System.Drawing.Color;
@@ -104,8 +103,8 @@ namespace SoapySpectrum.Extentions
         }
         public static decimal toMW(this decimal dB)
         {
-            var mehane =  (dB / (decimal)10.0);
-            var value = (DecimalMath.DecimalEx.Pow(10,mehane));
+            var mehane = (dB / (decimal)10.0);
+            var value = (DecimalMath.DecimalEx.Pow(10, mehane));
             return value;
         }
     }
@@ -113,7 +112,15 @@ namespace SoapySpectrum.Extentions
     {
         public static void AddRangeOverride<TKey, TValue>(this IDictionary<TKey, TValue> dic, IDictionary<TKey, TValue> dicToAdd)
         {
-            dicToAdd.ForEach(x => dic[x.Key] = x.Value);
+            try
+            {
+                if (dicToAdd is null) return;
+                dicToAdd.ForEach(x => dic[x.Key] = x.Value);
+            }
+            catch (Exception ex)
+            {
+                //something the given dict is null when changing some values with samples,fft,etc...
+            }
         }
 
         public static void AddRangeNewOnly<TKey, TValue>(this IDictionary<TKey, TValue> dic, IDictionary<TKey, TValue> dicToAdd)

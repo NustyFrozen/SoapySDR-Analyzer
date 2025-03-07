@@ -12,7 +12,7 @@ namespace SoapySpectrum.UI
             ImGui.Text($"{FontAwesome5.ArrowLeft} Cable Atten:");
             ImGui.SliderFloat("Db Tolerance", ref dbTol, -114, -20);
             ImGui.SliderFloat("input DB", ref inputDB, -114, -20);
-            ImGui.Text($"Calibration Status:\n FFT Window {FFTWindow[selectedFFTWINDOW]}\nstill calibrating: {calibrating}");
+            //ImGui.Text($"Calibration Status:\n FFT Window {FFTWindow[selectedFFTWINDOW]}\nstill calibrating: {calibrating}");
             if (ImGui.Button("Begin calibration"))
             {
                 beginCalibration();
@@ -65,7 +65,7 @@ namespace SoapySpectrum.UI
             }
             Logger.Info("Calibration Results:");
             Logger.Info(csvFormat);
-            File.WriteAllText($"Calibration Results-{FFTWindow[selectedFFTWINDOW]}-{display_FreqStart.Replace(".", "")}-{display_FreqStop.Replace(".", "")}-{DateTime.Now.ToString("MM-dd-yyy")}.csv", csvFormat);
+            //File.WriteAllText($"Calibration Results-{FFTWindow[selectedFFTWINDOW]}-{display_FreqStart.Replace(".", "")}-{display_FreqStop.Replace(".", "")}-{DateTime.Now.ToString("MM-dd-yyy")}.csv", csvFormat);
         }
         public static float calculateDBInput(float input, float results)
         {
