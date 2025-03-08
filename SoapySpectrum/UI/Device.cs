@@ -12,6 +12,7 @@ namespace SoapySpectrum.UI
         string selectedAntennas = "TX/RX";
         int selectedSampleRate;
         string customSampleRate = "0";
+        float leakageSleep = 0;
         bool correctIQ = true;
         public static void setupSoapyEnvironment()
         {
@@ -46,6 +47,7 @@ namespace SoapySpectrum.UI
         Tuple<string, Pothosware.SoapySDR.Range>[] gains;
         float[] gains_values;
         string[] sensorData;
+        string[] gainModes;
         Dictionary<int, RangeList> frequencyRange = new Dictionary<int, RangeList>();
         Dictionary<int, RangeList> sample_rates = new Dictionary<int, RangeList>();
         void fetchSDR_Data()
@@ -86,6 +88,7 @@ namespace SoapySpectrum.UI
 
 
             }
+            i = 0;
         }
         void renderDeviceData()
         {
@@ -104,7 +107,10 @@ namespace SoapySpectrum.UI
             ImGui.Text($"Anntena:");
             foreach (var antenna in anntenas)
                 if (ImGui.RadioButton($"{antenna}", antenna == selectedAntennas))
+                {
                     selectedAntennas = antenna;
+                    sdr_device.SetAntenna(Direction.Rx, selectedChannel, selectedAntennas);
+                }
             ImGui.Text($"Sample Rate:");
 
             List<string> sample_rates_choice = new List<string>();
@@ -196,10 +202,16 @@ namespace SoapySpectrum.UI
             {
                 var gain = gains[i];
                 var range = gain.Item2;
-                if (ImGui.SliderFloat($"{gain.Item1}", ref gains_values[i], (float)range.Minimum, (float)range.Maximum, "%.3f", ImGuiSliderFlags.AlwaysClamp))
+                ImGui.Text($"{gain.Item1}");
+                if (ImGuiTheme.slider($"{gain.Item1}", (float)range.Minimum, (float)range.Maximum, ref gains_values[i], sliderTheme))
                 {
-                    sdr_device.SetGain(Direction.Rx, selectedChannel, gain.Item1, Math.Round(gains_values[i] / range.Step) * range.Step);
-                    PerformFFT.resetIQFilter();
+                    if (range.Step != 0)
+                        sdr_device.SetGain(Direction.Rx, selectedChannel, gain.Item1, Math.Round(gains_values[i] / range.Step) * range.Step);
+                    else
+                    { //free value
+                        sdr_device.SetGain(Direction.Rx, selectedChannel, gain.Item1, gains_values[i]);
+                    }
+
                 }
             }
             ImGui.Text($"Sensors Data:");
@@ -225,10 +237,11 @@ namespace SoapySpectrum.UI
             }
 
         }
+        static ImGuiTheme.glowingInputConfigurator inputTheme = ImGuiTheme.getTextTheme();
+        static ImGuiTheme.ButtonConfigurator buttonTheme = ImGuiTheme.getButtonTheme();
+        static ImGuiTheme.SliderInputConfigurator sliderTheme = ImGuiTheme.getSliderTheme();
         public void renderDevice()
         {
-            var inputTheme = ImGuiTheme.getTextTheme();
-            var buttonTheme = ImGuiTheme.getButtonTheme();
             buttonTheme.text = "Refresh";
             if (ImGuiTheme.button("Refresh_Devices", buttonTheme))
                 refreshDevices();
@@ -240,6 +253,13 @@ namespace SoapySpectrum.UI
                 updateDevice();
             ImGuiTheme.newLine();
             renderDeviceData();
+            ImGuiTheme.newLine();
+            ImGui.Text("LO/PLL Leakage sleep:");
+            if (ImGuiTheme.slider("Leakage", ref leakageSleep, sliderTheme))
+            {
+                Configuration.config["leakageSleep"] = (int)(leakageSleep * 100);
+                Logger.Debug(Configuration.config["leakageSleep"]);
+            }
             if (ImGui.Checkbox("IQ correction", ref correctIQ))
                 Configuration.config["IQCorrection"] = correctIQ;
         }

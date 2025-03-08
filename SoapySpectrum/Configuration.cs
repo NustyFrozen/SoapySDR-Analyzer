@@ -48,6 +48,7 @@ namespace SoapySpectrum
             Configuration.config.Add("freqStop", 120e6);
 
             Configuration.config.Add("sampleRate", (double)20e6);
+            Configuration.config["leakageSleep"] = 5;
             Configuration.config.Add("devicesOptions", new string[] { });
             Configuration.config["IQCorrection"] = true;
 
@@ -59,8 +60,8 @@ namespace SoapySpectrum
             Func<int, double[]> windowFunction_Periodic = length => Window.HammingPeriodic(length);
             Configuration.config.Add("FFT_WINDOW", windowFunction);
             Configuration.config.Add("FFT_WINDOW_PERIODIC", windowFunction_Periodic);
-            Configuration.config["FFT_Size"] = 512;
-            Configuration.config["FFT_segments"] = 10;
+            Configuration.config["FFT_Size"] = 32768;
+            Configuration.config["FFT_segments"] = 22;
             Configuration.config["FFT_overlap"] = 0.5;
             Configuration.config["refreshRate"] = (long)0;
         }

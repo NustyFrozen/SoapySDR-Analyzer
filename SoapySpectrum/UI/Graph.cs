@@ -162,7 +162,7 @@ namespace SoapySpectrum.UI
             //endb = 0
 
 
-            var scaledY = Scale(dB, graph_startDB, graph_endDB, bottom, top);
+            var scaledY = Extentions.Imports.Scale(dB, graph_startDB, graph_endDB, bottom, top);
             return new Vector2((float)scaledX, (float)scaledY);
         }
         public static void calculateBandPower(int traceID, List<float> dBArray)
@@ -194,10 +194,7 @@ namespace SoapySpectrum.UI
             { Priority = ThreadPriority.Lowest }.Start();
         }
         static Stopwatch waitForMouseClick = new Stopwatch();
-        public static double Scale(double value, double oldMin, double oldMax, double newMin, double newMax)
-        {
-            return newMin + (value - oldMin) * (newMax - newMin) / (oldMax - oldMin);
-        }
+
         public static void drawGraph()
         {
             var draw = ImGui.GetForegroundDrawList();
@@ -246,7 +243,7 @@ namespace SoapySpectrum.UI
                 draw.AddLine(new Vector2(posX + ImGui.CalcTextSize(text).X / 2, bottom), new Vector2(posX + ImGui.CalcTextSize(text).X / 2, top), ToUint(Color.FromArgb(100, Color.Gray)));
 
                 //draw Y axis
-                text = Scale(i, 0, graphLabelIdx, graph_endDB + dbOffset, graph_startDB + dbOffset).ToString().TruncateLongString(5);
+                text = Extentions.Imports.Scale(i, 0, graphLabelIdx, graph_endDB + dbOffset, graph_startDB + dbOffset).ToString().TruncateLongString(5);
                 //((graph_startDB - (graphLabelIdx - i) / graphLabelIdx * (Math.Abs(graph_endDB) - Math.Abs(graph_startDB))) + dbOffset).ToString().TruncateLongString(5);
                 float posY = top + i / graphLabelIdx * Configuration.graph_Size.Y;
                 draw.AddText(new Vector2(left - ImGui.CalcTextSize(text).X, posY - ImGui.CalcTextSize(text).Y / 2), ToUint(Color.LightGray), text);

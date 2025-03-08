@@ -176,6 +176,8 @@
 
   <ItemGroup>
     <None Remove="C:\Users\NU\.nuget\packages\fftw.net\1.0.1\build\netstandard1.3\libfftw3-3-x64.dll" />
+    <None Remove="SoapySDR\airspy.dll" />
+    <None Remove="SoapySDR\root\SoapySDR\lib\SoapySDR\modules0.8-3\airspySupport.dll" />
   </ItemGroup>
 
 </Project>

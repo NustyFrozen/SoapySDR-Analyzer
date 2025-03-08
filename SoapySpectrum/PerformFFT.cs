@@ -210,6 +210,7 @@ namespace SoapySpectrum
                     {
                         frequency = f_center;
                         sdr.SetFrequency(Direction.Rx, 0, frequency);
+                        Thread.Sleep((int)Configuration.config["leakageSleep"]);
                     }
                     //fill up the iqbuffer to have enough samples for FFT
 

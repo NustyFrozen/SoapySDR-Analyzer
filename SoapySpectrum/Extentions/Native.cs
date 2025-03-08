@@ -46,6 +46,10 @@ namespace SoapySpectrum.Extentions
         private static extern bool BitBlt(IntPtr hdcDest, int nXDest, int nYDest, int nWidth, int nHeight, IntPtr hdcSrc, int nXSrc, int nYSrc, int dwRop);
         [DllImport("user32.dll")]
         internal static extern IntPtr GetDCEx(IntPtr hWnd, IntPtr hrgnClip, DeviceContextValues flags);
+        public static double Scale(double value, double oldMin, double oldMax, double newMin, double newMax)
+        {
+            return newMin + (value - oldMin) * (newMax - newMin) / (oldMax - oldMin);
+        }
         internal enum DeviceContextValues : uint
         {
             /// <summary>

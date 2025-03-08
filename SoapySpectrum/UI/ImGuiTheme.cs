@@ -576,9 +576,17 @@ namespace SoapySpectrum.UI
             draw.AddLine(start, end, ExitColorActive.ToUint(), 2);
             draw.AddLine(new Vector2(end.X, start.Y), new Vector2(start.X, end.Y), ExitColorActive.ToUint(), 2);
         }
-        public static void slider(string label, ref float value, SliderInputConfigurator cfg)
+        public static bool slider(string label, float min, float max, ref float value, SliderInputConfigurator cfg)
+        {
+            float scaled = (float)Extentions.Imports.Scale(value, min, max, 0, 1);
+            var results = slider(label, ref scaled, cfg);
+            value = (float)Extentions.Imports.Scale(scaled, 0, 1, min, max);
+            return results;
+        }
+        public static bool slider(string label, ref float value, SliderInputConfigurator cfg)
         {
             label = "##" + label;
+            bool results = false;
             object obj = cfg.borderColor;
             var borderColorActive = cfg.borderColorActive;
             var BorderThicknessActive = cfg.borderThickness;
@@ -635,9 +643,11 @@ namespace SoapySpectrum.UI
                     if (drawPos > cfg.size.X)
                         drawPos = cfg.size.X;
                     value = drawPos / cfg.size.X;
+                    results = true;
                     draw.AddRectFilled(startDrawBg, endDrawBg, cfg.bgcolor, cfg.roundCorners);
                     draw.AddRectFilled(new Vector2(startDrawBg.X, startDrawBg.Y), new Vector2(startDrawBg.X + drawPos, endDrawBg.Y), sliderColorActive, cfg.roundCorners);
                     lerpProgress += 0.0025f;
+
                 }
                 else
                 {
@@ -697,6 +707,7 @@ namespace SoapySpectrum.UI
                 draw.AddRect(new Vector2(startDrawBg.X - i, startDrawBg.Y - i),
                     new Vector2(endDrawBg.X + i, endDrawBg.Y + i), lerpedToBackground.ToUint(), cfg.roundCorners);
             }
+            return results;
         }
         public static bool glowingInput(string label, ref string text, glowingInputConfigurator cfg, uint maxlength = 32)
         {
@@ -913,8 +924,8 @@ namespace SoapySpectrum.UI
         public static SliderInputConfigurator getSliderTheme()
         {
             SliderInputConfigurator textboxTheme = new SliderInputConfigurator();
-            textboxTheme.size = new Vector2(320 * Configuration.scale_Size.X, 10.0f * Configuration.scale_Size.Y);
-            textboxTheme.roundCorners = 5;
+            textboxTheme.size = new Vector2(320 * Configuration.scale_Size.X, 25f * Configuration.scale_Size.Y);
+            textboxTheme.roundCorners = 2;
             textboxTheme.borderThickness = 3f;
             textboxTheme.bgcolor = Color.FromArgb(28, 28, 32).ToUint();
             textboxTheme.borderColor = Color.FromArgb(88, 37, 227).ToUint();

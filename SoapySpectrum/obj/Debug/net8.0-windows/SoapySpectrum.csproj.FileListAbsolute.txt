@@ -257,3 +257,6 @@ C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Deb
 C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\SoapySDR\rtlsdrSupport.dll
 C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\SoapySDR\SoapySDR.dll
 C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\SoapySDR\SoapySDRCSharpSWIG.dll
+C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\SoapySDR\airspy.dll
+C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\SoapySDR\airspySupport.dll
+C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\SoapySDR\root\SoapySDR\lib\SoapySDR\modules0.8-3\airspySupport.dll
