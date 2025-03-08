@@ -64,10 +64,6 @@
               "target": "Package",
               "version": "[1.0.2, )"
             },
-            "FFTW.NET": {
-              "target": "Package",
-              "version": "[1.0.1, )"
-            },
             "MathNet.Numerics": {
               "target": "Package",
               "version": "[5.0.0, )"

@@ -12,21 +12,14 @@ namespace SoapySpectrum.UI
         string selectedAntennas = "TX/RX";
         int selectedSampleRate;
         string customSampleRate = "0";
+        bool correctIQ = true;
         public static void setupSoapyEnvironment()
         {
-            Environment.SetEnvironmentVariable("SOAPY_SDR_PLUGIN_PATH", @"C:\Program Files (x86)\SoapySDR\lib\SoapySDR\modules0.8-3");
-            if (Environment.GetEnvironmentVariable("SOAPY_SDR_ROOT") == null)
-            {
-                if (Directory.Exists($"C:\\Program Files (x86)\\SoapySDR"))
-                {
-                    Environment.SetEnvironmentVariable("SOAPY_SDR_ROOT", @"C:\Program Files (x86)\SoapySDR");
-                }
-                else
-                {
-                    MessageBox.Show("SOAPY_SDR_ROOT environment not found, please add it to the environment variables");
-                    Application.Exit();
-                }
-            }
+            var currentPath = System.IO.Path.GetDirectoryName(Application.ExecutablePath);
+            Environment.SetEnvironmentVariable("SOAPY_SDR_PLUGIN_PATH", Path.Combine(currentPath, @"SoapySDR\root\SoapySDR\lib\SoapySDR\modules0.8-3\"));
+            Environment.SetEnvironmentVariable("SOAPY_SDR_ROOT", Path.Combine(currentPath, @"SoapySDR\root\SoapySDR"));
+            Environment.SetEnvironmentVariable("PATH", $"{Environment.GetEnvironmentVariable("PATH")};{Path.Combine(currentPath, @"SoapySDR")}");
+
         }
         public void refreshDevices()
         {
@@ -247,6 +240,8 @@ namespace SoapySpectrum.UI
                 updateDevice();
             ImGuiTheme.newLine();
             renderDeviceData();
+            if (ImGui.Checkbox("IQ correction", ref correctIQ))
+                Configuration.config["IQCorrection"] = correctIQ;
         }
     }
 }

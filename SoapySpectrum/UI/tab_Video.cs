@@ -14,7 +14,7 @@ namespace SoapySpectrum.UI
                         FFT_Window = new string[] {"Hamming","Triangular","Tukey","Lanczos","Nuttall","Hann","Bartlett","BartlettHann"
                             ,"Blackman","BlackmanHarris","BlackmanNuttall",
                             "Cosine","Dirichlet","FlatTop","Gauss","None"};
-        static string FFT_segments = "1600", FFT_overlap = "50%", FFT_WINDOW_ADDITIONAL = "0.5";
+        static string FFT_segments = "1600", FFT_overlap = "50%", FFT_WINDOW_ADDITIONAL = "0.5", refreshrate_text = "1000";
         double[] noWindowFunction(int length)
         {
             double[] result = new double[length];
@@ -136,6 +136,27 @@ namespace SoapySpectrum.UI
                     Logger.Debug($"Invalid Integer for value overlap");
                 }
             }
+            ImGuiTheme.newLine();
+            ImGui.Text($"\uf1fb FFT Refresh Rate (hz):");
+            inputTheme.prefix = $"Overlap Between Segments";
+            if (ImGuiTheme.glowingInput("FFT_refresh_rate", ref refreshrate_text, inputTheme))
+            {
+                long refresh_rate = 0;
+                if (long.TryParse(refreshrate_text, out refresh_rate))
+                    if (refresh_rate > 0)
+                    {
+                        Configuration.config["refreshRate"] = (long)1000 / refresh_rate;
+                    }
+                    else
+                    {
+                        Logger.Debug($"cannot devide by 0");
+                    }
+                else
+                {
+                    Logger.Debug($"Invalid value for refresh rate");
+                }
+            }
+            ImGui.NewLine();
             ImGui.Text($"RBW: {PerformFFT.RBW}Hz");
             ImGui.Text($"VBW: {PerformFFT.VBW}Hz");
         }

@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SoapySpectrum")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a05afbda7faa3bf699d49556fc03c984a55895ce")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f93298879bc20bc58b855fd651938d6e3ef19d0f")]
 [assembly: System.Reflection.AssemblyProductAttribute("SoapySpectrum")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SoapySpectrum")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

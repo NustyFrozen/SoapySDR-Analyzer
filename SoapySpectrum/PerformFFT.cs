@@ -1,5 +1,6 @@
 ﻿using MathNet.Numerics.IntegralTransforms;
 using Pothosware.SoapySDR;
+using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.InteropServices;
 
@@ -101,7 +102,7 @@ namespace SoapySpectrum
         //https://github.com/ghostop14/gr-correctiq
         static double ratio = 1e-05f;
         static double avg_real = 0.0, avg_img = 0.0;
-        public static double RBW, VBW;
+        public static double RBW, VBW, ENBW;
         static void calculateRBWVBW()
         {
 
@@ -115,7 +116,7 @@ namespace SoapySpectrum
                 BW += window[j];
             }
             BW *= BW;
-            var ENBW = (EN / BW) * (double)FFT_size;
+            ENBW = (EN / BW) * (double)FFT_size;
             var sample_rate = (double)Configuration.config["sampleRate"];
             double overlap = (double)Configuration.config["FFT_overlap"];
             var neff = FFT_size / (1 - overlap);
@@ -190,6 +191,7 @@ namespace SoapySpectrum
             var floatBuffer = new float[MTU * 2];
             GCHandle bufferHandle = GCHandle.Alloc(floatBuffer, GCHandleType.Pinned);
             Logger.Info($"Begining Stream MTU: {stream.MTU}");
+            Stopwatch sw = new Stopwatch();
             while (isRunning)
             {
                 if (sample_rate != (double)Configuration.config["sampleRate"])
@@ -238,12 +240,31 @@ namespace SoapySpectrum
                         }
                     }
                     var IQCorrectionSamples = samples.Take(FFTSIZE).ToArray();
-                    correctIQ(IQCorrectionSamples);
+                    if ((bool)Configuration.config["IQCorrection"])
+                        correctIQ(IQCorrectionSamples);
                     FFTCalculator(new Tuple<double, Complex[]>(frequency, IQCorrectionSamples), sample_rate);
                     UI.UI.updateData(FFT_RESULTS);
                     FFT_RESULTS.Clear();
                     if (noHopping)
                         break;
+                }
+                sw.Restart();
+                while (sw.ElapsedMilliseconds < (long)Configuration.config["refreshRate"])
+                {
+                    //reading while sleeping so no buffer overflow will happen
+                    unsafe
+                    {
+                        fixed (float* bufferPtr = floatBuffer)
+                        {
+                            var errorCode = stream.Read((nint)bufferPtr, (uint)MTU, 10_000_000, out results);
+                            if (errorCode is not ErrorCode.None || results is null)
+                            {
+                                Logger.Error($"Readstream Error Code {errorCode}");
+                                continue;
+                            }
+                        }
+                    }
+                    Thread.Sleep(0);
                 }
             }
             stream.Deactivate();

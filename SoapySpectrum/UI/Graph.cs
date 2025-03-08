@@ -162,10 +162,7 @@ namespace SoapySpectrum.UI
             //endb = 0
 
 
-            scale = Math.Abs(graph_endDB) - Math.Abs(graph_startDB); //-114
-            scale2 = Math.Abs(graph_startDB) - Math.Abs(dB); // 114 - 121 = -7
-            if (scale2 < 0) scale2 = 0; //revaya
-            double scaledY = bottom - Configuration.graph_Size.Y * (Math.Abs(scale2) / Math.Abs(scale)); // 
+            var scaledY = Scale(dB, graph_startDB, graph_endDB, bottom, top);
             return new Vector2((float)scaledX, (float)scaledY);
         }
         public static void calculateBandPower(int traceID, List<float> dBArray)
@@ -197,13 +194,19 @@ namespace SoapySpectrum.UI
             { Priority = ThreadPriority.Lowest }.Start();
         }
         static Stopwatch waitForMouseClick = new Stopwatch();
+        public static double Scale(double value, double oldMin, double oldMax, double newMin, double newMax)
+        {
+            return newMin + (value - oldMin) * (newMax - newMin) / (oldMax - oldMin);
+        }
         public static void drawGraph()
         {
             var draw = ImGui.GetForegroundDrawList();
             var dbOffset = (double)Configuration.config["graph_OffsetDB"];
-            float left = ImGui.GetWindowPos().X + 50 * Configuration.scale_Size.X;
+            var refLevel = (double)Configuration.config["graph_RefLevel"];
+            var positionOffset = new Vector2(50 * Configuration.scale_Size.X, 10 * Configuration.scale_Size.Y);
+            float left = ImGui.GetWindowPos().X + positionOffset.X;
             float right = left + Configuration.graph_Size.X;
-            float top = ImGui.GetWindowPos().Y + 10 * Configuration.scale_Size.Y;
+            float top = ImGui.GetWindowPos().Y + positionOffset.Y;
             float bottom = top + Configuration.graph_Size.Y;
 
             float graphLabelIdx = 20;
@@ -211,14 +214,26 @@ namespace SoapySpectrum.UI
 
             double freqStart = (double)Configuration.config["freqStart"];
             double freqStop = (double)Configuration.config["freqStop"];
+            var mousePos = ImGui.GetMousePos();
 
-            double graph_startDB = (double)Configuration.config["graph_startDB"];
-            double graph_endDB = (double)Configuration.config["graph_endDB"];
+            double graph_startDB = (double)Configuration.config["graph_startDB"] + refLevel;
+            double graph_endDB = (double)Configuration.config["graph_endDB"] + refLevel;
 
             Vector2 graphStatus = new Vector2();
             draw.AddRectFilled(new Vector2(left, top), new Vector2(right, bottom), ToUint(Color.FromArgb(16, 16, 16)));
             Vector2 mouseRange = new Vector2();
             float mousePosFreq = 0, mousePosdB;
+            if (new RectangleF(left, top, Configuration.graph_Size.X, Configuration.graph_Size.Y).Contains(mousePos.X, mousePos.Y))
+            {
+                draw.AddLine(new Vector2(left, mousePos.Y), new Vector2(right, mousePos.Y), Color.FromArgb(100, 100, 100).ToUint());
+                draw.AddLine(new Vector2(mousePos.X, top), new Vector2(mousePos.X, bottom), Color.FromArgb(100, 100, 100).ToUint());
+
+                mousePosFreq = (float)((freqStart + ((mousePos.X - left) / (Configuration.graph_Size.X)) * (freqStop - freqStart)));
+                mousePosdB = (float)((graph_startDB - (bottom - mousePos.Y + top) / bottom * (Math.Abs(graph_endDB) - Math.Abs(graph_startDB))) + dbOffset);
+                mouseRange.X = (float)(freqStart + (freqStop - freqStart));
+                mouseRange.Y = (float)(freqStart + (freqStop - freqStart));
+                draw.AddText(new Vector2(mousePos.X + 5, mousePos.Y + 5), Color.FromArgb(100, 100, 100).ToUint(), $"Freq {(mousePosFreq / 1e6).ToString().TruncateLongString(5)}M\ndBm {mousePosdB}");
+            }
             for (float i = 0; i <= graphLabelIdx; i++)
             {
                 //draw X axis
@@ -226,21 +241,13 @@ namespace SoapySpectrum.UI
                 text += "M";
                 float posX = left + i / graphLabelIdx * Configuration.graph_Size.X - ImGui.CalcTextSize(text).X / 2;
                 draw.AddText(new Vector2(posX, bottom), ToUint(Color.LightGray), text);
-                if (ImGui.IsMouseHoveringRect(new Vector2(posX + ImGui.CalcTextSize(text).X / 2, top), new Vector2((left + (i + 1) / graphLabelIdx * Configuration.graph_Size.X), bottom)))
-                {
-                    draw.AddLine(new Vector2(left, ImGui.GetMousePos().Y), new Vector2(right, ImGui.GetMousePos().Y), Color.FromArgb(100, 100, 100).ToUint());
-                    draw.AddLine(new Vector2(ImGui.GetMousePos().X, top), new Vector2(ImGui.GetMousePos().X, bottom), Color.FromArgb(100, 100, 100).ToUint());
 
-                    mousePosFreq = (float)((freqStart + ((ImGui.GetMousePos().X - left) / (Configuration.graph_Size.X)) * (freqStop - freqStart)));
-                    mousePosdB = (float)((graph_startDB - (bottom - ImGui.GetMousePos().Y + top) / bottom * (Math.Abs(graph_endDB) - Math.Abs(graph_startDB))) + dbOffset);
-                    mouseRange.X = (float)(freqStart + i / graphLabelIdx * (freqStop - freqStart));
-                    mouseRange.Y = (float)(freqStart + (i + 1) / graphLabelIdx * (freqStop - freqStart));
-                    draw.AddText(new Vector2(ImGui.GetMousePos().X + 5, ImGui.GetMousePos().Y + 5), Color.FromArgb(100, 100, 100).ToUint(), $"Freq {(mousePosFreq / 1e6).ToString().TruncateLongString(5)}M\ndBm {mousePosdB}");
-                }
+
                 draw.AddLine(new Vector2(posX + ImGui.CalcTextSize(text).X / 2, bottom), new Vector2(posX + ImGui.CalcTextSize(text).X / 2, top), ToUint(Color.FromArgb(100, Color.Gray)));
 
                 //draw Y axis
-                text = ((graph_startDB - (graphLabelIdx - i) / graphLabelIdx * (Math.Abs(graph_endDB) - Math.Abs(graph_startDB))) + dbOffset).ToString().TruncateLongString(5);
+                text = Scale(i, 0, graphLabelIdx, graph_endDB + dbOffset, graph_startDB + dbOffset).ToString().TruncateLongString(5);
+                //((graph_startDB - (graphLabelIdx - i) / graphLabelIdx * (Math.Abs(graph_endDB) - Math.Abs(graph_startDB))) + dbOffset).ToString().TruncateLongString(5);
                 float posY = top + i / graphLabelIdx * Configuration.graph_Size.Y;
                 draw.AddText(new Vector2(left - ImGui.CalcTextSize(text).X, posY - ImGui.CalcTextSize(text).Y / 2), ToUint(Color.LightGray), text);
                 draw.AddLine(new Vector2(left, posY), new Vector2(right, posY), ToUint(Color.FromArgb(100, Color.Gray)));

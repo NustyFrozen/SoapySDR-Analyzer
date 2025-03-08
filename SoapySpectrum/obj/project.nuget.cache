@@ -1,13 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "BL3OvIrdANk=",
+  "dgSpecHash": "lyqfsyGsaSU=",
   "success": true,
   "projectFilePath": "C:\\Users\\NU\\Documents\\GitHub\\Soapy-.NET-Spectrum-Analayzer\\SoapySpectrum\\SoapySpectrum.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\NU\\.nuget\\packages\\clickabletransparentoverlay\\10.2.0\\clickabletransparentoverlay.10.2.0.nupkg.sha512",
     "C:\\Users\\NU\\.nuget\\packages\\costura.fody\\5.7.0\\costura.fody.5.7.0.nupkg.sha512",
     "C:\\Users\\NU\\.nuget\\packages\\decimalmath.decimalex\\1.0.2\\decimalmath.decimalex.1.0.2.nupkg.sha512",
-    "C:\\Users\\NU\\.nuget\\packages\\fftw.net\\1.0.1\\fftw.net.1.0.1.nupkg.sha512",
     "C:\\Users\\NU\\.nuget\\packages\\fody\\6.5.5\\fody.6.5.5.nupkg.sha512",
     "C:\\Users\\NU\\.nuget\\packages\\imgui.net\\1.90.6.1\\imgui.net.1.90.6.1.nupkg.sha512",
     "C:\\Users\\NU\\.nuget\\packages\\mathnet.numerics\\5.0.0\\mathnet.numerics.5.0.0.nupkg.sha512",
