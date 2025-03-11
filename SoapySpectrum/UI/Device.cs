@@ -17,9 +17,11 @@ namespace SoapySpectrum.UI
         public static void setupSoapyEnvironment()
         {
             var currentPath = System.IO.Path.GetDirectoryName(Application.ExecutablePath);
+            var soapyPath = Path.Combine(currentPath, @"SoapySDR");
+            var libsPath = Path.Combine(soapyPath, @"Libs");
             Environment.SetEnvironmentVariable("SOAPY_SDR_PLUGIN_PATH", Path.Combine(currentPath, @"SoapySDR\root\SoapySDR\lib\SoapySDR\modules0.8-3\"));
             Environment.SetEnvironmentVariable("SOAPY_SDR_ROOT", Path.Combine(currentPath, @"SoapySDR\root\SoapySDR"));
-            Environment.SetEnvironmentVariable("PATH", $"{Environment.GetEnvironmentVariable("PATH")};{Path.Combine(currentPath, @"SoapySDR")}");
+            Environment.SetEnvironmentVariable("PATH", $"{Environment.GetEnvironmentVariable("PATH")};{soapyPath};{libsPath}");
 
         }
         public void refreshDevices()

@@ -95,19 +95,19 @@
     <None Update="Fonts\Poppins-ThinItalic.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="SoapySDR\hackrf.dll">
+    <None Update="SoapySDR\Libs\hackrf.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="libfftw3f-3.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="SoapySDR\libiio.dll">
+    <None Update="SoapySDR\Libs\libiio.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="SoapySDR\libusb-1.0.dll">
+    <None Update="SoapySDR\Libs\libusb-1.0.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="SoapySDR\LimeSuite.dll">
+    <None Update="SoapySDR\Libs\LimeSuite.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="SoapySDR\LMS7Support.dll">
@@ -116,19 +116,19 @@
     <None Update="nlog.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="SoapySDR\pthreadVC2.dll">
+    <None Update="SoapySDR\Libs\pthreadVC2.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="SoapySDR\rtlsdr.dll">
+    <None Update="SoapySDR\Libs\rtlsdr.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="SoapySDR\rtlsdrSupport.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="SoapySDR\SoapySDR.dll">
+    <None Update="SoapySDR\Libs\SoapySDR.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="SoapySDR\SoapySDRCSharpSWIG.dll">
+    <None Update="SoapySDR\Libs\SoapySDRCSharpSWIG.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
 
@@ -176,8 +176,20 @@
 
   <ItemGroup>
     <None Remove="C:\Users\NU\.nuget\packages\fftw.net\1.0.1\build\netstandard1.3\libfftw3-3-x64.dll" />
+    <None Remove="SoapySDR\Libs\boost_chrono-vc142-mt-x64-1_75.dll" />
+    <None Remove="SoapySDR\Libs\boost_date_time-vc142-mt-x64-1_75.dll" />
+    <None Remove="SoapySDR\Libs\boost_filesystem-vc142-mt-x64-1_75.dll" />
+    <None Remove="SoapySDR\Libs\boost_program_options-vc142-mt-x64-1_75.dll" />
+    <None Remove="SoapySDR\Libs\boost_regex-vc142-mt-x64-1_75.dll" />
+    <None Remove="SoapySDR\Libs\boost_serialization-vc142-mt-x64-1_75.dll" />
+    <None Remove="SoapySDR\Libs\boost_system-vc142-mt-x64-1_75.dll" />
+    <None Remove="SoapySDR\Libs\boost_thread-vc142-mt-x64-1_75.dll" />
     <None Remove="SoapySDR\airspy.dll" />
+    <None Remove="SoapySDR\Libs\uhd.dll" />
     <None Remove="SoapySDR\root\SoapySDR\lib\SoapySDR\modules0.8-3\airspySupport.dll" />
+    <None Remove="SoapySDR\soapySupport.dll" />
+    <None Remove="SoapySDR\uhd.dll" />
+    <None Remove="SoapySDR\uhdSupport.dll" />
   </ItemGroup>
 
 </Project>
