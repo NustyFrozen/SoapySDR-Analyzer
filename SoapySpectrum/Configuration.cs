@@ -60,8 +60,8 @@ namespace SoapySpectrum
             Func<int, double[]> windowFunction_Periodic = length => Window.HammingPeriodic(length);
             Configuration.config.Add("FFT_WINDOW", windowFunction);
             Configuration.config.Add("FFT_WINDOW_PERIODIC", windowFunction_Periodic);
-            Configuration.config["FFT_Size"] = 32768;
-            Configuration.config["FFT_segments"] = 22;
+            Configuration.config["FFT_Size"] = 4096;
+            Configuration.config["FFT_segments"] = 13;
             Configuration.config["FFT_overlap"] = 0.5;
             Configuration.config["refreshRate"] = (long)0;
         }

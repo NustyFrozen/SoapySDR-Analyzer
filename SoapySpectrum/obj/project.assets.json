@@ -51,6 +51,21 @@
           }
         }
       },
+      "FFTW.NET/1.0.1": {
+        "type": "package",
+        "dependencies": {
+          "NETStandard.Library": "1.6.1"
+        },
+        "compile": {
+          "lib/netstandard1.3/FFTW.NET.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard1.3/FFTW.NET.dll": {}
+        },
+        "build": {
+          "build/netstandard1.3/FFTW.NET.targets": {}
+        }
+      },
       "Fody/6.5.5": {
         "type": "package",
         "build": {
@@ -94,6 +109,19 @@
           "runtimes/win-x86/native/cimgui.dll": {
             "assetType": "native",
             "rid": "win-x86"
+          }
+        }
+      },
+      "ManagedCuda-CUFFT/12.8.60": {
+        "type": "package",
+        "compile": {
+          "lib/net7.0/CudaFFT.netCore.dll": {
+            "related": ".deps.json;.pdb"
+          }
+        },
+        "runtime": {
+          "lib/net7.0/CudaFFT.netCore.dll": {
+            "related": ".deps.json;.pdb"
           }
         }
       },
@@ -301,7 +329,7 @@
           "System.Runtime": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.3/_._": {
+          "ref/netstandard1.3/Microsoft.Win32.Primitives.dll": {
             "related": ".xml"
           }
         }
@@ -384,6 +412,18 @@
           "lib/net8.0/NLog.Extensions.Logging.dll": {
             "related": ".xml"
           }
+        }
+      },
+      "OpenCL.Net/2.2.9": {
+        "type": "package",
+        "compile": {
+          "lib/net40/OpenCL.Net.dll": {}
+        },
+        "runtime": {
+          "lib/net40/OpenCL.Net.dll": {}
+        },
+        "build": {
+          "build/net40/OpenCL.Net.targets": {}
         }
       },
       "runtime.debian.8-x64.runtime.native.System.Security.Cryptography.OpenSsl/4.3.0": {
@@ -612,7 +652,7 @@
           "System.Runtime": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.6/_._": {
+          "ref/netstandard1.6/System.AppContext.dll": {
             "related": ".xml"
           }
         },
@@ -653,7 +693,7 @@
           "System.Runtime": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.3/_._": {
+          "ref/netstandard1.3/System.Collections.dll": {
             "related": ".xml"
           }
         }
@@ -673,7 +713,7 @@
           "System.Threading.Tasks": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.3/_._": {
+          "ref/netstandard1.3/System.Collections.Concurrent.dll": {
             "related": ".xml"
           }
         },
@@ -691,7 +731,7 @@
           "System.Text.Encoding": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.3/_._": {
+          "ref/netstandard1.3/System.Console.dll": {
             "related": ".xml"
           }
         }
@@ -704,7 +744,7 @@
           "System.Runtime": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.3/_._": {
+          "ref/netstandard1.3/System.Diagnostics.Debug.dll": {
             "related": ".xml"
           }
         }
@@ -737,7 +777,7 @@
           "System.Runtime": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.0/_._": {
+          "ref/netstandard1.0/System.Diagnostics.Tools.dll": {
             "related": ".xml"
           }
         }
@@ -750,7 +790,7 @@
           "System.Runtime": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.5/_._": {
+          "ref/netstandard1.5/System.Diagnostics.Tracing.dll": {
             "related": ".xml"
           }
         }
@@ -763,7 +803,7 @@
           "System.Runtime": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.3/_._": {
+          "ref/netstandard1.3/System.Globalization.dll": {
             "related": ".xml"
           }
         }
@@ -777,7 +817,7 @@
           "System.Runtime": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.3/_._": {
+          "ref/netstandard1.3/System.Globalization.Calendars.dll": {
             "related": ".xml"
           }
         }
@@ -818,7 +858,7 @@
           "System.Threading.Tasks": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.5/_._": {
+          "ref/netstandard1.5/System.IO.dll": {
             "related": ".xml"
           }
         }
@@ -843,7 +883,7 @@
           "runtime.native.System.IO.Compression": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.3/_._": {
+          "ref/netstandard1.3/System.IO.Compression.dll": {
             "related": ".xml"
           }
         },
@@ -872,7 +912,7 @@
           "System.Text.Encoding": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.3/_._": {
+          "ref/netstandard1.3/System.IO.Compression.ZipFile.dll": {
             "related": ".xml"
           }
         },
@@ -893,7 +933,7 @@
           "System.Threading.Tasks": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.3/_._": {
+          "ref/netstandard1.3/System.IO.FileSystem.dll": {
             "related": ".xml"
           }
         }
@@ -904,7 +944,7 @@
           "System.Runtime": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.3/_._": {
+          "ref/netstandard1.3/System.IO.FileSystem.Primitives.dll": {
             "related": ".xml"
           }
         },
@@ -922,7 +962,7 @@
           "System.Runtime.Extensions": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.6/_._": {
+          "ref/netstandard1.6/System.Linq.dll": {
             "related": ".xml"
           }
         },
@@ -952,7 +992,7 @@
           "System.Threading": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.6/_._": {
+          "ref/netstandard1.6/System.Linq.Expressions.dll": {
             "related": ".xml"
           }
         },
@@ -1016,7 +1056,7 @@
           "runtime.native.System.Security.Cryptography.OpenSsl": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.3/_._": {
+          "ref/netstandard1.3/System.Net.Http.dll": {
             "related": ".xml"
           }
         },
@@ -1040,7 +1080,7 @@
           "System.Runtime.Handles": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.3/_._": {
+          "ref/netstandard1.3/System.Net.Primitives.dll": {
             "related": ".xml"
           }
         }
@@ -1056,7 +1096,7 @@
           "System.Threading.Tasks": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.3/_._": {
+          "ref/netstandard1.3/System.Net.Sockets.dll": {
             "related": ".xml"
           }
         }
@@ -1080,7 +1120,7 @@
           "System.Threading": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.3/_._": {
+          "ref/netstandard1.3/System.ObjectModel.dll": {
             "related": ".xml"
           }
         },
@@ -1098,7 +1138,7 @@
           "System.Runtime": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.5/_._": {
+          "ref/netstandard1.5/System.Reflection.dll": {
             "related": ".xml"
           }
         }
@@ -1163,7 +1203,7 @@
           "System.Runtime": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.0/_._": {
+          "ref/netstandard1.0/System.Reflection.Extensions.dll": {
             "related": ".xml"
           }
         }
@@ -1176,7 +1216,7 @@
           "System.Runtime": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.0/_._": {
+          "ref/netstandard1.0/System.Reflection.Primitives.dll": {
             "related": ".xml"
           }
         }
@@ -1206,7 +1246,7 @@
           "System.Runtime": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.0/_._": {
+          "ref/netstandard1.0/System.Resources.ResourceManager.dll": {
             "related": ".xml"
           }
         }
@@ -1218,7 +1258,7 @@
           "Microsoft.NETCore.Targets": "1.1.0"
         },
         "compile": {
-          "ref/netstandard1.5/_._": {
+          "ref/netstandard1.5/System.Runtime.dll": {
             "related": ".xml"
           }
         }
@@ -1244,7 +1284,7 @@
           "System.Runtime": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.5/_._": {
+          "ref/netstandard1.5/System.Runtime.Extensions.dll": {
             "related": ".xml"
           }
         }
@@ -1257,7 +1297,7 @@
           "System.Runtime": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.3/_._": {
+          "ref/netstandard1.3/System.Runtime.Handles.dll": {
             "related": ".xml"
           }
         }
@@ -1273,7 +1313,7 @@
           "System.Runtime.Handles": "4.3.0"
         },
         "compile": {
-          "ref/netcoreapp1.1/_._": {}
+          "ref/netcoreapp1.1/System.Runtime.InteropServices.dll": {}
         }
       },
       "System.Runtime.InteropServices.RuntimeInformation/4.3.0": {
@@ -1288,7 +1328,7 @@
           "runtime.native.System": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.1/_._": {}
+          "ref/netstandard1.1/System.Runtime.InteropServices.RuntimeInformation.dll": {}
         },
         "runtime": {
           "lib/netstandard1.1/System.Runtime.InteropServices.RuntimeInformation.dll": {}
@@ -1313,7 +1353,7 @@
           "System.Runtime.Extensions": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.1/_._": {
+          "ref/netstandard1.1/System.Runtime.Numerics.dll": {
             "related": ".xml"
           }
         },
@@ -1340,7 +1380,7 @@
           "runtime.native.System.Security.Cryptography.OpenSsl": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.6/_._": {}
+          "ref/netstandard1.6/System.Security.Cryptography.Algorithms.dll": {}
         },
         "runtimeTargets": {
           "runtimes/osx/lib/netstandard1.6/System.Security.Cryptography.Algorithms.dll": {
@@ -1434,7 +1474,7 @@
           "runtime.native.System.Security.Cryptography.OpenSsl": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.3/_._": {
+          "ref/netstandard1.3/System.Security.Cryptography.Encoding.dll": {
             "related": ".xml"
           }
         },
@@ -1491,7 +1531,7 @@
           "System.Threading.Tasks": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.3/_._": {}
+          "ref/netstandard1.3/System.Security.Cryptography.Primitives.dll": {}
         },
         "runtime": {
           "lib/netstandard1.3/System.Security.Cryptography.Primitives.dll": {}
@@ -1527,7 +1567,7 @@
           "runtime.native.System.Security.Cryptography.OpenSsl": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.4/_._": {
+          "ref/netstandard1.4/System.Security.Cryptography.X509Certificates.dll": {
             "related": ".xml"
           }
         },
@@ -1550,7 +1590,7 @@
           "System.Runtime": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.3/_._": {
+          "ref/netstandard1.3/System.Text.Encoding.dll": {
             "related": ".xml"
           }
         }
@@ -1564,7 +1604,7 @@
           "System.Text.Encoding": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.3/_._": {
+          "ref/netstandard1.3/System.Text.Encoding.Extensions.dll": {
             "related": ".xml"
           }
         }
@@ -1575,7 +1615,7 @@
           "System.Runtime": "4.3.0"
         },
         "compile": {
-          "ref/netcoreapp1.1/_._": {}
+          "ref/netcoreapp1.1/System.Text.RegularExpressions.dll": {}
         },
         "runtime": {
           "lib/netstandard1.6/System.Text.RegularExpressions.dll": {}
@@ -1588,7 +1628,7 @@
           "System.Threading.Tasks": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.3/_._": {
+          "ref/netstandard1.3/System.Threading.dll": {
             "related": ".xml"
           }
         },
@@ -1604,7 +1644,7 @@
           "System.Runtime": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.3/_._": {
+          "ref/netstandard1.3/System.Threading.Tasks.dll": {
             "related": ".xml"
           }
         }
@@ -1635,7 +1675,7 @@
           "System.Runtime": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.2/_._": {
+          "ref/netstandard1.2/System.Threading.Timer.dll": {
             "related": ".xml"
           }
         }
@@ -1660,7 +1700,7 @@
           "System.Threading.Tasks.Extensions": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.3/_._": {
+          "ref/netstandard1.3/System.Xml.ReaderWriter.dll": {
             "related": ".xml"
           }
         },
@@ -1685,7 +1725,7 @@
           "System.Xml.ReaderWriter": "4.3.0"
         },
         "compile": {
-          "ref/netstandard1.3/_._": {
+          "ref/netstandard1.3/System.Xml.XDocument.dll": {
             "related": ".xml"
           }
         },
@@ -1850,6 +1890,21 @@
         "lib/netstandard2.0/DecimalEx.xml"
       ]
     },
+    "FFTW.NET/1.0.1": {
+      "sha512": "xLe3nwiEFeW60dP5RzrwkCbGzwOj4fi4ePv2plbjH8hkIKrfVUaMo8m1e6I15lo08DfbzRObUjOkAQjL6BavgA==",
+      "type": "package",
+      "path": "fftw.net/1.0.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "build/netstandard1.3/FFTW.NET.targets",
+        "build/netstandard1.3/libfftw3-3-x64.dll",
+        "build/netstandard1.3/libfftw3-3-x86.dll",
+        "fftw.net.1.0.1.nupkg.sha512",
+        "fftw.net.nuspec",
+        "lib/netstandard1.3/FFTW.NET.dll"
+      ]
+    },
     "Fody/6.5.5": {
       "sha512": "Krca41L/PDva1VsmDec5n52cQZxQAQp/bsHdzsNi8iLLI0lqKL94fNIkNaC8tVolUkCyWsbzvxfxJCeD2789fA==",
       "type": "package",
@@ -1902,6 +1957,31 @@
         "runtimes/win-arm64/native/cimgui.dll",
         "runtimes/win-x64/native/cimgui.dll",
         "runtimes/win-x86/native/cimgui.dll"
+      ]
+    },
+    "ManagedCuda-CUFFT/12.8.60": {
+      "sha512": "H4H+cKsEc0evZNwcpRDNlVNk6SDbF+QRp9znIDFxBpVYBI36BQa/gR7ysSdCtacFoUY8jUIIzgU1ymTySZJfFg==",
+      "type": "package",
+      "path": "managedcuda-cufft/12.8.60",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "doc/README.md",
+        "images/AI_128.png",
+        "lib/net48/CudaFFT.XML",
+        "lib/net48/CudaFFT.dll",
+        "lib/net48/CudaFFT.pdb",
+        "lib/net6.0/CudaFFT.netCore.deps.json",
+        "lib/net6.0/CudaFFT.netCore.dll",
+        "lib/net6.0/CudaFFT.netCore.pdb",
+        "lib/net7.0/CudaFFT.netCore.deps.json",
+        "lib/net7.0/CudaFFT.netCore.dll",
+        "lib/net7.0/CudaFFT.netCore.pdb",
+        "lib/netcoreapp3.1/CudaFFT.netCore.deps.json",
+        "lib/netcoreapp3.1/CudaFFT.netCore.dll",
+        "lib/netcoreapp3.1/CudaFFT.netCore.pdb",
+        "managedcuda-cufft.12.8.60.nupkg.sha512",
+        "managedcuda-cufft.nuspec"
       ]
     },
     "MathNet.Numerics/5.0.0": {
@@ -2377,6 +2457,19 @@
         "lib/netstandard2.1/NLog.Extensions.Logging.xml",
         "nlog.extensions.logging.5.3.12.nupkg.sha512",
         "nlog.extensions.logging.nuspec"
+      ]
+    },
+    "OpenCL.Net/2.2.9": {
+      "sha512": "88xksmTwopVt7UN8Kdpry3sIKcEM5sbvIKJYYwj8MGOvnpqS50N9HaKBD/oXae/1pKyuj2/Ipo1eid7yQ18B1Q==",
+      "type": "package",
+      "path": "opencl.net/2.2.9",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "build/net40/OpenCL.Net.targets",
+        "lib/net40/OpenCL.Net.dll",
+        "opencl.net.2.2.9.nupkg.sha512",
+        "opencl.net.nuspec"
       ]
     },
     "runtime.debian.8-x64.runtime.native.System.Security.Cryptography.OpenSsl/4.3.0": {
@@ -5863,9 +5956,12 @@
       "ClickableTransparentOverlay >= 10.2.0",
       "Costura.Fody >= 5.7.0",
       "DecimalMath.DecimalEx >= 1.0.2",
+      "FFTW.NET >= 1.0.1",
+      "ManagedCuda-CUFFT >= 12.8.60",
       "MathNet.Numerics >= 5.0.0",
       "MathNet.Numerics.MKL.Win-x64 >= 3.0.0",
       "NLog.Extensions.Logging >= 5.3.12",
+      "OpenCL.Net >= 2.2.9",
       "System.Management >= 8.0.0"
     ]
   },
@@ -5933,6 +6029,14 @@
             "target": "Package",
             "version": "[1.0.2, )"
           },
+          "FFTW.NET": {
+            "target": "Package",
+            "version": "[1.0.1, )"
+          },
+          "ManagedCuda-CUFFT": {
+            "target": "Package",
+            "version": "[12.8.60, )"
+          },
           "MathNet.Numerics": {
             "target": "Package",
             "version": "[5.0.0, )"
@@ -5944,6 +6048,10 @@
           "NLog.Extensions.Logging": {
             "target": "Package",
             "version": "[5.3.12, )"
+          },
+          "OpenCL.Net": {
+            "target": "Package",
+            "version": "[2.2.9, )"
           },
           "System.Management": {
             "target": "Package",
@@ -5972,5 +6080,17 @@
         "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.302/PortableRuntimeIdentifierGraph.json"
       }
     }
-  }
+  },
+  "logs": [
+    {
+      "code": "NU1701",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'OpenCL.Net 2.2.9' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1' instead of the project target framework 'net8.0-windows7.0'. This package may not be fully compatible with your project.",
+      "libraryId": "OpenCL.Net",
+      "targetGraphs": [
+        "net8.0-windows7.0"
+      ]
+    }
+  ]
 }

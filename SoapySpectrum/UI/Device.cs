@@ -79,6 +79,7 @@ namespace SoapySpectrum.UI
             for (; i < availableChannels; i++)
             {
                 sample_rates[i] = sdr_device.GetSampleRateRange(Direction.Rx, (uint)i);
+                sample_rates[i].Add(new Pothosware.SoapySDR.Range(0, double.MaxValue, 0));
                 customSampleRate = sample_rates[i].First().Maximum.ToString();
             }
             i = 0;
@@ -134,6 +135,7 @@ namespace SoapySpectrum.UI
 
 
             }
+
             if ((ImGuiTheme.glowingCombo("sample_rate_Tab", ref selectedSampleRate, sample_rates_choice.ToArray(), inputTheme)))
             {
                 Configuration.config["sampleRate"] = Convert.ToDouble(sample_rates_choice[selectedSampleRate]);

@@ -191,7 +191,6 @@ C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\obj\Deb
 C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\obj\Debug\net8.0-windows\ref\SoapySpectrum.dll
 C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\runtimes\win-x64\native\libMathNetNumericsMKL.dll
 C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\runtimes\win-x64\native\libiomp5md.dll
-C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\SoapySDR\LMS7Support.dll
 C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\SoapySDR\root\SoapySDR\bin\hackrf.dll
 C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\SoapySDR\root\SoapySDR\bin\libiio.dll
 C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\SoapySDR\root\SoapySDR\bin\libusb-1.0.dll
@@ -247,11 +246,8 @@ C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Deb
 C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\SoapySDR\root\SoapySDR\lib\SoapySDR\modules0.8-3\LMS7Support.dll
 C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\SoapySDR\root\SoapySDR\lib\SoapySDR\modules0.8-3\rtlsdrSupport.dll
 C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\SoapySDR\root\SoapySDR\share\man\man1\SoapySDRUtil.1
-C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\SoapySDR\rtlsdrSupport.dll
-C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\SoapySDR\airspySupport.dll
 C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\SoapySDR\root\SoapySDR\lib\SoapySDR\modules0.8-3\airspySupport.dll
 C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\SoapySDR\root\SoapySDR\lib\SoapySDR\modules0.8-3\uhdSupport.dll
-C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\SoapySDR\uhdSupport.dll
 C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\SoapySDR\Libs\airspy.dll
 C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\SoapySDR\Libs\boost_chrono-vc142-mt-x64-1_75.dll
 C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\SoapySDR\Libs\boost_date_time-vc142-mt-x64-1_75.dll
@@ -272,3 +268,5 @@ C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Deb
 C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\SoapySDR\Libs\SoapySDRCSharpSWIG.dll
 C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\SoapySDR\Libs\soapySupport.dll
 C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\SoapySDR\Libs\uhd.dll
+C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\libfftw3-3-x64.dll
+C:\Users\NU\Documents\GitHub\Soapy-.NET-Spectrum-Analayzer\SoapySpectrum\bin\Debug\net8.0-windows\libfftw3-3-x86.dll

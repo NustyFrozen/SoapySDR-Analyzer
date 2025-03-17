@@ -95,7 +95,7 @@ namespace SoapySpectrum.UI
             lock (traces[traceID].plot)
                 return traces[traceID].plot.MinBy(x => Math.Abs((long)x.Key)).Value;
         }
-        public static void updateData(Dictionary<float, float> data) //called by soapyPower
+        public static void updateData(float[][] data)
         {
             for (int i = 0; i < traces.Length; i++)
             {
@@ -106,44 +106,49 @@ namespace SoapySpectrum.UI
                     switch (traces[i].dataStatus)
                     {
                         case traceDataStatus.normal:
-                            plot.AddRangeOverride(data);
+                            for (int k = 0; k < data[0].Length; k++)
+                            {
+                                if (plot.ContainsKey(data[1][k]))
+                                    plot[data[1][k]] = data[0][k];
+                                else
+                                    plot.Add(data[1][k], data[0][k]);
+                            }
                             break;
                         case traceDataStatus.minHold:
-                            foreach (KeyValuePair<float, float> dataPoint in data)
+                            for (int k = 0; k < data[0].Length; k++)
                             {
-                                if (plot.ContainsKey(dataPoint.Key))
+                                if (plot.ContainsKey(data[1][k]))
                                 {
-                                    if (plot[dataPoint.Key] > dataPoint.Value)
-                                        plot[dataPoint.Key] = dataPoint.Value;
+                                    if (plot[data[1][k]] > data[0][k])
+                                        plot[data[1][k]] = data[0][k];
                                 }
                                 else
-                                    plot.Add(dataPoint.Key, dataPoint.Value);
+                                    plot.Add(data[1][k], data[0][k]);
 
                             }
                             break;
                         case traceDataStatus.maxHold:
-                            foreach (KeyValuePair<float, float> dataPoint in data)
+                            for (int k = 0; k < data[0].Length; k++)
                             {
-                                if (plot.ContainsKey(dataPoint.Key))
+                                if (plot.ContainsKey(data[1][k]))
                                 {
-                                    if (plot[dataPoint.Key] < dataPoint.Value)
-                                        plot[dataPoint.Key] = dataPoint.Value;
+                                    if (plot[data[1][k]] < data[0][k])
+                                        plot[data[1][k]] = data[0][k];
                                 }
                                 else
-                                    plot.Add(dataPoint.Key, dataPoint.Value);
-
+                                    plot.Add(data[1][k], data[0][k]);
                             }
                             break;
                         case traceDataStatus.Average:
-                            foreach (KeyValuePair<float, float> dataPoint in data)
+                            for (int k = 0; k < data[0].Length; k++)
                             {
-                                if (plot.ContainsKey(dataPoint.Key))
+                                if (plot.ContainsKey(data[1][k]))
                                 {
 
-                                    plot[dataPoint.Key] = (plot[dataPoint.Key] * traces[i].average + dataPoint.Value) / (traces[i].average + 1);
+                                    plot[data[1][k]] = (plot[data[1][k]] * traces[i].average + data[0][k]) / (traces[i].average + 1);
                                 }
                                 else
-                                    plot.Add(dataPoint.Key, dataPoint.Value);
+                                    plot.Add(data[1][k], data[0][k]);
 
                             }
                             traces[i].average++;

@@ -64,6 +64,14 @@
               "target": "Package",
               "version": "[1.0.2, )"
             },
+            "FFTW.NET": {
+              "target": "Package",
+              "version": "[1.0.1, )"
+            },
+            "ManagedCuda-CUFFT": {
+              "target": "Package",
+              "version": "[12.8.60, )"
+            },
             "MathNet.Numerics": {
               "target": "Package",
               "version": "[5.0.0, )"
@@ -75,6 +83,10 @@
             "NLog.Extensions.Logging": {
               "target": "Package",
               "version": "[5.3.12, )"
+            },
+            "OpenCL.Net": {
+              "target": "Package",
+              "version": "[2.2.9, )"
             },
             "System.Management": {
               "target": "Package",

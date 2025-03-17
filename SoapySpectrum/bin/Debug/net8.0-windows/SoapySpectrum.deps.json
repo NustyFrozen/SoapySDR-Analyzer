@@ -11,9 +11,12 @@
           "ClickableTransparentOverlay": "10.2.0",
           "Costura.Fody": "5.7.0",
           "DecimalMath.DecimalEx": "1.0.2",
+          "FFTW.NET": "1.0.1",
+          "ManagedCuda-CUFFT": "12.8.60",
           "MathNet.Numerics": "5.0.0",
           "MathNet.Numerics.MKL.Win-x64": "3.0.0",
           "NLog.Extensions.Logging": "5.3.12",
+          "OpenCL.Net": "2.2.9",
           "System.Management": "8.0.0",
           "Pothosware.SoapySDR": "0.8.1.0"
         },
@@ -55,6 +58,17 @@
           }
         }
       },
+      "FFTW.NET/1.0.1": {
+        "dependencies": {
+          "NETStandard.Library": "1.6.1"
+        },
+        "runtime": {
+          "lib/netstandard1.3/FFTW.NET.dll": {
+            "assemblyVersion": "1.0.1.0",
+            "fileVersion": "1.0.1.0"
+          }
+        }
+      },
       "Fody/6.5.5": {},
       "ImGui.NET/1.90.6.1": {
         "dependencies": {
@@ -93,6 +107,14 @@
             "rid": "win-x86",
             "assetType": "native",
             "fileVersion": "0.0.0.0"
+          }
+        }
+      },
+      "ManagedCuda-CUFFT/12.8.60": {
+        "runtime": {
+          "lib/net7.0/CudaFFT.netCore.dll": {
+            "assemblyVersion": "12.8.60.0",
+            "fileVersion": "12.8.60.0"
           }
         }
       },
@@ -281,6 +303,14 @@
           "lib/net8.0/NLog.Extensions.Logging.dll": {
             "assemblyVersion": "5.0.0.0",
             "fileVersion": "5.3.12.562"
+          }
+        }
+      },
+      "OpenCL.Net/2.2.9": {
+        "runtime": {
+          "lib/net40/OpenCL.Net.dll": {
+            "assemblyVersion": "2.2.9.0",
+            "fileVersion": "2.2.9.0"
           }
         }
       },
@@ -1028,6 +1058,13 @@
       "path": "decimalmath.decimalex/1.0.2",
       "hashPath": "decimalmath.decimalex.1.0.2.nupkg.sha512"
     },
+    "FFTW.NET/1.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-xLe3nwiEFeW60dP5RzrwkCbGzwOj4fi4ePv2plbjH8hkIKrfVUaMo8m1e6I15lo08DfbzRObUjOkAQjL6BavgA==",
+      "path": "fftw.net/1.0.1",
+      "hashPath": "fftw.net.1.0.1.nupkg.sha512"
+    },
     "Fody/6.5.5": {
       "type": "package",
       "serviceable": true,
@@ -1041,6 +1078,13 @@
       "sha512": "sha512-Nr3KVv1hCdyTJ4ojvZtW11nTHXzSOtk3h+0OwqjMt3Qxpz3ivcnc3KdUKceeiFWP4PyzxIQiY7ccL7raitVbPg==",
       "path": "imgui.net/1.90.6.1",
       "hashPath": "imgui.net.1.90.6.1.nupkg.sha512"
+    },
+    "ManagedCuda-CUFFT/12.8.60": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-H4H+cKsEc0evZNwcpRDNlVNk6SDbF+QRp9znIDFxBpVYBI36BQa/gR7ysSdCtacFoUY8jUIIzgU1ymTySZJfFg==",
+      "path": "managedcuda-cufft/12.8.60",
+      "hashPath": "managedcuda-cufft.12.8.60.nupkg.sha512"
     },
     "MathNet.Numerics/5.0.0": {
       "type": "package",
@@ -1153,6 +1197,13 @@
       "sha512": "sha512-L6bOT5O5/pDZFAz4Oief/xtEi8zsVoGfjHqgtvA5ZI/cSBwpNwAKRBQsMYNadmmgj3OdJuQRfkasn6+qppVmuQ==",
       "path": "nlog.extensions.logging/5.3.12",
       "hashPath": "nlog.extensions.logging.5.3.12.nupkg.sha512"
+    },
+    "OpenCL.Net/2.2.9": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-88xksmTwopVt7UN8Kdpry3sIKcEM5sbvIKJYYwj8MGOvnpqS50N9HaKBD/oXae/1pKyuj2/Ipo1eid7yQ18B1Q==",
+      "path": "opencl.net/2.2.9",
+      "hashPath": "opencl.net.2.2.9.nupkg.sha512"
     },
     "runtime.debian.8-x64.runtime.native.System.Security.Cryptography.OpenSsl/4.3.0": {
       "type": "package",

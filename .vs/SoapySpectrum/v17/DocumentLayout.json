@@ -3,48 +3,28 @@
   "WorkspaceRootPath": "C:\\Users\\NU\\Documents\\GitHub\\Soapy-.NET-Spectrum-Analayzer\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{1DB4D707-AC54-43E2-BADF-FCDB3BBC3A3D}|SoapySpectrum\\SoapySpectrum.csproj|c:\\users\\nu\\documents\\github\\soapy-.net-spectrum-analayzer\\soapyspectrum\\performfft.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1DB4D707-AC54-43E2-BADF-FCDB3BBC3A3D}|SoapySpectrum\\SoapySpectrum.csproj|solutionrelative:soapyspectrum\\performfft.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{1DB4D707-AC54-43E2-BADF-FCDB3BBC3A3D}|SoapySpectrum\\SoapySpectrum.csproj|c:\\users\\nu\\documents\\github\\soapy-.net-spectrum-analayzer\\soapyspectrum\\ui\\device.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{1DB4D707-AC54-43E2-BADF-FCDB3BBC3A3D}|SoapySpectrum\\SoapySpectrum.csproj|solutionrelative:soapyspectrum\\ui\\device.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{1DB4D707-AC54-43E2-BADF-FCDB3BBC3A3D}|SoapySpectrum\\SoapySpectrum.csproj|c:\\users\\nu\\documents\\github\\soapy-.net-spectrum-analayzer\\soapyspectrum\\ui\\imguitheme.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{1DB4D707-AC54-43E2-BADF-FCDB3BBC3A3D}|SoapySpectrum\\SoapySpectrum.csproj|solutionrelative:soapyspectrum\\ui\\imguitheme.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{1DB4D707-AC54-43E2-BADF-FCDB3BBC3A3D}|SoapySpectrum\\SoapySpectrum.csproj|c:\\users\\nu\\documents\\github\\soapy-.net-spectrum-analayzer\\soapyspectrum\\ui\\graph.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{1DB4D707-AC54-43E2-BADF-FCDB3BBC3A3D}|SoapySpectrum\\SoapySpectrum.csproj|solutionrelative:soapyspectrum\\ui\\graph.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{1DB4D707-AC54-43E2-BADF-FCDB3BBC3A3D}|SoapySpectrum\\SoapySpectrum.csproj|c:\\users\\nu\\documents\\github\\soapy-.net-spectrum-analayzer\\soapyspectrum\\extentions\\helper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{1DB4D707-AC54-43E2-BADF-FCDB3BBC3A3D}|SoapySpectrum\\SoapySpectrum.csproj|solutionrelative:soapyspectrum\\extentions\\helper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{1DB4D707-AC54-43E2-BADF-FCDB3BBC3A3D}|SoapySpectrum\\SoapySpectrum.csproj|c:\\users\\nu\\documents\\github\\soapy-.net-spectrum-analayzer\\soapyspectrum\\configuration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{1DB4D707-AC54-43E2-BADF-FCDB3BBC3A3D}|SoapySpectrum\\SoapySpectrum.csproj|solutionrelative:soapyspectrum\\configuration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{1DB4D707-AC54-43E2-BADF-FCDB3BBC3A3D}|SoapySpectrum\\SoapySpectrum.csproj|c:\\users\\nu\\documents\\github\\soapy-.net-spectrum-analayzer\\soapyspectrum\\ui\\tab_video.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{1DB4D707-AC54-43E2-BADF-FCDB3BBC3A3D}|SoapySpectrum\\SoapySpectrum.csproj|solutionrelative:soapyspectrum\\ui\\tab_video.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{1DB4D707-AC54-43E2-BADF-FCDB3BBC3A3D}|SoapySpectrum\\SoapySpectrum.csproj|c:\\users\\nu\\documents\\github\\soapy-.net-spectrum-analayzer\\soapyspectrum\\ui\\mainwindow.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{1DB4D707-AC54-43E2-BADF-FCDB3BBC3A3D}|SoapySpectrum\\SoapySpectrum.csproj|solutionrelative:soapyspectrum\\ui\\mainwindow.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{1DB4D707-AC54-43E2-BADF-FCDB3BBC3A3D}|SoapySpectrum\\SoapySpectrum.csproj|c:\\users\\nu\\documents\\github\\soapy-.net-spectrum-analayzer\\soapyspectrum\\ui\\tab_amplitude.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{1DB4D707-AC54-43E2-BADF-FCDB3BBC3A3D}|SoapySpectrum\\SoapySpectrum.csproj|solutionrelative:soapyspectrum\\ui\\tab_amplitude.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{1DB4D707-AC54-43E2-BADF-FCDB3BBC3A3D}|SoapySpectrum\\SoapySpectrum.csproj|c:\\users\\nu\\documents\\github\\soapy-.net-spectrum-analayzer\\soapyspectrum\\ui\\imguitheme.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1DB4D707-AC54-43E2-BADF-FCDB3BBC3A3D}|SoapySpectrum\\SoapySpectrum.csproj|solutionrelative:soapyspectrum\\ui\\imguitheme.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{1DB4D707-AC54-43E2-BADF-FCDB3BBC3A3D}|SoapySpectrum\\SoapySpectrum.csproj|c:\\users\\nu\\documents\\github\\soapy-.net-spectrum-analayzer\\soapyspectrum\\ui\\tab_trace.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{1DB4D707-AC54-43E2-BADF-FCDB3BBC3A3D}|SoapySpectrum\\SoapySpectrum.csproj|solutionrelative:soapyspectrum\\ui\\tab_trace.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{1DB4D707-AC54-43E2-BADF-FCDB3BBC3A3D}|SoapySpectrum\\SoapySpectrum.csproj|c:\\users\\nu\\documents\\github\\soapy-.net-spectrum-analayzer\\soapyspectrum\\configuration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1DB4D707-AC54-43E2-BADF-FCDB3BBC3A3D}|SoapySpectrum\\SoapySpectrum.csproj|solutionrelative:soapyspectrum\\configuration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{1DB4D707-AC54-43E2-BADF-FCDB3BBC3A3D}|SoapySpectrum\\SoapySpectrum.csproj|c:\\users\\nu\\documents\\github\\soapy-.net-spectrum-analayzer\\soapyspectrum\\ui\\tab_cal.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{1DB4D707-AC54-43E2-BADF-FCDB3BBC3A3D}|SoapySpectrum\\SoapySpectrum.csproj|solutionrelative:soapyspectrum\\ui\\tab_cal.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{1DB4D707-AC54-43E2-BADF-FCDB3BBC3A3D}|SoapySpectrum\\SoapySpectrum.csproj|c:\\users\\nu\\documents\\github\\soapy-.net-spectrum-analayzer\\soapyspectrum\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{1DB4D707-AC54-43E2-BADF-FCDB3BBC3A3D}|SoapySpectrum\\SoapySpectrum.csproj|solutionrelative:soapyspectrum\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{1DB4D707-AC54-43E2-BADF-FCDB3BBC3A3D}|SoapySpectrum\\SoapySpectrum.csproj|c:\\users\\nu\\documents\\github\\soapy-.net-spectrum-analayzer\\soapyspectrum\\ui\\graph.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1DB4D707-AC54-43E2-BADF-FCDB3BBC3A3D}|SoapySpectrum\\SoapySpectrum.csproj|solutionrelative:soapyspectrum\\ui\\graph.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -54,45 +34,33 @@
       "DocumentGroups": [
         {
           "DockedWidth": 319,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 5,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "Device.cs",
-              "DocumentMoniker": "C:\\Users\\NU\\Documents\\GitHub\\Soapy-.NET-Spectrum-Analayzer\\SoapySpectrum\\UI\\Device.cs",
-              "RelativeDocumentMoniker": "SoapySpectrum\\UI\\Device.cs",
-              "ToolTip": "C:\\Users\\NU\\Documents\\GitHub\\Soapy-.NET-Spectrum-Analayzer\\SoapySpectrum\\UI\\Device.cs",
-              "RelativeToolTip": "SoapySpectrum\\UI\\Device.cs",
-              "ViewState": "AQIAAAcAAAAAAAAAAAAgwBcAAAB7AAAA",
+              "DocumentIndex": 2,
+              "Title": "MainWindow.cs",
+              "DocumentMoniker": "C:\\Users\\NU\\Documents\\GitHub\\Soapy-.NET-Spectrum-Analayzer\\SoapySpectrum\\UI\\MainWindow.cs",
+              "RelativeDocumentMoniker": "SoapySpectrum\\UI\\MainWindow.cs",
+              "ToolTip": "C:\\Users\\NU\\Documents\\GitHub\\Soapy-.NET-Spectrum-Analayzer\\SoapySpectrum\\UI\\MainWindow.cs",
+              "RelativeToolTip": "SoapySpectrum\\UI\\MainWindow.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-08T14:47:08.109Z",
-              "IsPinned": true,
+              "WhenOpened": "2025-03-17T17:46:09.653Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 3,
-              "Title": "Helper.cs",
-              "DocumentMoniker": "C:\\Users\\NU\\Documents\\GitHub\\Soapy-.NET-Spectrum-Analayzer\\SoapySpectrum\\Extentions\\Helper.cs",
-              "RelativeDocumentMoniker": "SoapySpectrum\\Extentions\\Helper.cs",
-              "ToolTip": "C:\\Users\\NU\\Documents\\GitHub\\Soapy-.NET-Spectrum-Analayzer\\SoapySpectrum\\Extentions\\Helper.cs",
-              "RelativeToolTip": "SoapySpectrum\\Extentions\\Helper.cs",
-              "ViewState": "AQIAAF8AAAAAAAAAAADwvxEAAAANAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-08T19:53:45.58Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
               "Title": "ImGuiTheme.cs",
               "DocumentMoniker": "C:\\Users\\NU\\Documents\\GitHub\\Soapy-.NET-Spectrum-Analayzer\\SoapySpectrum\\UI\\ImGuiTheme.cs",
               "RelativeDocumentMoniker": "SoapySpectrum\\UI\\ImGuiTheme.cs",
               "ToolTip": "C:\\Users\\NU\\Documents\\GitHub\\Soapy-.NET-Spectrum-Analayzer\\SoapySpectrum\\UI\\ImGuiTheme.cs",
               "RelativeToolTip": "SoapySpectrum\\UI\\ImGuiTheme.cs",
-              "ViewState": "AQIAADECAAAAAAAAAAAAAEcCAAAbAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-08T19:46:26.069Z"
+              "WhenOpened": "2025-03-17T17:46:08.801Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -102,93 +70,49 @@
               "RelativeDocumentMoniker": "SoapySpectrum\\Configuration.cs",
               "ToolTip": "C:\\Users\\NU\\Documents\\GitHub\\Soapy-.NET-Spectrum-Analayzer\\SoapySpectrum\\Configuration.cs",
               "RelativeToolTip": "SoapySpectrum\\Configuration.cs",
-              "ViewState": "AQIAACoAAAAAAAAAAAAowDIAAAAuAAAA",
+              "ViewState": "AQIAACEAAAAAAAAAAAAAADIAAAAhAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-08T15:47:35.1Z"
+              "WhenOpened": "2025-03-17T17:00:39.784Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 5,
               "Title": "Graph.cs",
               "DocumentMoniker": "C:\\Users\\NU\\Documents\\GitHub\\Soapy-.NET-Spectrum-Analayzer\\SoapySpectrum\\UI\\Graph.cs",
               "RelativeDocumentMoniker": "SoapySpectrum\\UI\\Graph.cs",
               "ToolTip": "C:\\Users\\NU\\Documents\\GitHub\\Soapy-.NET-Spectrum-Analayzer\\SoapySpectrum\\UI\\Graph.cs",
               "RelativeToolTip": "SoapySpectrum\\UI\\Graph.cs",
-              "ViewState": "AQIAANcAAAAAAAAAAAAAAO4AAABOAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-08T10:28:34.194Z"
+              "WhenOpened": "2025-03-17T17:00:16.198Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "tab_Video.cs",
-              "DocumentMoniker": "C:\\Users\\NU\\Documents\\GitHub\\Soapy-.NET-Spectrum-Analayzer\\SoapySpectrum\\UI\\tab_Video.cs",
-              "RelativeDocumentMoniker": "SoapySpectrum\\UI\\tab_Video.cs",
-              "ToolTip": "C:\\Users\\NU\\Documents\\GitHub\\Soapy-.NET-Spectrum-Analayzer\\SoapySpectrum\\UI\\tab_Video.cs",
-              "RelativeToolTip": "SoapySpectrum\\UI\\tab_Video.cs",
-              "ViewState": "AQIAAIAAAAAAAAAAAAAgwIsAAAAkAAAA",
+              "DocumentIndex": 1,
+              "Title": "Device.cs",
+              "DocumentMoniker": "C:\\Users\\NU\\Documents\\GitHub\\Soapy-.NET-Spectrum-Analayzer\\SoapySpectrum\\UI\\Device.cs",
+              "RelativeDocumentMoniker": "SoapySpectrum\\UI\\Device.cs",
+              "ToolTip": "C:\\Users\\NU\\Documents\\GitHub\\Soapy-.NET-Spectrum-Analayzer\\SoapySpectrum\\UI\\Device.cs",
+              "RelativeToolTip": "SoapySpectrum\\UI\\Device.cs",
+              "ViewState": "AQIAAMoAAAAAAAAAAAAowF4AAAAJAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-07T10:18:10.212Z"
+              "WhenOpened": "2025-03-17T15:39:06.603Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "Tab_Cal.cs",
-              "DocumentMoniker": "C:\\Users\\NU\\Documents\\GitHub\\Soapy-.NET-Spectrum-Analayzer\\SoapySpectrum\\UI\\Tab_Cal.cs",
-              "RelativeDocumentMoniker": "SoapySpectrum\\UI\\Tab_Cal.cs",
-              "ToolTip": "C:\\Users\\NU\\Documents\\GitHub\\Soapy-.NET-Spectrum-Analayzer\\SoapySpectrum\\UI\\Tab_Cal.cs",
-              "RelativeToolTip": "SoapySpectrum\\UI\\Tab_Cal.cs",
-              "ViewState": "AQIAADAAAAAAAAAAAAAWwEYAAAAJAAAA",
+              "DocumentIndex": 0,
+              "Title": "PerformFFT.cs",
+              "DocumentMoniker": "C:\\Users\\NU\\Documents\\GitHub\\Soapy-.NET-Spectrum-Analayzer\\SoapySpectrum\\PerformFFT.cs",
+              "RelativeDocumentMoniker": "SoapySpectrum\\PerformFFT.cs",
+              "ToolTip": "C:\\Users\\NU\\Documents\\GitHub\\Soapy-.NET-Spectrum-Analayzer\\SoapySpectrum\\PerformFFT.cs",
+              "RelativeToolTip": "SoapySpectrum\\PerformFFT.cs",
+              "ViewState": "AQIAAE0AAAAAAAAAAAAAAG8AAAA+AAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-06T21:00:14.572Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "tab_Amplitude.cs",
-              "DocumentMoniker": "C:\\Users\\NU\\Documents\\GitHub\\Soapy-.NET-Spectrum-Analayzer\\SoapySpectrum\\UI\\tab_Amplitude.cs",
-              "RelativeDocumentMoniker": "SoapySpectrum\\UI\\tab_Amplitude.cs",
-              "ToolTip": "C:\\Users\\NU\\Documents\\GitHub\\Soapy-.NET-Spectrum-Analayzer\\SoapySpectrum\\UI\\tab_Amplitude.cs",
-              "RelativeToolTip": "SoapySpectrum\\UI\\tab_Amplitude.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAIBJwCAAAAARAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-06T21:00:12.874Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "tab_Trace.cs",
-              "DocumentMoniker": "C:\\Users\\NU\\Documents\\GitHub\\Soapy-.NET-Spectrum-Analayzer\\SoapySpectrum\\UI\\tab_Trace.cs",
-              "RelativeDocumentMoniker": "SoapySpectrum\\UI\\tab_Trace.cs",
-              "ToolTip": "C:\\Users\\NU\\Documents\\GitHub\\Soapy-.NET-Spectrum-Analayzer\\SoapySpectrum\\UI\\tab_Trace.cs",
-              "RelativeToolTip": "SoapySpectrum\\UI\\tab_Trace.cs",
-              "ViewState": "AQIAAB8AAAAAAAAAAAAiwD8AAAARAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-01T22:13:26.39Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "MainWindow.cs",
-              "DocumentMoniker": "C:\\Users\\NU\\Documents\\GitHub\\Soapy-.NET-Spectrum-Analayzer\\SoapySpectrum\\UI\\MainWindow.cs",
-              "RelativeDocumentMoniker": "SoapySpectrum\\UI\\MainWindow.cs",
-              "ToolTip": "C:\\Users\\NU\\Documents\\GitHub\\Soapy-.NET-Spectrum-Analayzer\\SoapySpectrum\\UI\\MainWindow.cs",
-              "RelativeToolTip": "SoapySpectrum\\UI\\MainWindow.cs",
-              "ViewState": "AQIAAF4AAAAAAAAAAAAAAGwAAAAhAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-02-28T15:10:04.417Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 10,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\NU\\Documents\\GitHub\\Soapy-.NET-Spectrum-Analayzer\\SoapySpectrum\\Program.cs",
-              "RelativeDocumentMoniker": "SoapySpectrum\\Program.cs",
-              "ToolTip": "C:\\Users\\NU\\Documents\\GitHub\\Soapy-.NET-Spectrum-Analayzer\\SoapySpectrum\\Program.cs",
-              "RelativeToolTip": "SoapySpectrum\\Program.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAcAAAAiAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-03-01T22:17:56.933Z"
+              "WhenOpened": "2025-03-17T07:06:57.108Z",
+              "EditorCaption": ""
             }
           ]
         }

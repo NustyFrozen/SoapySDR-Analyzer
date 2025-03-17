@@ -1,14 +1,16 @@
 {
   "version": 2,
-  "dgSpecHash": "lyqfsyGsaSU=",
+  "dgSpecHash": "YbOs/QxCsmk=",
   "success": true,
   "projectFilePath": "C:\\Users\\NU\\Documents\\GitHub\\Soapy-.NET-Spectrum-Analayzer\\SoapySpectrum\\SoapySpectrum.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\NU\\.nuget\\packages\\clickabletransparentoverlay\\10.2.0\\clickabletransparentoverlay.10.2.0.nupkg.sha512",
     "C:\\Users\\NU\\.nuget\\packages\\costura.fody\\5.7.0\\costura.fody.5.7.0.nupkg.sha512",
     "C:\\Users\\NU\\.nuget\\packages\\decimalmath.decimalex\\1.0.2\\decimalmath.decimalex.1.0.2.nupkg.sha512",
+    "C:\\Users\\NU\\.nuget\\packages\\fftw.net\\1.0.1\\fftw.net.1.0.1.nupkg.sha512",
     "C:\\Users\\NU\\.nuget\\packages\\fody\\6.5.5\\fody.6.5.5.nupkg.sha512",
     "C:\\Users\\NU\\.nuget\\packages\\imgui.net\\1.90.6.1\\imgui.net.1.90.6.1.nupkg.sha512",
+    "C:\\Users\\NU\\.nuget\\packages\\managedcuda-cufft\\12.8.60\\managedcuda-cufft.12.8.60.nupkg.sha512",
     "C:\\Users\\NU\\.nuget\\packages\\mathnet.numerics\\5.0.0\\mathnet.numerics.5.0.0.nupkg.sha512",
     "C:\\Users\\NU\\.nuget\\packages\\mathnet.numerics.mkl.win-x64\\3.0.0\\mathnet.numerics.mkl.win-x64.3.0.0.nupkg.sha512",
     "C:\\Users\\NU\\.nuget\\packages\\mathnet.numerics.providers.mkl\\5.0.0\\mathnet.numerics.providers.mkl.5.0.0.nupkg.sha512",
@@ -25,6 +27,7 @@
     "C:\\Users\\NU\\.nuget\\packages\\netstandard.library\\1.6.1\\netstandard.library.1.6.1.nupkg.sha512",
     "C:\\Users\\NU\\.nuget\\packages\\nlog\\5.3.3\\nlog.5.3.3.nupkg.sha512",
     "C:\\Users\\NU\\.nuget\\packages\\nlog.extensions.logging\\5.3.12\\nlog.extensions.logging.5.3.12.nupkg.sha512",
+    "C:\\Users\\NU\\.nuget\\packages\\opencl.net\\2.2.9\\opencl.net.2.2.9.nupkg.sha512",
     "C:\\Users\\NU\\.nuget\\packages\\runtime.debian.8-x64.runtime.native.system.security.cryptography.openssl\\4.3.0\\runtime.debian.8-x64.runtime.native.system.security.cryptography.openssl.4.3.0.nupkg.sha512",
     "C:\\Users\\NU\\.nuget\\packages\\runtime.fedora.23-x64.runtime.native.system.security.cryptography.openssl\\4.3.0\\runtime.fedora.23-x64.runtime.native.system.security.cryptography.openssl.4.3.0.nupkg.sha512",
     "C:\\Users\\NU\\.nuget\\packages\\runtime.fedora.24-x64.runtime.native.system.security.cryptography.openssl\\4.3.0\\runtime.fedora.24-x64.runtime.native.system.security.cryptography.openssl.4.3.0.nupkg.sha512",
@@ -107,5 +110,16 @@
     "C:\\Users\\NU\\.nuget\\packages\\vortice.dxgi\\3.5.0\\vortice.dxgi.3.5.0.nupkg.sha512",
     "C:\\Users\\NU\\.nuget\\packages\\vortice.mathematics\\1.7.8\\vortice.mathematics.1.7.8.nupkg.sha512"
   ],
-  "logs": []
+  "logs": [
+    {
+      "code": "NU1701",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'OpenCL.Net 2.2.9' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1' instead of the project target framework 'net8.0-windows7.0'. This package may not be fully compatible with your project.",
+      "libraryId": "OpenCL.Net",
+      "targetGraphs": [
+        "net8.0-windows7.0"
+      ]
+    }
+  ]
 }
