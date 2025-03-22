@@ -84,6 +84,10 @@
               "target": "Package",
               "version": "[5.3.12, )"
             },
+            "Newtonsoft.Json": {
+              "target": "Package",
+              "version": "[13.0.3, )"
+            },
             "OpenCL.Net": {
               "target": "Package",
               "version": "[2.2.9, )"

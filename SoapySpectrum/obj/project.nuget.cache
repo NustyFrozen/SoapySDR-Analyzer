@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "YbOs/QxCsmk=",
+  "dgSpecHash": "dVLtXNbxtrQ=",
   "success": true,
-  "projectFilePath": "C:\\Users\\NU\\Documents\\GitHub\\Soapy-.NET-Spectrum-Analayzer\\SoapySpectrum\\SoapySpectrum.csproj",
+  "projectFilePath": "C:\\Users\\NU\\Documents\\GitHub\\Soapy-.NET-Spectrum-Analayzer\\SoapySpectrum\\SoapySA.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\NU\\.nuget\\packages\\clickabletransparentoverlay\\10.2.0\\clickabletransparentoverlay.10.2.0.nupkg.sha512",
     "C:\\Users\\NU\\.nuget\\packages\\costura.fody\\5.7.0\\costura.fody.5.7.0.nupkg.sha512",
@@ -25,6 +25,7 @@
     "C:\\Users\\NU\\.nuget\\packages\\microsoft.netcore.targets\\1.1.0\\microsoft.netcore.targets.1.1.0.nupkg.sha512",
     "C:\\Users\\NU\\.nuget\\packages\\microsoft.win32.primitives\\4.3.0\\microsoft.win32.primitives.4.3.0.nupkg.sha512",
     "C:\\Users\\NU\\.nuget\\packages\\netstandard.library\\1.6.1\\netstandard.library.1.6.1.nupkg.sha512",
+    "C:\\Users\\NU\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512",
     "C:\\Users\\NU\\.nuget\\packages\\nlog\\5.3.3\\nlog.5.3.3.nupkg.sha512",
     "C:\\Users\\NU\\.nuget\\packages\\nlog.extensions.logging\\5.3.12\\nlog.extensions.logging.5.3.12.nupkg.sha512",
     "C:\\Users\\NU\\.nuget\\packages\\opencl.net\\2.2.9\\opencl.net.2.2.9.nupkg.sha512",

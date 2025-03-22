@@ -1,21 +1,21 @@
-﻿using ClickableTransparentOverlay;
-using ImGuiNET;
-using System.Numerics;
+﻿using ImGuiNET;
 
 namespace SoapySpectrum.UI
 {
-    public partial class UI : Overlay
+    public static class tab_Video
     {
+        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+
         static int selectedFFTLength = 2, selectedFFTWindow = 0;
         static double additionalWindowArgument = 0.5;
         static string additional_text;
-        bool requiredAdditionalWindowArgument = false;
+        static bool requiredAdditionalWindowArgument = false;
         static string[] FFTLength = new string[] { "256", "512", "1024", "2048", "4096", "8192", "16384", "32768", "65535", "131072", "262144", "524288", "1048576" },
                         FFT_Window = new string[] {"Hamming","Triangular","Tukey","Lanczos","Nuttall","Hann","Bartlett","BartlettHann"
                             ,"Blackman","BlackmanHarris","BlackmanNuttall",
                             "Cosine","Dirichlet","FlatTop","Gauss","None"};
         static string FFT_segments = "1600", FFT_overlap = "50%", FFT_WINDOW_ADDITIONAL = "0.5", refreshrate_text = "1000";
-        double[] noWindowFunction(int length)
+        public static double[] noWindowFunction(int length)
         {
             double[] result = new double[length];
             for (int i = 0; i < length; i++)
@@ -23,7 +23,7 @@ namespace SoapySpectrum.UI
             return result;
         }
 
-        public void selectWindow()
+        public static void selectWindow()
         {
             if (selectedFFTWindow == 15)
             {
@@ -63,40 +63,38 @@ namespace SoapySpectrum.UI
             Configuration.config["FFT_WINDOW"] = windowFunction;
             Configuration.config["FFT_WINDOW_PERIODIC"] = windowFunctionPeriodic;
         }
-        public void renderVideo()
+        public static void renderVideo()
         {
-            var inputTheme = ImGuiTheme.getTextTheme();
-            ImGui.Text($"\uf1fb FFT Length");
+            var inputTheme = Theme.getTextTheme();
+            Theme.Text($"\uf1fb FFT Length", inputTheme);
             inputTheme.prefix = "FFT Length";
-            inputTheme.size = new Vector2(262, 35);
-            if (ImGuiTheme.glowingCombo("fft Length", ref selectedFFTLength, FFTLength, inputTheme))
+            if (Theme.glowingCombo("fft Length", ref selectedFFTLength, FFTLength, inputTheme))
             {
                 Configuration.config["FFT_Size"] = int.Parse(FFTLength[selectedFFTLength]);
                 PerformFFT.resetIQFilter();
             }
 
 
-            ImGuiTheme.newLine();
-            ImGui.Text($"\uf1fb FFT WINDOW Size");
+            Theme.newLine();
+            Theme.Text($"\uf1fb FFT WINDOW Size", inputTheme);
             inputTheme.prefix = "Window Function";
-            inputTheme.size = new Vector2(262, 35);
-            if (ImGuiTheme.glowingCombo("fft Window Function", ref selectedFFTWindow, FFT_Window, inputTheme))
+            if (Theme.glowingCombo("fft Window Function", ref selectedFFTWindow, FFT_Window, inputTheme))
                 selectWindow();
 
             if (requiredAdditionalWindowArgument)
             {
-                ImGuiTheme.newLine();
-                ImGui.Text($"\uf1fb {additional_text}:");
+                Theme.newLine();
+                Theme.Text($"\uf1fb {additional_text}", inputTheme);
                 inputTheme.prefix = $"0.5";
-                if (ImGuiTheme.glowingInput("FFT_WINDOW_additional_text", ref FFT_WINDOW_ADDITIONAL, inputTheme))
+                if (Theme.glowingInput("FFT_WINDOW_additional_text", ref FFT_WINDOW_ADDITIONAL, inputTheme))
                     if (double.TryParse(FFT_WINDOW_ADDITIONAL, out additionalWindowArgument))
                         selectWindow();
             }
 
-            ImGuiTheme.newLine();
-            ImGui.Text($"\uf1fb Welch FFT segments:");
+            Theme.newLine();
+            Theme.Text($"\uf1fb Welch FFT segments", inputTheme);
             inputTheme.prefix = $"How many segments should be in the FFT";
-            if (ImGuiTheme.glowingInput("FFT_segments", ref FFT_segments, inputTheme))
+            if (Theme.glowingInput("FFT_segments", ref FFT_segments, inputTheme))
             {
                 int fft_segements = 0;
                 if (int.TryParse(FFT_segments, out fft_segements))
@@ -115,10 +113,10 @@ namespace SoapySpectrum.UI
                 }
             }
 
-            ImGuiTheme.newLine();
-            ImGui.Text($"\uf1fb Welch FFT overlap (precentage):");
+            Theme.newLine();
+            Theme.Text($"\uf1fb Welch FFT overlap (precentage)", inputTheme);
             inputTheme.prefix = $"Overlap Between Segments";
-            if (ImGuiTheme.glowingInput("FFT_overlap", ref FFT_overlap, inputTheme))
+            if (Theme.glowingInput("FFT_overlap", ref FFT_overlap, inputTheme))
             {
                 double fft_overlap = 0;
                 if (double.TryParse(FFT_overlap.Replace($"%", ""), out fft_overlap))
@@ -136,10 +134,10 @@ namespace SoapySpectrum.UI
                     Logger.Debug($"Invalid Integer for value overlap");
                 }
             }
-            ImGuiTheme.newLine();
-            ImGui.Text($"\uf1fb FFT Refresh Rate (hz):");
+            Theme.newLine();
+            Theme.Text($"\uf1fb FFT Refresh Rate (hz)", inputTheme);
             inputTheme.prefix = $"Overlap Between Segments";
-            if (ImGuiTheme.glowingInput("FFT_refresh_rate", ref refreshrate_text, inputTheme))
+            if (Theme.glowingInput("FFT_refresh_rate", ref refreshrate_text, inputTheme))
             {
                 long refresh_rate = 0;
                 if (long.TryParse(refreshrate_text, out refresh_rate))
@@ -157,8 +155,8 @@ namespace SoapySpectrum.UI
                 }
             }
             ImGui.NewLine();
-            ImGui.Text($"RBW: {PerformFFT.RBW}Hz");
-            ImGui.Text($"VBW: {PerformFFT.VBW}Hz");
+            Theme.Text($"RBW: {PerformFFT.RBW}Hz", inputTheme);
+            Theme.Text($"VBW: {PerformFFT.VBW}Hz", inputTheme);
         }
     }
 }

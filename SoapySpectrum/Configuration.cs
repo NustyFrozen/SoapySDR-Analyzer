@@ -1,5 +1,6 @@
 ﻿using ImGuiNET;
 using MathNet.Numerics;
+using SoapySpectrum.Extentions;
 using System.Numerics;
 namespace SoapySpectrum
 {
@@ -24,7 +25,7 @@ namespace SoapySpectrum
 
         option_Size = new Vector2(Convert.ToInt16(mainWindow_Size.X * .2), Convert.ToInt16(mainWindow_Size.Y));
 
-        public static Dictionary<string, object> config = new Dictionary<string, object>();
+        public static ObservableDictionary<string, object> config = new ObservableDictionary<string, object>();
         public static Dictionary<float, float> calibrationData = new Dictionary<float, float>();
         public static bool hasCalibration = false;
         public static void loadCalibrationData()
@@ -44,8 +45,9 @@ namespace SoapySpectrum
             {
                 loadCalibrationData();
             }
-            Configuration.config.Add("freqStart", 80e6);
-            Configuration.config.Add("freqStop", 120e6);
+            Configuration.config.CollectionChanged += updateUIElementsOnConfigChanged;
+            Configuration.config.Add("freqStart", 930e6);
+            Configuration.config.Add("freqStop", 960e6);
 
             Configuration.config.Add("sampleRate", (double)20e6);
             Configuration.config["leakageSleep"] = 5;
@@ -55,7 +57,7 @@ namespace SoapySpectrum
             Configuration.config.Add("graph_startDB", (double)-136);
             Configuration.config.Add("graph_endDB", (double)0);
             Configuration.config.Add("graph_OffsetDB", (double)0);
-            Configuration.config.Add("graph_RefLevel", (double)0);
+            Configuration.config.Add("graph_RefLevel", (double)-40);
             Func<int, double[]> windowFunction = length => Window.Hamming(length);
             Func<int, double[]> windowFunction_Periodic = length => Window.HammingPeriodic(length);
             Configuration.config.Add("FFT_WINDOW", windowFunction);
@@ -64,6 +66,54 @@ namespace SoapySpectrum
             Configuration.config["FFT_segments"] = 13;
             Configuration.config["FFT_overlap"] = 0.5;
             Configuration.config["refreshRate"] = (long)0;
+            Configuration.config["automaticLeveling"] = false;
+            Configuration.config["scalePerDivision"] = 20;
+        }
+
+        private static void updateUIElementsOnConfigChanged(object? sender, keyOfChangedValueEventArgs e)
+        {
+            switch (e.key)
+            {
+                case "freqStart":
+
+                    break;
+                case "freqStop":
+
+                    break;
+                case "sampleRate":
+
+                    break;
+                case "leakageSleep":
+
+                    break;
+                case "IQCorrection":
+
+                    break;
+                case "graph_startDB":
+
+                    break;
+                case "graph_endDB":
+
+                    break;
+                case "graph_OffsetDB":
+
+                    break;
+                case "graph_RefLevel":
+
+                    break;
+                case "FFT_Size":
+
+                    break;
+                case "FFT_segments":
+
+                    break;
+                case "automaticLeveling":
+
+                    break;
+                case "scalePerDivision":
+
+                    break;
+            }
         }
     }
 }

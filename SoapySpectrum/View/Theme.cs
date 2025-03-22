@@ -1,11 +1,10 @@
 ﻿using ImGuiNET;
 using SoapySpectrum.Extentions;
-using SoapySpectrum.Extentions.Design_imGUINET;
 using System.Numerics;
 
 namespace SoapySpectrum.UI
 {
-    internal class ImGuiTheme
+    internal class Theme
     {
         struct colFrame
         {
@@ -99,6 +98,13 @@ namespace SoapySpectrum.UI
                 speed = speed,
                 type = colID
             });
+        }
+        public static void Text(string text, glowingInputConfigurator cfg)
+        {
+            //a better text method that centers
+            var size = cfg.size.X / 2 - ImGui.CalcTextSize(text).X / 2;
+            ImGui.SetCursorPosX(size);
+            ImGui.Text(text);
         }
         public static bool button(string label, ButtonConfigurator cfg)
         {

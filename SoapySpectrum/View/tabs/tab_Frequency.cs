@@ -1,26 +1,26 @@
-﻿using ClickableTransparentOverlay;
-using Design_imGUINET;
-using ImGuiNET;
+﻿using Design_imGUINET;
 using Pothosware.SoapySDR;
 
 namespace SoapySpectrum.UI
 {
-    public partial class UI : Overlay
+    public static class tab_Frequency
     {
-        static string display_FreqStart = "930M", display_FreqStop = "960M";
+        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+
+        public static string display_FreqStart = "930M", display_FreqStop = "960M";
         static string display_center = "945M", display_span = "30M";
-        public void renderFrequency()
+        public static void renderFrequency()
         {
             var childSize = Configuration.option_Size;
-            var inputTheme = ImGuiTheme.getTextTheme();
+            var inputTheme = Theme.getTextTheme();
 
-            ImGui.Text($"Center Frequency:");
+            Theme.Text($"Center Frequency", inputTheme);
             inputTheme.prefix = $"Center Frequency";
-            bool changedFrequencyBySpan = ImGuiTheme.glowingInput("frequency_center", ref display_center, inputTheme);
+            bool changedFrequencyBySpan = Theme.glowingInput("frequency_center", ref display_center, inputTheme);
             bool changedFrequencyByBand = false;
-            ImGui.Text($"Span:");
+            Theme.Text($"Span", inputTheme);
             inputTheme.prefix = $"span";
-            changedFrequencyBySpan |= ImGuiTheme.glowingInput("frequency_span", ref display_span, inputTheme);
+            changedFrequencyBySpan |= Theme.glowingInput("frequency_span", ref display_span, inputTheme);
             if (changedFrequencyBySpan)
             {
                 double center_frequency = 0, span = 0;
@@ -32,19 +32,19 @@ namespace SoapySpectrum.UI
                 }
             }
 
-            ImGui.Text($"{FontAwesome5.ArrowLeft} Left Band:");
+            Theme.Text($"{FontAwesome5.ArrowLeft} Left Band", inputTheme);
             inputTheme.prefix = $" start Frequency";
-            changedFrequencyByBand |= ImGuiTheme.glowingInput("InputSelectortext", ref display_FreqStart, inputTheme);
-            ImGui.Text($"{FontAwesome5.ArrowRight} Right Band:");
+            changedFrequencyByBand |= Theme.glowingInput("InputSelectortext", ref display_FreqStart, inputTheme);
+            Theme.Text($"{FontAwesome5.ArrowRight} Right Band", inputTheme);
             inputTheme.prefix = "End Frequency";
-            changedFrequencyByBand |= ImGuiTheme.glowingInput("InputSelectortext2", ref display_FreqStop, inputTheme);
+            changedFrequencyByBand |= Theme.glowingInput("InputSelectortext2", ref display_FreqStop, inputTheme);
 
             if (changedFrequencyByBand)
             {
                 double freqStart, freqStop;
                 if (TryFormatFreq(display_FreqStart, out freqStart) && TryFormatFreq(display_FreqStop, out freqStop))
                 {
-                    if (freqStart >= freqStop || !frequencyRange[(int)selectedChannel].ToList().Exists(x => x.Minimum <= freqStart && x.Maximum >= freqStop))
+                    if (freqStart >= freqStop || !tab_Device.frequencyRange[(int)tab_Device.selectedChannel].ToList().Exists(x => x.Minimum <= freqStart && x.Maximum >= freqStop))
                     {
                         Logger.Error("$ Start or End Frequency is not valid");
                     }

@@ -2,7 +2,6 @@
 using Design_imGUINET;
 using ImGuiNET;
 using SoapySpectrum.Extentions;
-using SoapySpectrum.Extentions.Design_imGUINET;
 using System.Numerics;
 namespace SoapySpectrum.UI
 {
@@ -10,7 +9,7 @@ namespace SoapySpectrum.UI
     {
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
         static int tabID = 0;
-        string[] availableTabs = new string[] { $"\uf2db Device", $"\ue473 Amplitude", $"\uf1fe BW", $"{FontAwesome5.WaveSquare} Frequency", $"\uf3c5 Trace & Marker", $"\uf085 Calibration" };
+        string[] availableTabs = new string[] { $"\uf2db Device", $"\ue473 Amplitude", $"\uf1fe BW", $"{FontAwesome5.WaveSquare} Frequency", $"{FontAwesome5.Marker} Markers", $"\uf3c5 Trace", $"\uf085 Calibration" };
         bool visble = true;
         public UI() : base(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height)
         {
@@ -73,7 +72,7 @@ namespace SoapySpectrum.UI
         protected unsafe override void Render()
         {
             Thread.Sleep(1);
-            var inputTheme = ImGuiTheme.getTextTheme();
+            var inputTheme = Theme.getTextTheme();
             if (Imports.GetAsyncKeyState(Keys.Insert))
             {
                 Thread.Sleep(200);
@@ -82,50 +81,53 @@ namespace SoapySpectrum.UI
             if (!visble) return;
             if (!initializedResources)
             {
-                setupSoapyEnvironment();
-                refreshDevices();
-                waitForMouseClick.Start();
-                markerMoveKeys.Start();
-                initializeTraces();
+                tab_Device.setupSoapyEnvironment();
+                tab_Device.refreshDevices();
+                Graph.waitForMouseClick.Start();
+                tab_Marker.markerMoveKeys.Start();
+                Graph.initializeGraphElements();
                 loadResources();
                 ImGui.SetNextWindowPos(Configuration.mainWindow_Pos);
                 ImGui.SetNextWindowSize(Configuration.mainWindow_Size);
                 initializedResources = true;
             }
             ImGui.Begin("Spectrum Analyzer", Configuration.mainWindow_flags);
-            ImGuiTheme.drawExitButton(15, Color.Gray, Color.White);
+            Theme.drawExitButton(15, Color.Gray, Color.White);
 
             ImGui.BeginChild("Spectrum Graph", Configuration.graph_Size);
-            drawGraph();
+            Graph.drawGraph();
             ImGui.EndChild();
 
 
             ImGui.SetCursorPos(new Vector2(Configuration.graph_Size.X + 60 * Configuration.scale_Size.X, 10));
             ImGui.BeginChild("Spectrum Options", Configuration.option_Size);
-            ImGuiTheme.newLine();
-            ImGuiTheme.newLine();
+            Theme.newLine();
+            Theme.newLine();
             inputTheme.prefix = "RBW";
-            ImGuiTheme.glowingCombo("InputSelectortext4", ref tabID, availableTabs, inputTheme);
-            ImGuiTheme.newLine();
+            Theme.glowingCombo("InputSelectortext4", ref tabID, availableTabs, inputTheme);
+            Theme.newLine();
             switch (tabID)
             {
                 case 0:
-                    renderDevice();
+                    tab_Device.renderDevice();
                     break;
                 case 1:
-                    renderAmplitude();
+                    tab_Amplitude.renderAmplitude();
                     break;
                 case 2:
-                    renderVideo();
+                    tab_Video.renderVideo();
                     break;
                 case 3:
-                    renderFrequency();
+                    tab_Frequency.renderFrequency();
                     break;
                 case 4:
-                    renderTrace();
+                    tab_Marker.renderMarker();
                     break;
                 case 5:
-                    renderCalibration();
+                    tab_Trace.renderTrace();
+                    break;
+                case 6:
+                    tab_Cal.renderCalibration();
                     break;
             }
             ImGui.EndChild();

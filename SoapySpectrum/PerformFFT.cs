@@ -1,5 +1,6 @@
 ﻿using FFTW.NET;
 using Pothosware.SoapySDR;
+using SoapySpectrum.UI;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Numerics;
@@ -16,21 +17,21 @@ namespace SoapySpectrum
         static Device device;
         public static void beginFFT()
         {
-            device = UI.UI.sdr_device;
+            device = tab_Device.sdr_device;
             isRunning = true;
             new Thread(() =>
             {
 
                 FFT_POOL();
             })
-            { Priority = ThreadPriority.AboveNormal }.Start();
+            { }.Start();
 
             new Thread(() =>
             {
 
                 IQSampler(device);
             })
-            { Priority = ThreadPriority.Highest }.Start();
+            { }.Start();
 
 
 
@@ -109,7 +110,7 @@ namespace SoapySpectrum
                 //normalization for different combination of segmentSize and fft length and sample rate
                 psd[0][k] /= (float)(segmentLength * normalizationFactor_regular * sample_rate * numSegments);
                 //converting to dbm
-                psd[0][k] = (float)(10 * Math.Log10(psd[0][k])) + 90;
+                psd[0][k] = (float)(10 * Math.Log10(psd[0][k]));
                 //frequency
                 float frequency = 0;
                 if (k < (signal.Length / 2.0))
@@ -171,9 +172,6 @@ namespace SoapySpectrum
 
                 Thread.Sleep(20);
             }
-            FFTQueue.Clear();
-            resetData = true;
-            UI.UI.clearPlotData();
             resetData = true;
         }
         static void correctIQ(Complex[] samples)
@@ -205,13 +203,12 @@ namespace SoapySpectrum
                 int numSegments = (fft_size - overlap) / stepSize; // Number of segments
 
                 float[][] psd = WelchPSD(fft_samples, segmentLength, overlap, (float)next.Item3, (float)next.Item1);
-                Logger.Debug("Yes");
                 if (resetData)
                 {
-                    resetData = false;
+
                     continue;
                 }
-                UI.UI.updateData(psd);
+                Graph.updateData(psd);
             }
         }
         static unsafe void IQSampler(Device sdr)
@@ -238,7 +235,7 @@ namespace SoapySpectrum
                 }
                 bool noHopping = (double)Configuration.config["freqStop"] - (double)Configuration.config["freqStart"] <= sample_rate;
                 for (double f_center = (double)Configuration.config["freqStart"] + sample_rate / 2;
-                    f_center < (double)Configuration.config["freqStop"] || noHopping;
+                    f_center - sample_rate / 2 < (double)Configuration.config["freqStop"] || noHopping;
                     f_center += sample_rate)
                 {
 
@@ -248,7 +245,7 @@ namespace SoapySpectrum
                         frequency = f_center;
                         sdr.SetFrequency(Direction.Rx, 0, frequency);
                         sw.Restart();
-                        while (sw.ElapsedMilliseconds < (int)Configuration.config["leakageSleep"])
+                        while (sw.ElapsedMilliseconds < (int)Configuration.config["leakageSleep"] && isRunning)
                         {
                             //reading while sleeping so no buffer overflow will happen
                             unsafe
@@ -273,7 +270,7 @@ namespace SoapySpectrum
                     Complex[] samples = new Complex[FFTSIZE];
                     int totalSamples = 0;
 
-                    while (totalSamples < FFTSIZE)
+                    while (totalSamples < FFTSIZE && isRunning)
                     {
                         unsafe
                         {
@@ -285,15 +282,16 @@ namespace SoapySpectrum
 
                                 if (errorCode is not ErrorCode.None || results is null)
                                 {
+#if DEBUG_VERBOSE
                                     Logger.Error($"Readstream Error Code {errorCode}");
-
+#endif
 
                                     continue;
                                 }
                             }
                         }
 
-#if DEBUG
+#if DEBUG_VERBOSE
                         Logger.Debug($"Readstream samples returned {results.NumSamples} time {results.TimeNs},Flags {results.Flags}");
 #endif
 
@@ -320,7 +318,7 @@ namespace SoapySpectrum
                         break;
                 }
                 sw.Restart();
-                while (sw.ElapsedMilliseconds < (long)Configuration.config["refreshRate"])
+                while ((sw.ElapsedMilliseconds < (long)Configuration.config["refreshRate"] | resetData) && isRunning)
                 {
                     //reading while sleeping so no buffer overflow will happen
                     unsafe
@@ -330,10 +328,19 @@ namespace SoapySpectrum
                             var errorCode = stream.Read((nint)bufferPtr, (uint)MTU, 10_000_000, out results);
                             if (errorCode is not ErrorCode.None || results is null)
                             {
+#if DEBUG_VERBOSE
                                 Logger.Error($"Readstream Error Code {errorCode}");
+#endif
                                 continue;
                             }
                         }
+                    }
+                    if (resetData && FFTQueue.Count == 0)
+                    {
+                        resetData = false;
+                        Graph.clearPlotData();
+                        break;
+
                     }
                     Thread.Sleep(0);
                 }
