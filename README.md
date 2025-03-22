@@ -8,18 +8,13 @@ since known SA solutions in the market are quite expensive
 
 ## current Features
 Swept SA Using Welch's method with:
-<br>
 - Device - SDR selection, sample rate, gain, LO sleep, IQ correction, Read sensor data
-<br>
 - Amplitude - offset, leveling, graph range settings
-<br>
 - Frequency - span, center, start, end
-<br>
 - marker - 9 markers, delta, peaksearch, band power, mk -> mk diff
-<br>
 - trace - 6 traces, Modes active view clear, Status normal MaxHold minHold Average
-<br>
 - Video - FFT-Window, FFT-length, FFT-segments, FFT-overlap, refresh rate, RBW, VBW 
+- Calibration - calibrate sdr gain elements and the sdr itself using  external signal source
 
 ### TODO features
 real time SA & trigger to visualize and see bursts like signals
