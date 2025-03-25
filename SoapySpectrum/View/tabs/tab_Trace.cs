@@ -54,9 +54,10 @@ namespace SoapySpectrum.UI
             lock (traces[traceID].plot)
                 return traces[traceID].plot.MinBy(x => Math.Abs((long)x.Key)).Value;
         }
-        public static KeyValuePair<float, float> findMaxHoldRange(SortedDictionary<float, float> range, float start, float stop)
+        public static KeyValuePair<float, float> findMaxHoldRange(SortedDictionary<float, float> table, float start, float stop)
         {
             KeyValuePair<float, float> results = new KeyValuePair<float, float>(0, -1000);
+            var range = table.ToList();
             foreach (KeyValuePair<float, float> sample in range)
                 if (sample.Value > results.Value && sample.Key >= start && sample.Key <= stop)
                     results = sample;

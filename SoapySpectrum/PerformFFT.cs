@@ -1,9 +1,12 @@
-﻿using FFTW.NET;
+﻿using ClickableTransparentOverlay;
+using FFTW.NET;
+using MathNet.Numerics;
 using Pothosware.SoapySDR;
 using SoapySpectrum.UI;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace SoapySpectrum
@@ -15,6 +18,7 @@ namespace SoapySpectrum
         //FFT Queue
         static ConcurrentQueue<Tuple<double, Complex[], double>> FFTQueue = new ConcurrentQueue<Tuple<double, Complex[], double>>();
         static Device device;
+        static int FFT_size = 4096;
         public static void beginFFT()
         {
             device = tab_Device.sdr_device;
@@ -24,7 +28,7 @@ namespace SoapySpectrum
 
                 FFT_POOL();
             })
-            { }.Start();
+            { Priority = ThreadPriority.Highest }.Start();
 
             new Thread(() =>
             {
@@ -39,12 +43,7 @@ namespace SoapySpectrum
         static double[] getWindowFunction(int size)
         {
             return ((Func<int, double[]>)
-                Configuration.config["FFT_WINDOW"])(size);
-        }
-        static double[] getPeriodicWindowFunction(int size)
-        {
-            return ((Func<int, double[]>)
-                Configuration.config["FFT_WINDOW_PERIODIC"])(size);
+                Configuration.config[Configuration.saVar.fftWindow])(size);
         }
         static double CalculateFrequency(double index, double Fs, double N, double f_center)
         {
@@ -62,66 +61,72 @@ namespace SoapySpectrum
         //CalculateFrequency(i, next.Item3, fft_size, next.Item1);
         static float[][] WelchPSD(Complex[] signal, int segmentLength, int overlap, float sample_rate, float center)
         {
-            int stepSize = segmentLength - overlap;
-            int numSegments = (signal.Length - overlap) / stepSize;
+            int numSegments = (signal.Length - overlap) / (segmentLength - overlap);
             float[][] psd = new float[2][];
             psd[0] = new float[signal.Length];
             psd[1] = new float[signal.Length];
 
-
-            //calculating normalizationFactor for last segment (non periodic)
+            // Calculate normalization factor for window (Hanning, Hamming, etc.)
             double[] window = getWindowFunction(segmentLength);
             double normalizationFactor_regular = 0.0;
             for (int i = 0; i < segmentLength; i++)
                 normalizationFactor_regular += window[i] * window[i];
-            normalizationFactor_regular /= segmentLength;
+
             for (int seg = 0; seg < numSegments; seg++)
             {
-
-                Complex[] segment = new Complex[segmentLength];
+                int start = seg * (segmentLength - overlap);
+                var segment = signal.Skip(start).Take(segmentLength).ToArray();
 
                 // Apply window to segment
                 for (int i = 0; i < segmentLength; i++)
-                    segment[i] = signal[seg * stepSize + i] * window[i];
-
+                    segment[i] *= window[i];
 
                 var output = new Complex[signal.Length];
-                //adds zero padding if fftsize > segment length
                 var input = new Complex[signal.Length];
                 Array.Copy(segment, input, segmentLength);
 
+                // Perform FFT
                 using (var pinIn = new PinnedArray<Complex>(input))
                 using (var pinOut = new PinnedArray<Complex>(output))
                 {
-                    DFT.FFT(pinIn, pinOut);
+                    DFT.FFT(pinIn, pinOut);  // Perform FFT here
                 }
 
                 segment = output;
 
                 // Compute periodogram (magnitude squared)
                 for (int k = 0; k < signal.Length; k++)
-                    psd[0][k] += (float)(segment[k].Magnitude * segment[k].Magnitude);
-
+                {
+                    psd[0][k] += (float)((output[k].MagnitudeSquared()) / (normalizationFactor_regular * segmentLength)); // Normalize by window and segment length
+                }
             }
 
-            // Average over segments
+            // Average over segments and convert to dBm if needed
+            var calibration = 0.0f;
+            if (tab_Cal.current_cal.Count > 0)
+            {
+                calibration = tab_Cal.current_cal.OrderBy(x => Math.Abs(x.frequency - center)).First().results;
+            }
+
+            // Convert to dBm
             for (int k = 0; k < signal.Length; k++)
             {
-                //normalization for different combination of segmentSize and fft length and sample rate
-                psd[0][k] /= (float)(segmentLength * normalizationFactor_regular * sample_rate * numSegments);
-                //converting to dbm
-                psd[0][k] = (float)(10 * Math.Log10(psd[0][k]));
-                //frequency
+                // Convert the power to dBm (if applicable)
+                psd[0][k] /= numSegments;
+                psd[0][k] = (float)(10 * Math.Log10(psd[0][k])) + calibration;
+
+                // Calculate frequency for each bin
                 float frequency = 0;
                 if (k < (signal.Length / 2.0))
-
+                {
                     // Positive frequencies with center frequency offset
                     frequency = ((k * sample_rate) / (float)signal.Length) + center;
-
+                }
                 else
-
+                {
                     // Negative frequencies with center frequency offset
                     frequency = (((k - signal.Length) * sample_rate) / (float)signal.Length) + center;
+                }
 
                 psd[1][k] = frequency;
             }
@@ -129,17 +134,22 @@ namespace SoapySpectrum
             return psd;
         }
 
+
+
         //https://github.com/ghostop14/gr-correctiq
         static double ratio = 1e-05f;
         static double avg_real = 0.0, avg_img = 0.0;
-        public static double RBW, VBW, ENBW;
+        public static double RBW, VBW, ENBW,EN;
         static void calculateRBWVBW()
         {
-
-            double EN = 0;
             double BW = 0;
-            int FFT_size = (int)Configuration.config["FFT_Size"];
-            double[] window = getPeriodicWindowFunction(FFT_size);
+            if (0 == (int)Configuration.config[Configuration.saVar.fftSize])
+            {
+                //auto
+                calculateAutoFFTSize();
+            } else
+            FFT_size = (int)Configuration.config[Configuration.saVar.fftSize];
+            double[] window = getWindowFunction(FFT_size);
             for (int j = 0; j < window.Length; j++)
             {
                 EN += window[j] * window[j];
@@ -147,11 +157,11 @@ namespace SoapySpectrum
             }
             BW *= BW;
             ENBW = (EN / BW) * (double)FFT_size;
-            var sample_rate = (double)Configuration.config["sampleRate"];
-            double overlap = (double)Configuration.config["FFT_overlap"];
+            var sample_rate = (double)Configuration.config[Configuration.saVar.sampleRate];
+            double overlap = (double)Configuration.config[Configuration.saVar.fftOverlap];
             var neff = FFT_size / (1 - overlap);
             RBW = ENBW * sample_rate / neff;
-            int segmentLength = Math.Max(1, FFT_size / (int)Configuration.config["FFT_segments"]);
+            int segmentLength = Math.Max(1, FFT_size / (int)Configuration.config[Configuration.saVar.fftSegment]);
             double stepSize = segmentLength - overlap;
             double numSegments = (FFT_size - overlap) / stepSize;
             VBW = RBW / Math.Sqrt(numSegments);
@@ -167,7 +177,7 @@ namespace SoapySpectrum
             //anything that affects the bin width,frequencies,welching method,etc... can and will affect the dc bias position on the IQ chart therfore we need to reset it
             //in addition we might aswell reset the plot since the functions that calls it will also change the bin spacing and frequency positioning which might not be in our span
             //man i've been coding this spectrum for so long it hurts, but it is fun!
-            while (!((double)Configuration.config["sampleRate"]).Equals(device.GetSampleRate(Direction.Rx, 0)))
+            while (!((double)Configuration.config[Configuration.saVar.sampleRate]).Equals(device.GetSampleRate(Direction.Rx, 0)))
             {
 
                 Thread.Sleep(20);
@@ -184,6 +194,11 @@ namespace SoapySpectrum
                 samples[i] = new Complex(samples[i].Real - avg_real, samples[i].Imaginary - avg_img);
             }
         }
+        static void calculateAutoFFTSize()
+        {
+            var hops= ((double)Configuration.config[Configuration.saVar.freqStop] - (double)Configuration.config[Configuration.saVar.freqStart]) / ((double)Configuration.config[Configuration.saVar.sampleRate]/2);
+            FFT_size = Array.ConvertAll(tab_Video.FFTLength.Skip(1).ToArray(),s=> int.Parse(s)).OrderBy(i=>i).First(x=>x / (float)(int)Configuration.config[Configuration.saVar.fftSegment] > Configuration.graphSize.X/hops);
+        }
         static void FFT_POOL()
         {
 
@@ -197,12 +212,13 @@ namespace SoapySpectrum
                 }
                 var fft_samples = next.Item2;
                 int fft_size = next.Item2.Length;
-                int segmentLength = Math.Max(1, fft_size / (int)Configuration.config["FFT_segments"]);
-                int overlap = (int)(segmentLength * (double)Configuration.config["FFT_overlap"]);
+                int segmentLength = Math.Max(1, fft_size / (int)Configuration.config[Configuration.saVar.fftSegment]);
+                int overlap = (int)(segmentLength * (double)Configuration.config[Configuration.saVar.fftOverlap]);
                 int stepSize = segmentLength - overlap; // Step size
                 int numSegments = (fft_size - overlap) / stepSize; // Number of segments
 
                 float[][] psd = WelchPSD(fft_samples, segmentLength, overlap, (float)next.Item3, (float)next.Item1);
+
                 if (resetData)
                 {
 
@@ -213,10 +229,10 @@ namespace SoapySpectrum
         }
         static unsafe void IQSampler(Device sdr)
         {
-            var sample_rate = (double)Configuration.config["sampleRate"];
+            var sample_rate = (double)Configuration.config[Configuration.saVar.sampleRate];
             sdr.SetSampleRate(Direction.Rx, 0, sample_rate);
             sdr.SetGain(Direction.Rx, 0, 0);
-            double frequency = (double)Configuration.config["freqStart"] + sample_rate / 2;
+            double frequency = (double)Configuration.config[Configuration.saVar.freqStart] + sample_rate / 2;
             sdr.SetFrequency(Direction.Rx, 0, frequency);
             var stream = sdr.SetupRxStream(Pothosware.SoapySDR.StreamFormat.ComplexFloat32, new uint[] { 0 }, ""); ;
             stream.Activate();
@@ -228,14 +244,14 @@ namespace SoapySpectrum
             Stopwatch sw = new Stopwatch();
             while (isRunning)
             {
-                if (sample_rate != (double)Configuration.config["sampleRate"])
+                if (sample_rate != (double)Configuration.config[Configuration.saVar.sampleRate])
                 {
-                    sample_rate = (double)Configuration.config["sampleRate"];
+                    sample_rate = (double)Configuration.config[Configuration.saVar.sampleRate];
                     sdr.SetSampleRate(Direction.Rx, 0, sample_rate);
                 }
-                bool noHopping = (double)Configuration.config["freqStop"] - (double)Configuration.config["freqStart"] <= sample_rate;
-                for (double f_center = (double)Configuration.config["freqStart"] + sample_rate / 2;
-                    f_center - sample_rate / 2 < (double)Configuration.config["freqStop"] || noHopping;
+                bool noHopping = (double)Configuration.config[Configuration.saVar.freqStop] - (double)Configuration.config[Configuration.saVar.freqStart] <= sample_rate;
+                for (double f_center = (double)Configuration.config[Configuration.saVar.freqStart] + sample_rate / 2;
+                    f_center - sample_rate / 2 < (double)Configuration.config[Configuration.saVar.freqStop] || noHopping;
                     f_center += sample_rate)
                 {
 
@@ -245,7 +261,7 @@ namespace SoapySpectrum
                         frequency = f_center;
                         sdr.SetFrequency(Direction.Rx, 0, frequency);
                         sw.Restart();
-                        while (sw.ElapsedMilliseconds < (int)Configuration.config["leakageSleep"] && isRunning)
+                        while (sw.ElapsedMilliseconds < (int)Configuration.config[Configuration.saVar.leakageSleep] && isRunning)
                         {
                             //reading while sleeping so no buffer overflow will happen
                             unsafe
@@ -266,7 +282,7 @@ namespace SoapySpectrum
                     }
                     //fill up the iqbuffer to have enough samples for FFT
 
-                    var FFTSIZE = (int)Configuration.config["FFT_Size"];
+                    var FFTSIZE = FFT_size;
                     Complex[] samples = new Complex[FFTSIZE];
                     int totalSamples = 0;
 
@@ -310,7 +326,7 @@ namespace SoapySpectrum
                     if (FFTQueue.Any(x => x.Item1 == frequency))
                         continue;
                     var IQCorrectionSamples = samples.Take(FFTSIZE).ToArray();
-                    if ((bool)Configuration.config["IQCorrection"])
+                    if ((bool)Configuration.config[Configuration.saVar.iqCorrection])
                         correctIQ(IQCorrectionSamples);
                     FFTQueue.Enqueue(new Tuple<double, Complex[], double>(frequency, IQCorrectionSamples, sample_rate));
 
@@ -318,7 +334,7 @@ namespace SoapySpectrum
                         break;
                 }
                 sw.Restart();
-                while ((sw.ElapsedMilliseconds < (long)Configuration.config["refreshRate"] | resetData) && isRunning)
+                while ((sw.ElapsedMilliseconds < (long)Configuration.config[Configuration.saVar.refreshRate] | resetData) && isRunning)
                 {
                     //reading while sleeping so no buffer overflow will happen
                     unsafe

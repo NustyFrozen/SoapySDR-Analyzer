@@ -183,7 +183,7 @@ namespace SoapySpectrum.UI
 
             if ((Theme.glowingCombo("sample_rate_Tab", ref selectedSampleRate, sample_rates_choice.ToArray(), inputTheme)))
             {
-                Configuration.config["sampleRate"] = Convert.ToDouble(sample_rates_choice[selectedSampleRate]);
+                Configuration.config[Configuration.saVar.sampleRate] = Convert.ToDouble(sample_rates_choice[selectedSampleRate]);
                 PerformFFT.resetIQFilter();
             }
             Theme.Text("Custom Sample Rates", inputTheme);
@@ -206,7 +206,7 @@ namespace SoapySpectrum.UI
                             {
                                 if (rateRange.Minimum <= customSampleRate && rateRange.Maximum >= customSampleRate)
                                 {
-                                    Configuration.config["sampleRate"] = Convert.ToDouble(customSampleRate);
+                                    Configuration.config[Configuration.saVar.sampleRate] = Convert.ToDouble(customSampleRate);
                                     PerformFFT.resetIQFilter();
                                 }
                                 else
@@ -230,7 +230,7 @@ namespace SoapySpectrum.UI
                             customSampleRate = Math.Round(customSampleRate / rateRange.Step) * rateRange.Step;
                             if (rateRange.Minimum <= customSampleRate && rateRange.Maximum >= customSampleRate)
                             {
-                                Configuration.config["sampleRate"] = Convert.ToDouble(customSampleRate);
+                                Configuration.config[Configuration.saVar.sampleRate] = Convert.ToDouble(customSampleRate);
                                 PerformFFT.resetIQFilter();
                             }
                             else
@@ -304,11 +304,11 @@ namespace SoapySpectrum.UI
             Theme.Text("LO/PLL Leakage sleep", inputTheme);
             if (Theme.slider("Leakage", ref leakageSleep, sliderTheme))
             {
-                Configuration.config["leakageSleep"] = (int)(leakageSleep * 100);
-                Logger.Debug(Configuration.config["leakageSleep"]);
+                Configuration.config[Configuration.saVar.leakageSleep] = (int)(leakageSleep * 100);
+                Logger.Debug(Configuration.config[Configuration.saVar.leakageSleep]);
             }
             if (ImGui.Checkbox("IQ correction", ref correctIQ))
-                Configuration.config["IQCorrection"] = correctIQ;
+                Configuration.config[Configuration.saVar.iqCorrection] = correctIQ;
         }
     }
 }

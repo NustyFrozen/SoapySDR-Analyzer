@@ -87,20 +87,20 @@ namespace SoapySpectrum.UI
                 tab_Marker.markerMoveKeys.Start();
                 Graph.initializeGraphElements();
                 loadResources();
-                ImGui.SetNextWindowPos(Configuration.mainWindow_Pos);
-                ImGui.SetNextWindowSize(Configuration.mainWindow_Size);
+                ImGui.SetNextWindowPos(Configuration.mainWindowPos);
+                ImGui.SetNextWindowSize(Configuration.mainWindowSize);
                 initializedResources = true;
             }
             ImGui.Begin("Spectrum Analyzer", Configuration.mainWindow_flags);
             Theme.drawExitButton(15, Color.Gray, Color.White);
 
-            ImGui.BeginChild("Spectrum Graph", Configuration.graph_Size);
+            ImGui.BeginChild("Spectrum Graph", Configuration.graphSize);
             Graph.drawGraph();
             ImGui.EndChild();
 
 
-            ImGui.SetCursorPos(new Vector2(Configuration.graph_Size.X + 60 * Configuration.scale_Size.X, 10));
-            ImGui.BeginChild("Spectrum Options", Configuration.option_Size);
+            ImGui.SetCursorPos(new Vector2(Configuration.graphSize.X + 60 * Configuration.scaleSize.X, 10));
+            ImGui.BeginChild("Spectrum Options", Configuration.optionSize);
             Theme.newLine();
             Theme.newLine();
             inputTheme.prefix = "RBW";

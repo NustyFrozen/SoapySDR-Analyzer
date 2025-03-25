@@ -6,7 +6,7 @@ namespace SoapySpectrum.UI
     public static class tab_Amplitude
     {
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
-        static string display_Offset = "0", display_refLevel = "-40", display_startdB = "-138", display_stopdB = "0";
+        public static string displayOffset = "0", displayRefLevel = "-40", displayStartDB = "-138", displayStopDB = "0";
         public static int scalePerDivision = 20;
         public static bool automaticLeveling = false;
         public static void renderAmplitude()
@@ -14,15 +14,15 @@ namespace SoapySpectrum.UI
             var inputTheme = Theme.getTextTheme();
             Theme.Text($"Min Range (dBm)", inputTheme);
             inputTheme.prefix = $"Min Range";
-            if (Theme.glowingInput("min dB", ref display_startdB, inputTheme))
+            if (Theme.glowingInput("min dB", ref displayStartDB, inputTheme))
             {
                 double results;
 
-                if (double.TryParse(display_startdB, out results))
+                if (double.TryParse(displayStartDB, out results))
                 {
-                    if (results < (double)Configuration.config["graph_endDB"])
+                    if (results < (double)Configuration.config[Configuration.saVar.graphStopDB])
                     {
-                        Configuration.config["graph_startDB"] = results;
+                        Configuration.config[Configuration.saVar.graphStartDB] = results;
                     }
                 }
                 else
@@ -33,15 +33,15 @@ namespace SoapySpectrum.UI
 
             Theme.Text($"Max Range (dBm)", inputTheme);
             inputTheme.prefix = $"Max Range";
-            if (Theme.glowingInput("max dB", ref display_stopdB, inputTheme))
+            if (Theme.glowingInput("max dB", ref displayStopDB, inputTheme))
             {
                 double results;
 
-                if (double.TryParse(display_stopdB, out results))
+                if (double.TryParse(displayStopDB, out results))
                 {
-                    if (results > (double)Configuration.config["graph_startDB"])
+                    if (results > (double)Configuration.config[Configuration.saVar.graphStartDB])
                     {
-                        Configuration.config["graph_endDB"] = results;
+                        Configuration.config[Configuration.saVar.graphStopDB] = results;
                     }
                 }
                 else
@@ -51,12 +51,12 @@ namespace SoapySpectrum.UI
             }
 
             Theme.Text($"{FontAwesome5.Plus} Offset (dB)", inputTheme);
-            if (Theme.glowingInput("Amplitude Offset", ref display_Offset, inputTheme))
+            if (Theme.glowingInput("Amplitude Offset", ref displayOffset, inputTheme))
             {
                 double results;
-                if (double.TryParse(display_Offset, out results))
+                if (double.TryParse(displayOffset, out results))
                 {
-                    Configuration.config["graph_OffsetDB"] = results;
+                    Configuration.config[Configuration.saVar.graphOffsetDB] = results;
                 }
                 else
                 {
@@ -64,13 +64,18 @@ namespace SoapySpectrum.UI
                 }
             }
             Theme.newLine();
+            if(Theme.button("Auto Tune"))
+            {
+                var temp = Configuration.config;
+            }
+            Theme.newLine();
             Theme.Text($"{FontAwesome5.Plus} Ref Level (dB)", inputTheme);
-            if (Theme.glowingInput("Ref level", ref display_refLevel, inputTheme))
+            if (Theme.glowingInput("Ref level", ref displayRefLevel, inputTheme))
             {
                 double results;
-                if (double.TryParse(display_refLevel, out results))
+                if (double.TryParse(displayRefLevel, out results))
                 {
-                    Configuration.config["graph_RefLevel"] = results;
+                    Configuration.config[Configuration.saVar.graphRefLevel] = results;
                 }
                 else
                 {
@@ -80,7 +85,7 @@ namespace SoapySpectrum.UI
             Theme.newLine();
             if (ImGui.Checkbox("Auto Adjust", ref automaticLeveling))
             {
-                Configuration.config["automaticLeveling"] = automaticLeveling;
+                Configuration.config[Configuration.saVar.automaticLevel] = automaticLeveling;
             }
 
             Theme.newLine();
@@ -92,8 +97,9 @@ namespace SoapySpectrum.UI
                     scalePerDivision = 20;
                     Logger.Error("Invalid Scale per division, out of range (5-60)");
                 }
-                Configuration.config["scalePerDivision"] = scalePerDivision;
+                Configuration.config[Configuration.saVar.scalePerDivision] = scalePerDivision;
             }
+            
         }
     }
 }

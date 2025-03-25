@@ -9,9 +9,9 @@ namespace SoapySpectrum.UI
     {
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
         public static Stopwatch markerMoveKeys = new Stopwatch();
-        public static string[] markers_text = new string[] { "Marker 1", "Marker 2", "Marker 3", "Marker 4", "Marker 5", "Marker 6", "Marker 7", "Marker 8", "Marker 9" };
-        public static string[] marker_references;
-        public static string[] marker_source = new string[] { "trace" }.Concat(markers_text).ToArray();
+        public static string[] markersText = new string[] { "Marker 1", "Marker 2", "Marker 3", "Marker 4", "Marker 5", "Marker 6", "Marker 7", "Marker 8", "Marker 9" };
+        public static string[] markerReferences;
+        public static string[] markerSource = new string[] { "trace" }.Concat(markersText).ToArray();
         public static int selectedMarker = 0;
         public static marker[] markers = new marker[9];
 
@@ -19,28 +19,24 @@ namespace SoapySpectrum.UI
 
         public struct marker
         {
-            public int id;
-            public string bandPower_Span_str;
-            public double bandPowerSpan;
-            public int reference;
+           
             public marker()
             {
-                bandPower_Span_str = "5M";
+               
             }
+            public int id, reference;
             public string txtStatus;
             public bool active;
+            public double position, value;
+
             public int deltaReference;
             public bool delta;
-            public bool calculatingBandPower;
-            public bool bandPower;
-            public decimal bandPowerValue;
-            public double position;
-            public double value;
-            public double DeltaFreq;
-            public double DeltadB;
+            public double DeltaFreq, DeltadB;
 
-            public double freqLeft;
-            public double freqRight;
+            public bool bandPower;
+            public double bandPowerSpan = 5e6, bandPowerValue;
+            public string bandPower_Span_str = "5M";
+
         }
 
         public static void markerMoveNext(marker marker)
@@ -78,19 +74,17 @@ namespace SoapySpectrum.UI
 
         public static void markerSetDelta(int markerid)
         {
-            lock (tab_Trace.traces[markers[markerid].reference].plot) //could get updateData so we gotta lock it up
-            {
-                var nearest = tab_Trace.traces[markers[markerid].reference].plot.MinBy(x => Math.Abs((long)x.Key - markers[markerid].position));
-                markers[markerid].DeltaFreq = nearest.Key;
-                markers[markerid].DeltadB = nearest.Value;
-            }
+            
+                markers[markerid].DeltaFreq = markers[markerid].position;
+                markers[markerid].DeltadB = markers[markerid].value;
+            
         }
         public static float peakSearch(marker marker, float minimumFreq, float maxFreq)
         {
             float peak = 0;
             lock (tab_Trace.traces[marker.reference].plot) //could get updateData so we gotta lock it up
             {
-                peak = tab_Trace.traces[marker.reference].plot.Where(x => x.Key > minimumFreq && x.Key < maxFreq).MaxBy(entry => entry.Value).Key;
+                peak = tab_Trace.traces[marker.reference].plot.Where(x => x.Key >= minimumFreq && x.Key <= maxFreq).MaxBy(entry => entry.Value).Key;
             }
             return peak;
         }
@@ -98,12 +92,12 @@ namespace SoapySpectrum.UI
         {
             var inputTheme = Theme.getTextTheme();
             inputTheme.prefix = "Marker";
-            Theme.glowingCombo("marker_combo", ref selectedMarker, markers_text, inputTheme);
+            Theme.glowingCombo("marker_combo", ref selectedMarker, markersText, inputTheme);
             ImGui.Checkbox($"Enable Marker {selectedMarker + 1}", ref tab_Marker.markers[selectedMarker].active);
             if (tab_Marker.markers[selectedMarker].active)
             {
                 Theme.Text("Trace:", inputTheme);
-                Theme.glowingCombo("marker_reference", ref tab_Marker.markers[selectedMarker].reference, marker_references, inputTheme);
+                Theme.glowingCombo("marker_reference", ref tab_Marker.markers[selectedMarker].reference, markerReferences, inputTheme);
                 if (markerMoveKeys.ElapsedMilliseconds > 25)
                 {
                     if (Imports.GetAsyncKeyState(Keys.A))
@@ -114,26 +108,26 @@ namespace SoapySpectrum.UI
                 }
                 Theme.newLine();
                 Theme.Text("Source:", inputTheme);
-                Theme.glowingCombo("marker_delta_reference", ref markers[selectedMarker].deltaReference, marker_source, inputTheme);
+                Theme.glowingCombo("marker_delta_reference", ref markers[selectedMarker].deltaReference, markerSource, inputTheme);
                 Theme.newLine();
                 //In Case markers[selectedMarker] is enabled we show markers[selectedMarker] features
                 var buttonTheme = Theme.getButtonTheme();
                 buttonTheme.text = $"{Design_imGUINET.FontAwesome5.ArrowUp} Peak Search";
                 if (Theme.button("peakSearch", buttonTheme) || Imports.GetAsyncKeyState(Keys.Enter))
                 {
-                    markers[selectedMarker].position = peakSearch(markers[selectedMarker], (float)(double)Configuration.config["freqStart"], (float)(double)(Configuration.config["freqStop"]));
+                    markers[selectedMarker].position = peakSearch(markers[selectedMarker], (float)(double)Configuration.config[Configuration.saVar.freqStart], (float)(double)(Configuration.config[Configuration.saVar.freqStop]));
                 }
                 Theme.newLine();
                 buttonTheme.text = $"{Design_imGUINET.FontAwesome5.ArrowUp} Next Pk Right";
                 if (Theme.button("Next ", buttonTheme))
                 {
-                    markers[selectedMarker].position = peakSearch(markers[selectedMarker], (float)(double)markers[selectedMarker].position, (float)(double)(Configuration.config["freqStop"]));
+                    markers[selectedMarker].position = peakSearch(markers[selectedMarker], (float)(double)markers[selectedMarker].position, (float)(double)(Configuration.config[Configuration.saVar.freqStop]));
                 }
                 Theme.newLine();
                 buttonTheme.text = $"{Design_imGUINET.FontAwesome5.ArrowUp} Next Pk Left";
                 if (Theme.button("peakSearch", buttonTheme))
                 {
-                    markers[selectedMarker].position = peakSearch(markers[selectedMarker], (float)(double)Configuration.config["freqStart"], (float)(double)markers[selectedMarker].position);
+                    markers[selectedMarker].position = peakSearch(markers[selectedMarker], (float)(double)Configuration.config[Configuration.saVar.freqStart], (float)(double)markers[selectedMarker].position);
                 }
                 Theme.newLine();
                 buttonTheme.text = $"{Design_imGUINET.FontAwesome5.Mountain} Set Delta";

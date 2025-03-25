@@ -106,6 +106,17 @@ namespace SoapySpectrum.Extentions
             var value = (DecimalMath.DecimalEx.Pow(10, mehane));
             return value;
         }
+        public static double toDBm(this double mW)
+        {
+            var big = 10.0 * Math.Log10(mW);
+            return big;
+        }
+        public static double toMW(this double dB)
+        {
+            var mehane = (dB / 10.0);
+            var value = (Math.Pow(10, mehane));
+            return value;
+        }
     }
     public static class CollectionHelper
     {

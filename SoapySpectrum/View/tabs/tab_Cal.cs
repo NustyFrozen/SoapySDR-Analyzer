@@ -1,7 +1,9 @@
 ﻿using Design_imGUINET;
 using ImGuiNET;
+using Newtonsoft.Json;
 using Pothosware.SoapySDR;
 using SoapySpectrum.Extentions;
+using System.Runtime.CompilerServices;
 namespace SoapySpectrum.UI
 {
     public static class tab_Cal
@@ -10,9 +12,12 @@ namespace SoapySpectrum.UI
         public static float inputDB = -40;
         public static Dictionary<string, Tuple<bool, float, int>> cal_gain = new Dictionary<string, Tuple<bool, float, int>>();
         public static double freqStart = 900, freqStop = 1000, freqStep = 10;
-
+        
         public static string calibrationInfo = "";
         public static bool calibrating = false;
+        public static string[] calibrations;
+        public static int selectedCalibration = -1;
+        public static List<CalibrationPoint> current_cal = new List<CalibrationPoint>();
         public struct CalibrationPoint
         {
 
@@ -22,14 +27,24 @@ namespace SoapySpectrum.UI
             public float results;
         }
 
+        public static void loadCalibration(string name)
+        {
+            current_cal = JsonConvert.DeserializeObject<List<CalibrationPoint>>(File.ReadAllText(Path.Combine(Configuration.calibrationPath, $"{name}.cal")));
+        }
 
         public static void renderCalibration()
         {
+            Theme.Text($"Select Calibration");
+            if ((Theme.glowingCombo("sample_rate_Tab", ref selectedCalibration, calibrations, Theme.getTextTheme())))
+                loadCalibration(calibrations[selectedCalibration]);
+            
+
             if (calibrating)
                 goto calibrateData;
-            ImGui.Text($"{FontAwesome5.ArrowLeft} Cable Atten:");
+            Theme.Text($"Create Calibration");
             ImGui.InputFloat("input DB", ref inputDB);
             ImGui.Text($"Gain Elements");
+
             for (int i = 0; i < tab_Device.gains.Count(); i++)
             {
 
@@ -85,11 +100,9 @@ namespace SoapySpectrum.UI
         public static void beginCalibration()
         {
             //apply a stable fft
-            Func<int, double[]> noFunc = length => tab_Video.noWindowFunction(length);
-            Configuration.config["FFT_WINDOW"] = noFunc;
-            Configuration.config["FFT_Size"] = 1024;
-            Configuration.config["FFT_segments"] = 13;
-            Configuration.config["FFT_overlap"] = 0.5;
+            Configuration.config[Configuration.saVar.fftSize] = 4096;
+            Configuration.config[Configuration.saVar.fftSegment] = 20;
+            Configuration.config[Configuration.saVar.fftOverlap] = 0.5;
 
             List<CalibrationPoint> calibrationResults = new List<CalibrationPoint>();
             tab_Trace.traces[0].viewStatus = tab_Trace.traceViewStatus.active;
@@ -114,13 +127,13 @@ namespace SoapySpectrum.UI
                     var freqStop = (currentFreq * 1e6 + (1e6 / 2.0));
                     if (freqStart >= freqStop ||
                     !tab_Device.frequencyRange[0].ToList().Exists(x => x.Minimum <= freqStart && x.Maximum >= freqStop)
-                    || currentFreq > freqStop)
+                    || currentFreq > tab_Cal.freqStop)
                     {
                         Logger.Info("$Out Of Boundaries, finishing calibration");
                         break;
                     }
-                    Configuration.config["freqStart"] = freqStart;
-                    Configuration.config["freqStop"] = freqStop;
+                    Configuration.config[Configuration.saVar.freqStart] = freqStart;
+                    Configuration.config[Configuration.saVar.freqStop] = freqStop;
                     calibrationInfo = $"Please transmit {inputDB} at {currentFreq} and then press enter\n when you see the signal and the FFT is stable\n" +
                     $"\nFound\nFreq: {frequencyFound}\ndB:{currentdB}";
                     KeyValuePair<float, float> max;
@@ -133,7 +146,7 @@ namespace SoapySpectrum.UI
                     currentdB = max.Value;
                     if (Imports.GetAsyncKeyState(Keys.Enter))
                     {
-                        CalibrationPoint x = new CalibrationPoint() { frequency = currentFreq, results = currentdB };
+                        CalibrationPoint x = new CalibrationPoint() { frequency = currentFreq, results = inputDB - currentdB };
                         x.elementsData = new Dictionary<string, List<Tuple<float, float>>>();
 
                         //calibrate for gain elements
@@ -175,6 +188,7 @@ namespace SoapySpectrum.UI
                         {
                             Thread.Sleep(50);
                         }
+                        
                         Thread.Sleep(250);
 
                         //go to next frequency
@@ -183,6 +197,10 @@ namespace SoapySpectrum.UI
                         PerformFFT.resetIQFilter();
                         currentdB = -200.0f;
                         frequencyFound = 0;
+                    }
+                    if (Imports.GetAsyncKeyState(Keys.End))
+                    {
+                        break;
                     }
                 }
                 saveCalibrationData(calibrationResults);
@@ -196,12 +214,9 @@ namespace SoapySpectrum.UI
             data = data.Replace($",", "\n,").Replace("{", "\n{").Replace("}", "\n}");
             Logger.Info("Calibration Results:");
             Logger.Info(data);
-            File.WriteAllText($"{tab_Device.sdr_device.DriverKey}-{freqStart}-{freqStop}-{DateTime.Now.ToString("MM-dd-yyy")}.cal", data);
-        }
-        public static float calculateDBInput(float input, float results)
-        {
-            //example got -70 input -40 //Atten 8 db
-            return Math.Abs(results) - Math.Abs(input); // +30 DB
+            File.WriteAllText(Path.Combine(Configuration.calibrationPath,
+                $"{tab_Device.sdr_device.DriverKey}-{freqStart}-{freqStop}-{DateTime.Now.ToString("MM-dd-yyy")}.cal"),
+                data);
         }
     }
 }

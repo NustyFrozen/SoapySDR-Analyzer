@@ -22,7 +22,7 @@ namespace SoapySpectrum.UI
                 tab_Marker.markers[i].deltaReference = 0;
                 tab_Marker.markers[i].id = i;
             }
-            tab_Marker.marker_references = tab_Trace.Combotraces;
+            tab_Marker.markerReferences = tab_Trace.Combotraces;
             tab_Trace.traces[0].viewStatus = tab_Trace.traceViewStatus.active;
         }
         public static void clearPlotData()
@@ -104,40 +104,30 @@ namespace SoapySpectrum.UI
 
             double scale = freqStop - freqStart;
             double scale2 = freq - freqStart;
-            double scaledX = left + Configuration.graph_Size.X * (scale2 / scale);
+            double scaledX = left + Configuration.graphSize.X * (scale2 / scale);
             //endb = 0
 
 
             var scaledY = Extentions.Imports.Scale(dB, graph_startDB, graph_endDB, bottom, top);
             return new Vector2((float)scaledX, (float)scaledY);
         }
+        static Thread calculateBandPowerThread;
         public static void calculateBandPower(tab_Marker.marker marker, List<float> dBArray)
         {
-            /*
-            calculating band power require to change db values to watt and calculate with high significant digits (in this case decimal 26-27~ significant)
-            and since its very big numbers it takes a lot of time to calculate log and pow so we use a different thread to not make the renderer stuck
-            and calculate less often
-            this method opens at most 3 more threads (as many as the amount of tab_Trace.traces)
-            */
-            if (marker.calculatingBandPower) return; //Already in calculations return
-            marker.calculatingBandPower = true;
-            new Thread(() =>
+            if(calculateBandPowerThread is not null)
+            if (calculateBandPowerThread.IsAlive) return; //Already in calculations return
+            calculateBandPowerThread = new Thread(() =>
             {
-                decimal tempMarkerBandPowerDecimal = 0;
+                double tempMarkerBandPowerDecimal = 0;
                 foreach (float b in dBArray)
                 {
-                    tempMarkerBandPowerDecimal = tempMarkerBandPowerDecimal + ((decimal)b).toMW();
-                    Thread.Sleep(1); //this thread is not important, telling system to focus more on stuff like rendering
+                    tempMarkerBandPowerDecimal += ((double)b).toMW();
                 }
-                if (tempMarkerBandPowerDecimal == 0) //not enough values in dbArray --> log(0) --> overflow -inf
-                {
-                    marker.calculatingBandPower = false;
-                    return;
-                }
-                marker.bandPowerValue = tempMarkerBandPowerDecimal.toDBm();
-                marker.calculatingBandPower = false; //allowing to recalculate that trace
+                if (tempMarkerBandPowerDecimal != 0) //not enough values in dbArray --> log(0) --> overflow -inf
+                    tab_Marker.markers[marker.id].bandPowerValue = tempMarkerBandPowerDecimal.toDBm();
             })
-            { Priority = ThreadPriority.Lowest }.Start();
+            { Priority = ThreadPriority.Lowest };
+            calculateBandPowerThread.Start();
         }
         public static Stopwatch waitForMouseClick = new Stopwatch();
 
@@ -145,23 +135,23 @@ namespace SoapySpectrum.UI
         {
             #region Canvas_Data
             var draw = ImGui.GetForegroundDrawList();
-            var dbOffset = (double)Configuration.config["graph_OffsetDB"];
-            var refLevel = (double)Configuration.config["graph_RefLevel"];
-            var positionOffset = new Vector2(50 * Configuration.scale_Size.X, 10 * Configuration.scale_Size.Y);
+            var dbOffset = (double)Configuration.config[Configuration.saVar.graphOffsetDB];
+            var refLevel = (double)Configuration.config[Configuration.saVar.graphRefLevel];
+            var positionOffset = new Vector2(50 * Configuration.scaleSize.X, 10 * Configuration.scaleSize.Y);
             float left = ImGui.GetWindowPos().X + positionOffset.X;
-            float right = left + Configuration.graph_Size.X;
+            float right = left + Configuration.graphSize.X;
             float top = ImGui.GetWindowPos().Y + positionOffset.Y;
-            float bottom = top + Configuration.graph_Size.Y;
+            float bottom = top + Configuration.graphSize.Y;
 
             float graphLabelIdx = (float)tab_Amplitude.scalePerDivision;
-            float ratioX = graphLabelIdx / Configuration.graph_Size.X;
+            float ratioX = graphLabelIdx / Configuration.graphSize.X;
 
-            double freqStart = (double)Configuration.config["freqStart"];
-            double freqStop = (double)Configuration.config["freqStop"];
+            double freqStart = (double)Configuration.config[Configuration.saVar.freqStart];
+            double freqStop = (double)Configuration.config[Configuration.saVar.freqStop];
             var mousePos = ImGui.GetMousePos();
 
-            double graph_startDB = (double)Configuration.config["graph_startDB"] + refLevel;
-            double graph_endDB = (double)Configuration.config["graph_endDB"] + refLevel;
+            double graph_startDB = (double)Configuration.config[Configuration.saVar.graphStartDB] + refLevel;
+            double graph_endDB = (double)Configuration.config[Configuration.saVar.graphStopDB] + refLevel;
 
             Vector2 graphStatus = new Vector2();
             draw.AddRectFilled(new Vector2(left, top), new Vector2(right, bottom), ColorExtention.ToUint(Color.FromArgb(16, 16, 16)));
@@ -169,12 +159,12 @@ namespace SoapySpectrum.UI
             float mousePosFreq = 0, mousePosdB;
             #endregion
             #region backgroundDraw
-            if (new RectangleF(left, top, Configuration.graph_Size.X, Configuration.graph_Size.Y).Contains(mousePos.X, mousePos.Y))
+            if (new RectangleF(left, top, Configuration.graphSize.X, Configuration.graphSize.Y).Contains(mousePos.X, mousePos.Y))
             {
                 draw.AddLine(new Vector2(left, mousePos.Y), new Vector2(right, mousePos.Y), Color.FromArgb(100, 100, 100).ToUint());
                 draw.AddLine(new Vector2(mousePos.X, top), new Vector2(mousePos.X, bottom), Color.FromArgb(100, 100, 100).ToUint());
 
-                mousePosFreq = (float)((freqStart + ((mousePos.X - left) / (Configuration.graph_Size.X)) * (freqStop - freqStart)));
+                mousePosFreq = (float)((freqStart + ((mousePos.X - left) / (Configuration.graphSize.X)) * (freqStop - freqStart)));
                 mousePosdB = (float)((graph_startDB - (bottom - mousePos.Y + top) / bottom * (Math.Abs(graph_endDB) - Math.Abs(graph_startDB))) + dbOffset);
                 mouseRange.X = (float)(mousePosFreq - (freqStop - freqStart) / graphLabelIdx);
                 mouseRange.Y = (float)(mousePosFreq + (freqStop - freqStart) / graphLabelIdx);
@@ -185,7 +175,7 @@ namespace SoapySpectrum.UI
                 //draw X axis
                 string text = $"{(freqStart + i / graphLabelIdx * (freqStop - freqStart)) / 1e6}".TruncateLongString(5);
                 text += "M";
-                float posX = left + i / graphLabelIdx * Configuration.graph_Size.X - ImGui.CalcTextSize(text).X / 2;
+                float posX = left + i / graphLabelIdx * Configuration.graphSize.X - ImGui.CalcTextSize(text).X / 2;
                 draw.AddText(new Vector2(posX, bottom), ColorExtention.ToUint(Color.LightGray), text);
 
 
@@ -194,7 +184,7 @@ namespace SoapySpectrum.UI
                 //draw Y axis
                 text = Extentions.Imports.Scale(i, 0, graphLabelIdx, graph_endDB + dbOffset, graph_startDB + dbOffset).ToString().TruncateLongString(5);
                 //((graph_startDB - (graphLabelIdx - i) / graphLabelIdx * (Math.Abs(graph_endDB) - Math.Abs(graph_startDB))) + dbOffset).ToString().TruncateLongString(5);
-                float posY = top + i / graphLabelIdx * Configuration.graph_Size.Y;
+                float posY = top + i / graphLabelIdx * Configuration.graphSize.Y;
                 draw.AddText(new Vector2(left - ImGui.CalcTextSize(text).X, posY - ImGui.CalcTextSize(text).Y / 2), ColorExtention.ToUint(Color.LightGray), text);
                 draw.AddLine(new Vector2(left, posY), new Vector2(right, posY), ColorExtention.ToUint(Color.FromArgb(100, Color.Gray)));
 
@@ -248,15 +238,15 @@ namespace SoapySpectrum.UI
                         if (secondPoint.X > right || firstPoint.X < left) continue; //out of bounds
                         if (firstPoint.Y < top || secondPoint.Y < top || firstPoint.Y > bottom || secondPoint.Y > bottom)
                         {
-                            if (!(bool)Configuration.config["automaticLeveling"]) continue;
+                            if (!(bool)Configuration.config[Configuration.saVar.automaticLevel]) continue;
                             if (firstPoint.Y < top || secondPoint.Y < top)
                             {
-                                Configuration.config["graph_startDB"] = (double)Math.Min(sample1.Value, sample2.Value);
+                                Configuration.config[Configuration.saVar.graphStartDB] = (double)Math.Min(sample1.Value, sample2.Value);
 
                             }
                             else
                             {
-                                Configuration.config["graph_endDB"] = (double)Math.Max(sample1.Value, sample2.Value);
+                                Configuration.config[Configuration.saVar.graphStopDB] = (double)Math.Max(sample1.Value, sample2.Value);
                             }
                         }
                         draw.AddLine(firstPoint, secondPoint, uintTraceColor, 1.0f);
@@ -337,7 +327,7 @@ namespace SoapySpectrum.UI
                             var scaledPowerBandRight = scaleToGraph(left, top, right, bottom, powerBandRight.Key, powerBandRight.Value, freqStart, freqStop, graph_startDB, graph_endDB);
                             draw.AddLine(new Vector2(scaledPowerBandLeft.X, top), new Vector2(scaledPowerBandLeft.X, bottom), ColorExtention.ToUint(Color.FromArgb(200, traceColor)));
                             draw.AddLine(new Vector2(scaledPowerBandRight.X, top), new Vector2(scaledPowerBandRight.X, bottom), ColorExtention.ToUint(Color.FromArgb(200, traceColor)));
-                            tracetab_Marker[c].txtStatus += $"Band Power \n {(tracetab_Marker[c].bandPowerValue + (decimal)dbOffset).ToString().TruncateLongString(5)} dB\n";
+                            tracetab_Marker[c].txtStatus += $"Band Power \n {(tracetab_Marker[c].bandPowerValue + (double)dbOffset).ToString().TruncateLongString(5)} dB\n";
                         }
                         string markerstatusText = tracetab_Marker[c].txtStatus;
                         var textStatusSize = ImGui.CalcTextSize(markerstatusText);

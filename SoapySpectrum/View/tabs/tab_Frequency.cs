@@ -11,7 +11,7 @@ namespace SoapySpectrum.UI
         static string display_center = "945M", display_span = "30M";
         public static void renderFrequency()
         {
-            var childSize = Configuration.option_Size;
+            var childSize = Configuration.optionSize;
             var inputTheme = Theme.getTextTheme();
 
             Theme.Text($"Center Frequency", inputTheme);
@@ -50,8 +50,8 @@ namespace SoapySpectrum.UI
                     }
                     else
                     {
-                        Configuration.config["freqStart"] = freqStart;
-                        Configuration.config["freqStop"] = freqStop;
+                        Configuration.config[Configuration.saVar.freqStart] = freqStart;
+                        Configuration.config[Configuration.saVar.freqStop] = freqStop;
                     }
                     PerformFFT.resetIQFilter();
                 }

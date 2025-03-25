@@ -22,11 +22,11 @@
             OnCollectionChanged(key);
         }
 
-        protected void OnCollectionChanged(TKey key) => CollectionChanged?.Invoke(this, new keyOfChangedValueEventArgs(key.ToString()));
+        protected void OnCollectionChanged(TKey key) => CollectionChanged?.Invoke(this, new keyOfChangedValueEventArgs((Configuration.saVar)Convert.ToInt16(key)));
     }
     public class keyOfChangedValueEventArgs : EventArgs
     {
-        public string key;
-        public keyOfChangedValueEventArgs(string key) { this.key = key; }
+        public Configuration.saVar key;
+        public keyOfChangedValueEventArgs(Configuration.saVar key) { this.key = key; }
     }
 }
