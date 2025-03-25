@@ -1,12 +1,12 @@
 # Soapy-SA - A Vendor neutral SDR based Spectrum Analyzer
 ![Spectrum Image](ui.png)
 
-## motive and goal
-make an industry standard spectrum analyzer software
-that supports all software defined radio vendors for free
+## Motive and goal
+Make an industry-level spectrum analyzer software
+that supports all software-defined radio vendors for free
 since known SA solutions in the market are quite expensive
 
-## current Features
+## Current Features
 Swept SA Using Welch's method with:
 - Device - SDR selection, sample rate, gain, LO sleep, IQ correction, Read sensor data
 - Amplitude - offset, leveling, graph range settings
@@ -17,16 +17,16 @@ Swept SA Using Welch's method with:
 - Calibration - calibrate sdr gain elements and the sdr itself using  external signal source
 
 ### TODO features
-real time SA & trigger to visualize and see bursts like signals
+real-time SA & trigger to visualize and see bursts like signals
 <br>
 <br>
 support for external programmable gain & attenuators
 <br>
 <br>
-Vector network analyzer (like S11 & S21) implementation with general User based couplers and circulators
+Vector network analyzer (like S11 & S21) implementation with general user-based couplers and circulators
 <br>
 <br>
-additional implementation to swept SA like preset, modulation measurement, etc...
+Additional implementation to swept SA, such as preset, modulation measurement, etc.
 
 ## implementation & support
 - Windows only, at the moment
@@ -34,3 +34,14 @@ additional implementation to swept SA like preset, modulation measurement, etc..
 - Graphical Engine - DirectX back-end with ImGui through ClickableTransparentOverlay
 
 Soapy pre-built modules drivers include uhd, limesdr, hackrf, airspy, rtl-sdr
+
+## installation & usage
+requirements:
+- .NET 8.0
+- DirectX installed
+- appropriate drivers for your sdr (example: USRP install uhd)
+- If the compiled binaries version don't include your SDR simply compile the soapySupport (for example, uhd: https://github.com/pothosware/SoapyUHD) and put the Main dll in SoapySDR\root\SoapySDR\lib\SoapySDR\modules0.8-3, any additional dlls can be added to SoapySDR\Libs
+download the compiled binaries from Release and run it, to minimize click insert
+### how to calibrate
+You need an external rf CW signal generator, Select the range you want to calibrate for and step size and transmit the instructed frequency & power, it will iterate all over the required steps and click enter when you see the signal on the FFT-plot
+After calibration is done restart the program, and you'll be able to select the calibration.
