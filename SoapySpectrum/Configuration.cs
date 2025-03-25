@@ -3,21 +3,20 @@ using MathNet.Numerics;
 using SoapySpectrum.Extentions;
 using SoapySpectrum.UI;
 using System.Numerics;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 namespace SoapySpectrum
 {
     public static class Configuration
     {
 #if DEBUG
-        public static ImGuiWindowFlags mainWindow_flags = ImGuiWindowFlags.NoScrollbar;
+        public static ImGuiWindowFlags mainWindowFlags = ImGuiWindowFlags.NoScrollbar;
         private static Vector2 screenSize = new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.ToInt16(Screen.PrimaryScreen.Bounds.Height / 1.5));
         public static Vector2 mainWindowPos = new Vector2(600, 0);
 #else
-        public static ImGuiWindowFlags mainWindowflags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoMove;
+        public static ImGuiWindowFlags mainWindowFlags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoMove;
         private static Vector2 screenSize = new Vector2(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height);
         public static Vector2 mainWindowPos = new Vector2(0, 0);
 #endif
-        
+
         public static Vector2
         scaleSize = new Vector2(screenSize.X / 1920.0f, screenSize.Y / 1080.0f),
 
@@ -30,17 +29,17 @@ namespace SoapySpectrum
         public static string calibrationPath = Path.Combine(System.IO.Path.GetDirectoryName(Application.ExecutablePath), $"Cal");
         public enum saVar
         {
-            freqStart,freqStop,
-                sampleRate,leakageSleep,deviecOptions,iqCorrection,
-                graphStartDB,graphStopDB,graphOffsetDB,graphRefLevel,
-                fftWindow,fftSize,fftSegment,fftOverlap,refreshRate,automaticLevel,scalePerDivision
+            freqStart, freqStop,
+            sampleRate, leakageSleep, deviecOptions, iqCorrection,
+            graphStartDB, graphStopDB, graphOffsetDB, graphRefLevel,
+            fftWindow, fftSize, fftSegment, fftOverlap, refreshRate, automaticLevel, scalePerDivision
         }
         public static ObservableDictionary<saVar, object> config = new ObservableDictionary<saVar, object>();
         public static void initDefaultConfig()
         {
-            if(!Directory.Exists(presetPath))
+            if (!Directory.Exists(presetPath))
                 Directory.CreateDirectory(presetPath);
-            if ( !Directory.Exists(calibrationPath))
+            if (!Directory.Exists(calibrationPath))
                 Directory.CreateDirectory(calibrationPath);
             var calibrations = new List<string>();
             foreach (var file in Directory.GetFiles(calibrationPath))
@@ -107,7 +106,7 @@ namespace SoapySpectrum
                     tab_Amplitude.displayRefLevel = config[Configuration.saVar.graphRefLevel].ToString();
                     break;
                 case Configuration.saVar.fftSize:
-                    Enumerable.Range(0, tab_Video.FFTLength.Length).Where(i => tab_Video.FFTLength[i] == config[Configuration.saVar.fftSize]); 
+                    Enumerable.Range(0, tab_Video.FFTLength.Length).Where(i => tab_Video.FFTLength[i] == config[Configuration.saVar.fftSize]);
                     break;
                 case Configuration.saVar.fftSegment:
                     tab_Video.FFT_segments = Configuration.config[saVar.fftSegment].ToString();

@@ -91,7 +91,7 @@ namespace SoapySpectrum.UI
                 ImGui.SetNextWindowSize(Configuration.mainWindowSize);
                 initializedResources = true;
             }
-            ImGui.Begin("Spectrum Analyzer", Configuration.mainWindow_flags);
+            ImGui.Begin("Spectrum Analyzer", Configuration.mainWindowFlags);
             Theme.drawExitButton(15, Color.Gray, Color.White);
 
             ImGui.BeginChild("Spectrum Graph", Configuration.graphSize);
