@@ -2,7 +2,7 @@
 ![Spectrum Image](ui.png)
 
 ## motive and goal
-make an industry standard spectrum analyzer software
+make an industry level spectrum analyzer software
 that supports all software defined radio vendors for free
 since known SA solutions in the market are quite expensive
 
