@@ -8,16 +8,16 @@ namespace SoapySpectrum
     public static class Configuration
     {
 #if DEBUG
-        public static ImGuiWindowFlags mainWindowFlags = ImGuiWindowFlags.NoScrollbar;
-        private static Vector2 screenSize = new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.ToInt16(Screen.PrimaryScreen.Bounds.Height / 1.5));
-        public static Vector2 mainWindowPos = new Vector2(600, 0);
+        public const ImGuiWindowFlags mainWindowFlags = ImGuiWindowFlags.NoScrollbar;
+        private static readonly Vector2 screenSize = new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.ToInt16(Screen.PrimaryScreen.Bounds.Height / 1.5));
+        public static readonly Vector2 mainWindowPos = new Vector2(600, 0);
 #else
         public static ImGuiWindowFlags mainWindowFlags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoMove;
         private static Vector2 screenSize = new Vector2(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height);
         public static Vector2 mainWindowPos = new Vector2(0, 0);
 #endif
 
-        public static Vector2
+        public static readonly Vector2
         scaleSize = new Vector2(screenSize.X / 1920.0f, screenSize.Y / 1080.0f),
 
         mainWindowSize = screenSize,
@@ -25,15 +25,9 @@ namespace SoapySpectrum
         graphSize = new Vector2(Convert.ToInt16(mainWindowSize.X * .8), Convert.ToInt16(mainWindowSize.Y * .95)),
 
         optionSize = new Vector2(Convert.ToInt16(mainWindowSize.X * .2), Convert.ToInt16(mainWindowSize.Y));
-        public static string presetPath = Path.Combine(System.IO.Path.GetDirectoryName(Application.ExecutablePath), $"Preset");
-        public static string calibrationPath = Path.Combine(System.IO.Path.GetDirectoryName(Application.ExecutablePath), $"Cal");
-        public enum saVar
-        {
-            freqStart, freqStop,
-            sampleRate, leakageSleep, deviecOptions, iqCorrection,
-            graphStartDB, graphStopDB, graphOffsetDB, graphRefLevel,
-            fftWindow, fftSize, fftSegment, fftOverlap, refreshRate, automaticLevel, scalePerDivision
-        }
+        public static readonly string presetPath = Path.Combine(System.IO.Path.GetDirectoryName(Application.ExecutablePath), $"Preset");
+        public static readonly string calibrationPath = Path.Combine(System.IO.Path.GetDirectoryName(Application.ExecutablePath), $"Cal");
+
         public static ObservableDictionary<saVar, object> config = new ObservableDictionary<saVar, object>();
         public static void initDefaultConfig()
         {
@@ -51,10 +45,6 @@ namespace SoapySpectrum
             }
             tab_Cal.calibrations = calibrations.ToArray();
             Configuration.config.CollectionChanged += updateUIElementsOnConfigChanged;
-            Configuration.config.Add(saVar.freqStart, 930e6);
-            Configuration.config.Add(saVar.freqStop, 960e6);
-
-            Configuration.config.Add(saVar.sampleRate, (double)20e6);
             Configuration.config[saVar.leakageSleep] = 5;
             Configuration.config.Add(saVar.deviecOptions, new string[] { });
             Configuration.config[saVar.iqCorrection] = true;
@@ -78,44 +68,35 @@ namespace SoapySpectrum
         {
             switch (e.key)
             {
-                case Configuration.saVar.freqStart:
-                    tab_Frequency.display_FreqStart = config[saVar.freqStart].ToString();
+                case saVar.leakageSleep:
+                    tab_Device.leakageSleep = (float)(((int)Configuration.config[saVar.leakageSleep]) / 100.0f);
                     break;
-                case Configuration.saVar.freqStop:
-                    tab_Frequency.display_FreqStop = config[Configuration.saVar.freqStop].ToString();
+                case saVar.iqCorrection:
+                    tab_Device.correctIQ = (bool)config[saVar.iqCorrection];
                     break;
-                case Configuration.saVar.sampleRate:
-                    tab_Device.customSampleRate = config[Configuration.saVar.sampleRate].ToString();
+                case saVar.graphStartDB:
+                    tab_Amplitude.displayStartDB = config[saVar.graphStartDB].ToString();
                     break;
-                case Configuration.saVar.leakageSleep:
-                    tab_Device.leakageSleep = (float)(((int)Configuration.config[Configuration.saVar.leakageSleep]) / 100.0f);
+                case saVar.graphStopDB:
+                    tab_Amplitude.displayStopDB = config[saVar.graphStopDB].ToString();
                     break;
-                case Configuration.saVar.iqCorrection:
-                    tab_Device.correctIQ = (bool)config[Configuration.saVar.iqCorrection];
+                case saVar.graphOffsetDB:
+                    tab_Amplitude.displayOffset = config[saVar.graphOffsetDB].ToString();
                     break;
-                case Configuration.saVar.graphStartDB:
-                    tab_Amplitude.displayStartDB = config[Configuration.saVar.graphStartDB].ToString();
+                case saVar.graphRefLevel:
+                    tab_Amplitude.displayRefLevel = config[saVar.graphRefLevel].ToString();
                     break;
-                case Configuration.saVar.graphStopDB:
-                    tab_Amplitude.displayStopDB = config[Configuration.saVar.graphStopDB].ToString();
+                case saVar.fftSize:
+                    Enumerable.Range(0, tab_Video.FFTLength.Length).Where(i => tab_Video.FFTLength[i] == config[saVar.fftSize]);
                     break;
-                case Configuration.saVar.graphOffsetDB:
-                    tab_Amplitude.displayOffset = config[Configuration.saVar.graphOffsetDB].ToString();
-                    break;
-                case Configuration.saVar.graphRefLevel:
-                    tab_Amplitude.displayRefLevel = config[Configuration.saVar.graphRefLevel].ToString();
-                    break;
-                case Configuration.saVar.fftSize:
-                    Enumerable.Range(0, tab_Video.FFTLength.Length).Where(i => tab_Video.FFTLength[i] == config[Configuration.saVar.fftSize]);
-                    break;
-                case Configuration.saVar.fftSegment:
+                case saVar.fftSegment:
                     tab_Video.FFT_segments = Configuration.config[saVar.fftSegment].ToString();
                     break;
-                case Configuration.saVar.automaticLevel:
-                    tab_Amplitude.automaticLeveling = (bool)Configuration.config[Configuration.saVar.automaticLevel];
+                case saVar.automaticLevel:
+                    tab_Amplitude.automaticLeveling = (bool)Configuration.config[saVar.automaticLevel];
                     break;
-                case Configuration.saVar.scalePerDivision:
-                    tab_Amplitude.scalePerDivision = (int)Configuration.config[Configuration.saVar.scalePerDivision];
+                case saVar.scalePerDivision:
+                    tab_Amplitude.scalePerDivision = (int)Configuration.config[saVar.scalePerDivision];
                     break;
             }
         }

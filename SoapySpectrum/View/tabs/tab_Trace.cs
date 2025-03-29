@@ -6,44 +6,10 @@ namespace SoapySpectrum.UI
     {
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
-        public static int selectedTrace = 0;
+
         public static string[] Combotraces = new string[] { $"Trace 1", $"Trace 2", $"Trace 3", $"Trace 4", $"Trace 5", $"Trace 6" };
         public static trace[] traces = new trace[6];
-        public enum traceViewStatus
-        {
-            active, clear, view
-        }
-        public enum traceDataStatus
-        {
-            normal, Average, maxHold, minHold
-        }
-        public struct trace
-        {
-            public int average;
-            private traceDataStatus datastatus;
-            public trace()
-            {
-                plot = new SortedDictionary<float, float>();
-                dataStatus = traceDataStatus.normal;
-                average = 1;
-                viewStatus = traceViewStatus.clear;
-            }
-            public traceDataStatus dataStatus   // property
-            {
-                get
-                {
-                    return datastatus;
-                }   // get method
-                set
-                {
-                    average = 1;
-                    datastatus = value;
-                    plot.Clear();
-                }  // set method
-            }
-            public traceViewStatus viewStatus;
-            public SortedDictionary<float, float> plot;
-        }
+
         public static KeyValuePair<float, float> getClosestSampeledFrequency(int traceID, float Mhz)
         {
             lock (traces[traceID].plot)
@@ -68,27 +34,27 @@ namespace SoapySpectrum.UI
         {
             var inputTheme = Theme.getTextTheme();
             inputTheme.prefix = "RBW";
-            Theme.glowingCombo("InputSelectortext3", ref selectedTrace, Combotraces, inputTheme);
+            Theme.glowingCombo("InputSelectortext3", ref Global.selectedTrace, Combotraces, inputTheme);
             Theme.newLine();
             Theme.Text($"{Design_imGUINET.FontAwesome5.Eye} View", inputTheme);
-            if (ImGui.RadioButton($"{Design_imGUINET.FontAwesome5.PersonRunning} Active", traces[selectedTrace].viewStatus == traceViewStatus.active))
-                traces[selectedTrace].viewStatus = traceViewStatus.active;
-            if (ImGui.RadioButton($"{Design_imGUINET.FontAwesome5.Eye} View", traces[selectedTrace].viewStatus == traceViewStatus.view))
-                traces[selectedTrace].viewStatus = traceViewStatus.view;
-            if (ImGui.RadioButton($"{Design_imGUINET.FontAwesome5.Eraser} Clear", traces[selectedTrace].viewStatus == traceViewStatus.clear))
-                traces[selectedTrace].viewStatus = traceViewStatus.clear;
+            if (ImGui.RadioButton($"{Design_imGUINET.FontAwesome5.PersonRunning} Active", traces[Global.selectedTrace].viewStatus == traceViewStatus.active))
+                traces[Global.selectedTrace].viewStatus = traceViewStatus.active;
+            if (ImGui.RadioButton($"{Design_imGUINET.FontAwesome5.Eye} View", traces[Global.selectedTrace].viewStatus == traceViewStatus.view))
+                traces[Global.selectedTrace].viewStatus = traceViewStatus.view;
+            if (ImGui.RadioButton($"{Design_imGUINET.FontAwesome5.Eraser} Clear", traces[Global.selectedTrace].viewStatus == traceViewStatus.clear))
+                traces[Global.selectedTrace].viewStatus = traceViewStatus.clear;
 
             Theme.newLine();
             Theme.newLine();
             Theme.Text($"{Design_imGUINET.FontAwesome5.StreetView} Trace Function", inputTheme);
-            if (ImGui.RadioButton($"{Design_imGUINET.FontAwesome5.Equal} Normal", traces[selectedTrace].dataStatus == traceDataStatus.normal))
-                traces[selectedTrace].dataStatus = traceDataStatus.normal;
-            if (ImGui.RadioButton($"\ue4c2 Max Hold", traces[selectedTrace].dataStatus == traceDataStatus.maxHold))
-                traces[selectedTrace].dataStatus = traceDataStatus.maxHold;
-            if (ImGui.RadioButton($"\ue4b8 Min Hold", traces[selectedTrace].dataStatus == traceDataStatus.minHold))
-                traces[selectedTrace].dataStatus = traceDataStatus.minHold;
-            if (ImGui.RadioButton($"{Design_imGUINET.FontAwesome5.Microscope} Average", traces[selectedTrace].dataStatus == traceDataStatus.Average))
-                traces[selectedTrace].dataStatus = traceDataStatus.Average;
+            if (ImGui.RadioButton($"{Design_imGUINET.FontAwesome5.Equal} Normal", traces[Global.selectedTrace].dataStatus == traceDataStatus.normal))
+                traces[Global.selectedTrace].dataStatus = traceDataStatus.normal;
+            if (ImGui.RadioButton($"\ue4c2 Max Hold", traces[Global.selectedTrace].dataStatus == traceDataStatus.maxHold))
+                traces[Global.selectedTrace].dataStatus = traceDataStatus.maxHold;
+            if (ImGui.RadioButton($"\ue4b8 Min Hold", traces[Global.selectedTrace].dataStatus == traceDataStatus.minHold))
+                traces[Global.selectedTrace].dataStatus = traceDataStatus.minHold;
+            if (ImGui.RadioButton($"{Design_imGUINET.FontAwesome5.Microscope} Average", traces[Global.selectedTrace].dataStatus == traceDataStatus.Average))
+                traces[Global.selectedTrace].dataStatus = traceDataStatus.Average;
         }
 
 

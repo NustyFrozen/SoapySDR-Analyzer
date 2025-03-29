@@ -1,9 +1,7 @@
-﻿using Design_imGUINET;
-using ImGuiNET;
+﻿using ImGuiNET;
 using Newtonsoft.Json;
 using Pothosware.SoapySDR;
 using SoapySpectrum.Extentions;
-using System.Runtime.CompilerServices;
 namespace SoapySpectrum.UI
 {
     public static class tab_Cal
@@ -12,7 +10,7 @@ namespace SoapySpectrum.UI
         public static float inputDB = -40;
         public static Dictionary<string, Tuple<bool, float, int>> cal_gain = new Dictionary<string, Tuple<bool, float, int>>();
         public static double freqStart = 900, freqStop = 1000, freqStep = 10;
-        
+
         public static string calibrationInfo = "";
         public static bool calibrating = false;
         public static string[] calibrations;
@@ -37,7 +35,7 @@ namespace SoapySpectrum.UI
             Theme.Text($"Select Calibration");
             if ((Theme.glowingCombo("sample_rate_Tab", ref selectedCalibration, calibrations, Theme.getTextTheme())))
                 loadCalibration(calibrations[selectedCalibration]);
-            
+
 
             if (calibrating)
                 goto calibrateData;
@@ -45,10 +43,10 @@ namespace SoapySpectrum.UI
             ImGui.InputFloat("input DB", ref inputDB);
             ImGui.Text($"Gain Elements");
 
-            for (int i = 0; i < tab_Device.gains.Count(); i++)
+            for (int i = 0; i < tab_Device.availableChannels[0].gains.Count(); i++)
             {
 
-                var gain = tab_Device.gains[i];
+                var gain = tab_Device.availableChannels[0].gains[i];
                 if (!cal_gain.Keys.Any(x => x == gain.Item1))
                 {
                     cal_gain[gain.Item1] = new Tuple<bool, float, int>(false, 5, 0);
@@ -100,19 +98,19 @@ namespace SoapySpectrum.UI
         public static void beginCalibration()
         {
             //apply a stable fft
-            Configuration.config[Configuration.saVar.fftSize] = 4096;
-            Configuration.config[Configuration.saVar.fftSegment] = 20;
-            Configuration.config[Configuration.saVar.fftOverlap] = 0.5;
+            Configuration.config[saVar.fftSize] = 4096;
+            Configuration.config[saVar.fftSegment] = 20;
+            Configuration.config[saVar.fftOverlap] = 0.5;
 
             List<CalibrationPoint> calibrationResults = new List<CalibrationPoint>();
-            tab_Trace.traces[0].viewStatus = tab_Trace.traceViewStatus.active;
-            tab_Trace.traces[0].dataStatus = tab_Trace.traceDataStatus.maxHold;
+            tab_Trace.traces[0].viewStatus = traceViewStatus.active;
+            tab_Trace.traces[0].dataStatus = traceDataStatus.maxHold;
             PerformFFT.resetIQFilter();
             calibrating = true;
-            for (int i = 0; i < tab_Device.gains.Count(); i++)
+            for (int i = 0; i < tab_Device.availableChannels[0].gains.Count(); i++)
             {
                 //resetting all gain values
-                var gain = tab_Device.gains[i];
+                var gain = tab_Device.availableChannels[0].gains[i];
                 var range = gain.Item2;
                 tab_Device.sdr_device.SetGain(Direction.Rx, 0, gain.Item1, range.Minimum);
             }
@@ -126,14 +124,14 @@ namespace SoapySpectrum.UI
                     var freqStart = (currentFreq * 1e6 - (1e6 / 2.0));
                     var freqStop = (currentFreq * 1e6 + (1e6 / 2.0));
                     if (freqStart >= freqStop ||
-                    !tab_Device.frequencyRange[0].ToList().Exists(x => x.Minimum <= freqStart && x.Maximum >= freqStop)
+                    !tab_Device.availableChannels[0].frequencyRange.ToList().Exists(x => x.Minimum <= freqStart && x.Maximum >= freqStop)
                     || currentFreq > tab_Cal.freqStop)
                     {
                         Logger.Info("$Out Of Boundaries, finishing calibration");
                         break;
                     }
-                    Configuration.config[Configuration.saVar.freqStart] = freqStart;
-                    Configuration.config[Configuration.saVar.freqStop] = freqStop;
+                    Configuration.config[saVar.freqStart] = freqStart;
+                    Configuration.config[saVar.freqStop] = freqStop;
                     calibrationInfo = $"Please transmit {inputDB} at {currentFreq} and then press enter\n when you see the signal and the FFT is stable\n" +
                     $"\nFound\nFreq: {frequencyFound}\ndB:{currentdB}";
                     KeyValuePair<float, float> max;
@@ -158,7 +156,7 @@ namespace SoapySpectrum.UI
 
 
                             //calibrate changes by every step
-                            var element = tab_Device.gains.First(x => x.Item1 == keyvalue.Key);
+                            var element = tab_Device.availableChannels[0].gains.First(x => x.Item1 == keyvalue.Key);
                             var range = element.Item2;
                             for (double i = 0; i < 100; i += keyvalue.Value.Item2)
                             {
@@ -188,7 +186,7 @@ namespace SoapySpectrum.UI
                         {
                             Thread.Sleep(50);
                         }
-                        
+
                         Thread.Sleep(250);
 
                         //go to next frequency

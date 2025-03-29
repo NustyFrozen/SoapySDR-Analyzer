@@ -20,9 +20,9 @@ namespace SoapySpectrum.UI
 
                 if (double.TryParse(displayStartDB, out results))
                 {
-                    if (results < (double)Configuration.config[Configuration.saVar.graphStopDB])
+                    if (results < (double)Configuration.config[saVar.graphStopDB])
                     {
-                        Configuration.config[Configuration.saVar.graphStartDB] = results;
+                        Configuration.config[saVar.graphStartDB] = results;
                     }
                 }
                 else
@@ -39,9 +39,9 @@ namespace SoapySpectrum.UI
 
                 if (double.TryParse(displayStopDB, out results))
                 {
-                    if (results > (double)Configuration.config[Configuration.saVar.graphStartDB])
+                    if (results > (double)Configuration.config[saVar.graphStartDB])
                     {
-                        Configuration.config[Configuration.saVar.graphStopDB] = results;
+                        Configuration.config[saVar.graphStopDB] = results;
                     }
                 }
                 else
@@ -56,7 +56,7 @@ namespace SoapySpectrum.UI
                 double results;
                 if (double.TryParse(displayOffset, out results))
                 {
-                    Configuration.config[Configuration.saVar.graphOffsetDB] = results;
+                    Configuration.config[saVar.graphOffsetDB] = results;
                 }
                 else
                 {
@@ -75,7 +75,7 @@ namespace SoapySpectrum.UI
                 double results;
                 if (double.TryParse(displayRefLevel, out results))
                 {
-                    Configuration.config[Configuration.saVar.graphRefLevel] = results;
+                    Configuration.config[saVar.graphRefLevel] = results;
                 }
                 else
                 {
@@ -85,7 +85,7 @@ namespace SoapySpectrum.UI
             Theme.newLine();
             if (ImGui.Checkbox("Auto Adjust", ref automaticLeveling))
             {
-                Configuration.config[Configuration.saVar.automaticLevel] = automaticLeveling;
+                Configuration.config[saVar.automaticLevel] = automaticLeveling;
             }
 
             Theme.newLine();
@@ -97,7 +97,7 @@ namespace SoapySpectrum.UI
                     scalePerDivision = 20;
                     Logger.Error("Invalid Scale per division, out of range (5-60)");
                 }
-                Configuration.config[Configuration.saVar.scalePerDivision] = scalePerDivision;
+                Configuration.config[saVar.scalePerDivision] = scalePerDivision;
             }
             
         }

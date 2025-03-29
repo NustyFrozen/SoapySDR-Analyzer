@@ -46,6 +46,11 @@
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
 </ItemGroup>
+<ItemGroup>
+  <Compile Remove="Model\**" />
+  <EmbeddedResource Remove="Model\**" />
+  <None Remove="Model\**" />
+</ItemGroup>
   <ItemGroup>
     <None Update="Fonts\fa-solid-900.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -193,10 +198,6 @@
     <None Remove="SoapySDR\soapySupport.dll" />
     <None Remove="SoapySDR\uhd.dll" />
     <None Remove="SoapySDR\uhdSupport.dll" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Model\" />
   </ItemGroup>
 
 </Project>

@@ -12,17 +12,17 @@ namespace SoapySpectrum.UI
         public static string[] markersText = new string[] { "Marker 1", "Marker 2", "Marker 3", "Marker 4", "Marker 5", "Marker 6", "Marker 7", "Marker 8", "Marker 9" };
         public static string[] markerReferences;
         public static string[] markerSource = new string[] { "trace" }.Concat(markersText).ToArray();
-        public static int selectedMarker = 0;
+
         public static marker[] markers = new marker[9];
 
 
 
         public struct marker
         {
-           
+
             public marker()
             {
-               
+
             }
             public int id, reference;
             public string txtStatus;
@@ -74,10 +74,10 @@ namespace SoapySpectrum.UI
 
         public static void markerSetDelta(int markerid)
         {
-            
-                markers[markerid].DeltaFreq = markers[markerid].position;
-                markers[markerid].DeltadB = markers[markerid].value;
-            
+
+            markers[markerid].DeltaFreq = markers[markerid].position;
+            markers[markerid].DeltadB = markers[markerid].value;
+
         }
         public static float peakSearch(marker marker, float minimumFreq, float maxFreq)
         {
@@ -92,69 +92,69 @@ namespace SoapySpectrum.UI
         {
             var inputTheme = Theme.getTextTheme();
             inputTheme.prefix = "Marker";
-            Theme.glowingCombo("marker_combo", ref selectedMarker, markersText, inputTheme);
-            ImGui.Checkbox($"Enable Marker {selectedMarker + 1}", ref tab_Marker.markers[selectedMarker].active);
-            if (tab_Marker.markers[selectedMarker].active)
+            Theme.glowingCombo("marker_combo", ref Global.selectedMarker, markersText, inputTheme);
+            ImGui.Checkbox($"Enable Marker {Global.selectedMarker + 1}", ref tab_Marker.markers[Global.selectedMarker].active);
+            if (tab_Marker.markers[Global.selectedMarker].active)
             {
                 Theme.Text("Trace:", inputTheme);
-                Theme.glowingCombo("marker_reference", ref tab_Marker.markers[selectedMarker].reference, markerReferences, inputTheme);
+                Theme.glowingCombo("marker_reference", ref tab_Marker.markers[Global.selectedMarker].reference, markerReferences, inputTheme);
                 if (markerMoveKeys.ElapsedMilliseconds > 25)
                 {
                     if (Imports.GetAsyncKeyState(Keys.A))
-                        markerMovePrevious(markers[selectedMarker]);
+                        markerMovePrevious(markers[Global.selectedMarker]);
                     if (Imports.GetAsyncKeyState(Keys.D))
-                        markerMoveNext(markers[selectedMarker]);
+                        markerMoveNext(markers[Global.selectedMarker]);
                     markerMoveKeys.Restart();
                 }
                 Theme.newLine();
                 Theme.Text("Source:", inputTheme);
-                Theme.glowingCombo("marker_delta_reference", ref markers[selectedMarker].deltaReference, markerSource, inputTheme);
+                Theme.glowingCombo("marker_delta_reference", ref markers[Global.selectedMarker].deltaReference, markerSource, inputTheme);
                 Theme.newLine();
-                //In Case markers[selectedMarker] is enabled we show markers[selectedMarker] features
+                //In Case markers[Global.selectedMarker] is enabled we show markers[Global.selectedMarker] features
                 var buttonTheme = Theme.getButtonTheme();
                 buttonTheme.text = $"{Design_imGUINET.FontAwesome5.ArrowUp} Peak Search";
                 if (Theme.button("peakSearch", buttonTheme) || Imports.GetAsyncKeyState(Keys.Enter))
                 {
-                    markers[selectedMarker].position = peakSearch(markers[selectedMarker], (float)(double)Configuration.config[Configuration.saVar.freqStart], (float)(double)(Configuration.config[Configuration.saVar.freqStop]));
+                    markers[Global.selectedMarker].position = peakSearch(markers[Global.selectedMarker], (float)(double)Configuration.config[saVar.freqStart], (float)(double)(Configuration.config[saVar.freqStop]));
                 }
                 Theme.newLine();
                 buttonTheme.text = $"{Design_imGUINET.FontAwesome5.ArrowUp} Next Pk Right";
                 if (Theme.button("Next ", buttonTheme))
                 {
-                    markers[selectedMarker].position = peakSearch(markers[selectedMarker], (float)(double)markers[selectedMarker].position, (float)(double)(Configuration.config[Configuration.saVar.freqStop]));
+                    markers[Global.selectedMarker].position = peakSearch(markers[Global.selectedMarker], (float)(double)markers[Global.selectedMarker].position, (float)(double)(Configuration.config[saVar.freqStop]));
                 }
                 Theme.newLine();
                 buttonTheme.text = $"{Design_imGUINET.FontAwesome5.ArrowUp} Next Pk Left";
                 if (Theme.button("peakSearch", buttonTheme))
                 {
-                    markers[selectedMarker].position = peakSearch(markers[selectedMarker], (float)(double)Configuration.config[Configuration.saVar.freqStart], (float)(double)markers[selectedMarker].position);
+                    markers[Global.selectedMarker].position = peakSearch(markers[Global.selectedMarker], (float)(double)Configuration.config[saVar.freqStart], (float)(double)markers[Global.selectedMarker].position);
                 }
                 Theme.newLine();
                 buttonTheme.text = $"{Design_imGUINET.FontAwesome5.Mountain} Set Delta";
                 if (Theme.button("markerDelta", buttonTheme) || Imports.GetAsyncKeyState(Keys.Enter))
                 {
-                    markers[selectedMarker].delta = true;
-                    markerSetDelta(selectedMarker);
+                    markers[Global.selectedMarker].delta = true;
+                    markerSetDelta(Global.selectedMarker);
                 }
                 Theme.newLine();
                 buttonTheme.text = $"{Design_imGUINET.FontAwesome5.Eraser} Clear Delta";
                 if (Theme.button("markerDelta", buttonTheme) || Imports.GetAsyncKeyState(Keys.Enter))
                 {
-                    markers[selectedMarker].delta = false;
+                    markers[Global.selectedMarker].delta = false;
                 }
                 Theme.newLine();
                 Theme.newLine();
-                ImGui.Checkbox($"Enable Band Power", ref markers[selectedMarker].bandPower);
-                if (markers[selectedMarker].bandPower)
+                ImGui.Checkbox($"Enable Band Power", ref markers[Global.selectedMarker].bandPower);
+                if (markers[Global.selectedMarker].bandPower)
                 {
                     Theme.newLine();
                     Theme.Text($"{FontAwesome5.ArrowLeft} Span {FontAwesome5.ArrowRight}:", inputTheme);
-                    if (Theme.glowingInput("InputSelectortext11", ref markers[selectedMarker].bandPower_Span_str, inputTheme))
+                    if (Theme.glowingInput("InputSelectortext11", ref markers[Global.selectedMarker].bandPower_Span_str, inputTheme))
                     {
                         double results = 0;
-                        if (tab_Frequency.TryFormatFreq(markers[selectedMarker].bandPower_Span_str, out results))
+                        if (tab_Frequency.TryFormatFreq(markers[Global.selectedMarker].bandPower_Span_str, out results))
                         {
-                            markers[selectedMarker].bandPowerSpan = results;
+                            markers[Global.selectedMarker].bandPowerSpan = results;
                         }
                         else
                         {

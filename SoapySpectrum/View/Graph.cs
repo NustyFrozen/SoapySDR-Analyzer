@@ -114,8 +114,8 @@ namespace SoapySpectrum.UI
         static Thread calculateBandPowerThread;
         public static void calculateBandPower(tab_Marker.marker marker, List<float> dBArray)
         {
-            if(calculateBandPowerThread is not null)
-            if (calculateBandPowerThread.IsAlive) return; //Already in calculations return
+            if (calculateBandPowerThread is not null)
+                if (calculateBandPowerThread.IsAlive) return; //Already in calculations return
             calculateBandPowerThread = new Thread(() =>
             {
                 double tempMarkerBandPowerDecimal = 0;
@@ -135,8 +135,8 @@ namespace SoapySpectrum.UI
         {
             #region Canvas_Data
             var draw = ImGui.GetForegroundDrawList();
-            var dbOffset = (double)Configuration.config[Configuration.saVar.graphOffsetDB];
-            var refLevel = (double)Configuration.config[Configuration.saVar.graphRefLevel];
+            var dbOffset = (double)Configuration.config[saVar.graphOffsetDB];
+            var refLevel = (double)Configuration.config[saVar.graphRefLevel];
             var positionOffset = new Vector2(50 * Configuration.scaleSize.X, 10 * Configuration.scaleSize.Y);
             float left = ImGui.GetWindowPos().X + positionOffset.X;
             float right = left + Configuration.graphSize.X;
@@ -146,12 +146,12 @@ namespace SoapySpectrum.UI
             float graphLabelIdx = (float)tab_Amplitude.scalePerDivision;
             float ratioX = graphLabelIdx / Configuration.graphSize.X;
 
-            double freqStart = (double)Configuration.config[Configuration.saVar.freqStart];
-            double freqStop = (double)Configuration.config[Configuration.saVar.freqStop];
+            double freqStart = (double)Configuration.config[saVar.freqStart];
+            double freqStop = (double)Configuration.config[saVar.freqStop];
             var mousePos = ImGui.GetMousePos();
 
-            double graph_startDB = (double)Configuration.config[Configuration.saVar.graphStartDB] + refLevel;
-            double graph_endDB = (double)Configuration.config[Configuration.saVar.graphStopDB] + refLevel;
+            double graph_startDB = (double)Configuration.config[saVar.graphStartDB] + refLevel;
+            double graph_endDB = (double)Configuration.config[saVar.graphStopDB] + refLevel;
 
             Vector2 graphStatus = new Vector2();
             draw.AddRectFilled(new Vector2(left, top), new Vector2(right, bottom), ColorExtention.ToUint(Color.FromArgb(16, 16, 16)));
@@ -238,15 +238,15 @@ namespace SoapySpectrum.UI
                         if (secondPoint.X > right || firstPoint.X < left) continue; //out of bounds
                         if (firstPoint.Y < top || secondPoint.Y < top || firstPoint.Y > bottom || secondPoint.Y > bottom)
                         {
-                            if (!(bool)Configuration.config[Configuration.saVar.automaticLevel]) continue;
+                            if (!(bool)Configuration.config[saVar.automaticLevel]) continue;
                             if (firstPoint.Y < top || secondPoint.Y < top)
                             {
-                                Configuration.config[Configuration.saVar.graphStartDB] = (double)Math.Min(sample1.Value, sample2.Value);
+                                Configuration.config[saVar.graphStartDB] = (double)Math.Min(sample1.Value, sample2.Value);
 
                             }
                             else
                             {
-                                Configuration.config[Configuration.saVar.graphStopDB] = (double)Math.Max(sample1.Value, sample2.Value);
+                                Configuration.config[saVar.graphStopDB] = (double)Math.Max(sample1.Value, sample2.Value);
                             }
                         }
                         draw.AddLine(firstPoint, secondPoint, uintTraceColor, 1.0f);
@@ -266,16 +266,16 @@ namespace SoapySpectrum.UI
 
                         }
                     }
-                    if (tab_Marker.markers[tab_Marker.selectedMarker].active)
+                    if (tab_Marker.markers[Global.selectedMarker].active)
                     {
                         if (ImGui.IsMouseDown(ImGuiMouseButton.Left) && ImGui.IsMouseHoveringRect(new Vector2(left, top), new Vector2(right, bottom))
                                     && waitForMouseClick.ElapsedMilliseconds > 100)
                         {
-                            tab_Marker.markers[tab_Marker.selectedMarker].position = tab_Trace.getClosestSampeledFrequency(tab_Marker.markers[tab_Marker.selectedMarker].reference, mousePosFreq).Key;
+                            tab_Marker.markers[Global.selectedMarker].position = tab_Trace.getClosestSampeledFrequency(tab_Marker.markers[Global.selectedMarker].reference, mousePosFreq).Key;
                         }
                         if (mouseRange.X != 0 && ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left))
                         {
-                            tab_Marker.markers[tab_Marker.selectedMarker].position = tab_Trace.findMaxHoldRange(tab_Trace.traces[x].plot, mouseRange.X, mouseRange.Y).Key;
+                            tab_Marker.markers[Global.selectedMarker].position = tab_Trace.findMaxHoldRange(tab_Trace.traces[x].plot, mouseRange.X, mouseRange.Y).Key;
                             waitForMouseClick.Restart();
 
                         }

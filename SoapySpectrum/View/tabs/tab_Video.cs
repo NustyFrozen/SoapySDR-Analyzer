@@ -26,7 +26,7 @@ namespace SoapySpectrum.UI
             if (selectedFFTWindow == 2)
             {
                 Func<int, double[]> noFunc = length => noWindowFunction(length);
-                Configuration.config[Configuration.saVar.fftWindow] = noFunc;
+                Configuration.config[saVar.fftWindow] = noFunc;
                 PerformFFT.resetIQFilter();
                 return;
             }
@@ -52,7 +52,7 @@ namespace SoapySpectrum.UI
                 windowFunction = length => (double[])method.Invoke(null, new object[] { length });
             }
             PerformFFT.resetIQFilter();
-            Configuration.config[Configuration.saVar.fftWindow] = windowFunction;
+            Configuration.config[saVar.fftWindow] = windowFunction;
         }
         public static void renderVideo()
         {
@@ -64,9 +64,9 @@ namespace SoapySpectrum.UI
                 if(selectedFFTLength == 0)
                 {
                     //auto
-                    Configuration.config[Configuration.saVar.fftSize] = 0;
+                    Configuration.config[saVar.fftSize] = 0;
                 } else
-                Configuration.config[Configuration.saVar.fftSize] = int.Parse(FFTLength[selectedFFTLength]);
+                Configuration.config[saVar.fftSize] = int.Parse(FFTLength[selectedFFTLength]);
                 PerformFFT.resetIQFilter();
             }
 
@@ -96,7 +96,7 @@ namespace SoapySpectrum.UI
                 if (int.TryParse(FFT_segments, out fft_segements))
                     if (fft_segements > 0)
                     {
-                        Configuration.config[Configuration.saVar.fftSegment] = fft_segements;
+                        Configuration.config[saVar.fftSegment] = fft_segements;
                         PerformFFT.resetIQFilter();
                     }
                     else
@@ -118,7 +118,7 @@ namespace SoapySpectrum.UI
                 if (double.TryParse(FFT_overlap.Replace($"%", ""), out fft_overlap))
                     if (fft_overlap <= 80 && fft_overlap >= 0)
                     {
-                        Configuration.config[Configuration.saVar.fftOverlap] = fft_overlap / 100.0;
+                        Configuration.config[saVar.fftOverlap] = fft_overlap / 100.0;
                         PerformFFT.resetIQFilter();
                     }
                     else
@@ -139,7 +139,7 @@ namespace SoapySpectrum.UI
                 if (long.TryParse(refreshrate_text, out refresh_rate))
                     if (refresh_rate > 0)
                     {
-                        Configuration.config[Configuration.saVar.refreshRate] = (long)1000 / refresh_rate;
+                        Configuration.config[saVar.refreshRate] = (long)1000 / refresh_rate;
                     }
                     else
                     {
