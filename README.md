@@ -1,10 +1,10 @@
-# Soapy-SA - A Vendor neutral SDR based VNA & Spectrum Analyzer
+# SoapySDR Analyzer - A Vendor neutral SDR based unoffical RF Equipment testing suite
 ![Spectrum Image](https://github.com/NustyFrozen/Soapy-.NET-Spectrum-Analayzer/blob/main/Media/ui.png?raw=true)
 
 ## Motive and goal
-Make an industry-level spectrum analyzer software
+Make an industry-level SDR Based RF testing equipments
 that supports all software-defined radio vendors for free
-since known SA solutions in the market are quite expensive
+since known solutions in the market are quite expensive
 
 ## Current Features
 RL - Return Loss / VSWR / Reflection Coefficent / Mismatch loss using a circulator and full duplex SDR board
