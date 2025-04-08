@@ -1,51 +1,49 @@
-﻿using ClickableTransparentOverlay;
-using FFTW.NET;
+﻿using FFTW.NET;
 using MathNet.Numerics;
 using Pothosware.SoapySDR;
-using SoapySpectrum.UI;
+using SoapyRL.UI;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Numerics;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace SoapySpectrum
+namespace SoapyRL
 {
     public static class PerformFFT
     {
         public static bool isRunning = false, resetData = false;
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+
         //FFT Queue
-        static ConcurrentQueue<Tuple<double, Complex[], double>> FFTQueue = new ConcurrentQueue<Tuple<double, Complex[], double>>();
-        static Device device;
-        static int FFT_size = 4096;
+        private static ConcurrentQueue<Tuple<double, Complex[], double>> FFTQueue = new ConcurrentQueue<Tuple<double, Complex[], double>>();
+
+        private static Device device;
+        private static int FFT_size = 4096;
+
         public static void beginFFT()
         {
-            device = tab_Device.sdr_device;
+            device = tab_Device.s_sdrDevice;
             isRunning = true;
             new Thread(() =>
             {
-
                 FFT_POOL();
             })
             { Priority = ThreadPriority.Highest }.Start();
 
             new Thread(() =>
             {
-
                 IQSampler(device);
             })
             { }.Start();
-
-
-
         }
-        static double[] getWindowFunction(int size)
+
+        private static double[] getWindowFunction(int size)
         {
             return ((Func<int, double[]>)
                 Configuration.config[Configuration.saVar.fftWindow])(size);
         }
-        static double CalculateFrequency(double index, double Fs, double N, double f_center)
+
+        private static double CalculateFrequency(double index, double Fs, double N, double f_center)
         {
             if (index < N / 2)
             {
@@ -58,8 +56,9 @@ namespace SoapySpectrum
                 return (((index - N) * Fs) / (double)N) + f_center;
             }
         }
+
         //CalculateFrequency(i, next.Item3, fft_size, next.Item1);
-        static float[][] WelchPSD(Complex[] signal, int segmentLength, int overlap, float sample_rate, float center)
+        private static float[][] WelchPSD(Complex[] signal, int segmentLength, int overlap, float sample_rate, float center)
         {
             int numSegments = (signal.Length - overlap) / (segmentLength - overlap);
             float[][] psd = new float[2][];
@@ -103,9 +102,9 @@ namespace SoapySpectrum
 
             // Average over segments and convert to dBm if needed
             var calibration = 0.0f;
-            if (tab_Cal.current_cal.Count > 0)
+            if (tab_Cal.s_currentCalData.Count > 0)
             {
-                calibration = tab_Cal.current_cal.OrderBy(x => Math.Abs(x.frequency - center)).First().results;
+                calibration = tab_Cal.s_currentCalData.OrderBy(x => Math.Abs(x.frequency - center)).First().results;
             }
 
             // Convert to dBm
@@ -134,21 +133,22 @@ namespace SoapySpectrum
             return psd;
         }
 
-
-
         //https://github.com/ghostop14/gr-correctiq
-        static double ratio = 1e-05f;
-        static double avg_real = 0.0, avg_img = 0.0;
-        public static double RBW, VBW, ENBW,EN;
-        static void calculateRBWVBW()
+        private static double ratio = 1e-05f;
+
+        private static double avg_real = 0.0, avg_img = 0.0;
+        public static double RBW, VBW, ENBW, EN;
+
+        private static void calculateRBWVBW()
         {
             double BW = 0;
             if (0 == (int)Configuration.config[Configuration.saVar.fftSize])
             {
                 //auto
                 calculateAutoFFTSize();
-            } else
-            FFT_size = (int)Configuration.config[Configuration.saVar.fftSize];
+            }
+            else
+                FFT_size = (int)Configuration.config[Configuration.saVar.fftSize];
             double[] window = getWindowFunction(FFT_size);
             for (int j = 0; j < window.Length; j++)
             {
@@ -168,6 +168,7 @@ namespace SoapySpectrum
             RBW = (double)(int)RBW;
             VBW = (double)(int)VBW;
         }
+
         public static void resetIQFilter()
         {
             avg_real = 0;
@@ -179,12 +180,12 @@ namespace SoapySpectrum
             //man i've been coding this spectrum for so long it hurts, but it is fun!
             while (!((double)Configuration.config[Configuration.saVar.sampleRate]).Equals(device.GetSampleRate(Direction.Rx, 0)))
             {
-
                 Thread.Sleep(20);
             }
             resetData = true;
         }
-        static void correctIQ(Complex[] samples)
+
+        private static void correctIQ(Complex[] samples)
         {
             // return;
             for (int i = 0; i < samples.Length; i++)
@@ -194,14 +195,15 @@ namespace SoapySpectrum
                 samples[i] = new Complex(samples[i].Real - avg_real, samples[i].Imaginary - avg_img);
             }
         }
-        static void calculateAutoFFTSize()
-        {
-            var hops= ((double)Configuration.config[Configuration.saVar.freqStop] - (double)Configuration.config[Configuration.saVar.freqStart]) / ((double)Configuration.config[Configuration.saVar.sampleRate]/2);
-            FFT_size = Array.ConvertAll(tab_Video.FFTLength.Skip(1).ToArray(),s=> int.Parse(s)).OrderBy(i=>i).First(x=>x / (float)(int)Configuration.config[Configuration.saVar.fftSegment] > Configuration.graphSize.X/hops);
-        }
-        static void FFT_POOL()
-        {
 
+        private static void calculateAutoFFTSize()
+        {
+            var hops = ((double)Configuration.config[Configuration.saVar.freqStop] - (double)Configuration.config[Configuration.saVar.freqStart]) / ((double)Configuration.config[Configuration.saVar.sampleRate] / 2);
+            FFT_size = Array.ConvertAll(tab_Video.s_fftLengthCombo.Skip(1).ToArray(), s => int.Parse(s)).OrderBy(i => i).First(x => x / (float)(int)Configuration.config[Configuration.saVar.fftSegment] > Configuration.graphSize.X / hops);
+        }
+
+        private static void FFT_POOL()
+        {
             while (isRunning)
             {
                 Tuple<double, Complex[], double> next;
@@ -221,13 +223,13 @@ namespace SoapySpectrum
 
                 if (resetData)
                 {
-
                     continue;
                 }
                 Graph.updateData(psd);
             }
         }
-        static unsafe void IQSampler(Device sdr)
+
+        private static unsafe void IQSampler(Device sdr)
         {
             var sample_rate = (double)Configuration.config[Configuration.saVar.sampleRate];
             sdr.SetSampleRate(Direction.Rx, 0, sample_rate);
@@ -254,7 +256,6 @@ namespace SoapySpectrum
                     f_center - sample_rate / 2 < (double)Configuration.config[Configuration.saVar.freqStop] || noHopping;
                     f_center += sample_rate)
                 {
-
                     //some sdrs are slow with hopping so it is preferable if we sample without hopping (just the span of the sample rate) we wont call setFrequency as it will slow the algorithm
                     if (frequency != f_center)
                     {
@@ -290,10 +291,8 @@ namespace SoapySpectrum
                     {
                         unsafe
                         {
-
                             fixed (float* bufferPtr = floatBuffer)
                             {
-
                                 var errorCode = stream.Read((nint)bufferPtr, (uint)MTU, 10_000_000, out results);
 
                                 if (errorCode is not ErrorCode.None || results is null)
@@ -319,8 +318,6 @@ namespace SoapySpectrum
                             totalSamples++;
                         }
                     }
-
-
 
                     //did it finish the same sampling yet?
                     if (FFTQueue.Any(x => x.Item1 == frequency))
@@ -356,7 +353,6 @@ namespace SoapySpectrum
                         resetData = false;
                         Graph.clearPlotData();
                         break;
-
                     }
                     Thread.Sleep(0);
                 }

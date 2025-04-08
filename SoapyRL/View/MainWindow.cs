@@ -10,7 +10,7 @@ namespace SoapyRL.UI
     {
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
         private static int tabID = 0;
-        private string[] availableTabs = new string[] { $"\uf2db Device", $"\ue473 Amplitude", $"\uf1fe BW", $"{FontAwesome5.WaveSquare} Frequency", $"{FontAwesome5.Marker} Markers", $"\uf3c5 Trace", $"\uf085 Calibration" };
+        private string[] availableTabs = new string[] { $"\uf2db Device", $"{FontAwesome5.Marker} Markers", $"\uf3c5 Trace" };
         private bool visble = true;
 
         public UI() : base(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height)
@@ -125,7 +125,6 @@ namespace SoapyRL.UI
             ImGui.BeginChild("Spectrum Options", Configuration.optionSize);
             Theme.newLine();
             Theme.newLine();
-            inputTheme.prefix = "RBW";
             Theme.glowingCombo("InputSelectortext4", ref tabID, availableTabs, inputTheme);
             Theme.newLine();
             switch (tabID)
@@ -135,27 +134,7 @@ namespace SoapyRL.UI
                     break;
 
                 case 1:
-                    tab_Amplitude.renderAmplitude();
-                    break;
-
-                case 2:
-                    tab_Video.renderVideo();
-                    break;
-
-                case 3:
-                    tab_Frequency.renderFrequency();
-                    break;
-
-                case 4:
                     tab_Marker.renderMarker();
-                    break;
-
-                case 5:
-                    tab_Trace.renderTrace();
-                    break;
-
-                case 6:
-                    tab_Cal.renderCalibration();
                     break;
             }
             ImGui.EndChild();
