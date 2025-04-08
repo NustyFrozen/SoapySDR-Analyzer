@@ -1,5 +1,5 @@
 # Soapy-SA - A Vendor neutral SDR based VNA & Spectrum Analyzer
-![Spectrum Image](media/ui.png)
+![Spectrum Image](https://github.com/NustyFrozen/Soapy-.NET-Spectrum-Analayzer/blob/main/Media/ui.png?raw=true)
 
 ## Motive and goal
 Make an industry-level spectrum analyzer software
@@ -51,4 +51,4 @@ After calibration is done restart the program, and you'll be able to select the 
 
 **` NOTICE`**` before measuring please note it is illegal to do this test outside a controlled environment & without a proper qualification as you are transmitting white noise over a large frequency range please check your country's regulations before doing so, I am not responsible for any illegal activity you may do`<BR>
 what you need is a coupler to measure return loss
-an [example video](Media/RL%20test%20demo.mp4) how it is measured is included i Highly recommend to not use a coupler and use a circulator as a coupler will actually return it to the transmit port and please make sure you know what gain values to put before transmitting as the transmission power can destory your sdr
+an [example video](https://github.com/NustyFrozen/Soapy-.NET-Spectrum-Analayzer/blob/main/Media/RL%20test%20demo.mp4?raw=true) how it is measured is included i Highly recommend to not use a coupler and use a circulator as a coupler will actually return it to the transmit port and please make sure you know what gain values to put before transmitting as the transmission power can destory your sdr
