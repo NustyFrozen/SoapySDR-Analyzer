@@ -15,7 +15,7 @@
 
   <ItemGroup>
     <Reference Include="Pothosware.SoapySDR">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\SoapySDR\bin\Pothosware.SoapySDR.dll</HintPath>
+      <HintPath>..\SoapyVNACommon\SoapySDR\Libs\Pothosware.SoapySDR.dll</HintPath>
     </Reference>
   </ItemGroup>
 

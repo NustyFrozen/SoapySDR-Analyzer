@@ -132,9 +132,11 @@ namespace SoapyRL.UI
 
             try
             {
-                var plotData = tab_Trace.s_traces[0].plot.ToArray().AsSpan();
+                var data = tab_Trace.s_traces[0].plot.ToArray();
+                var plotData = data.AsSpan();
+                var minDB = data.MinBy(x=>x.Value).Value;
                 var traceColor_uint = ColorExtention.ToUint(Color.Yellow);
-                var fadedColor = Color.FromArgb(100, Color.Yellow).ToUint();
+                var fadedColorYellow = Color.FromArgb(100, Color.Yellow).ToUint();
                 for (int i = 1; i < plotData.Length; i++)
                 {
                     var sampleA = plotData[i - 1];
@@ -147,16 +149,16 @@ namespace SoapyRL.UI
                     if (sampleBPos.X > right || sampleAPos.X < left) continue;
 
                     draw.AddLine(sampleAPos, sampleBPos, traceColor_uint, 1.0f);
-#if DEBUG
-                    Vector2 sampleAPosRef = scaleToGraph(left, top, right, bottom, sampleA.Key, sampleA.Value, freqStart, freqStop, graph_startDB, graph_endDB);
-                    Vector2 sampleBPosRef = scaleToGraph(left, top, right, bottom, sampleB.Key, sampleB.Value, freqStart, freqStop, graph_startDB, graph_endDB);
+                    
+                    Vector2 sampleAPosRef = scaleToGraph(left, top, right, bottom, sampleA.Key, sampleA.Value - minDB, freqStart, freqStop, graph_startDB, graph_endDB);
+                    Vector2 sampleBPosRef = scaleToGraph(left, top, right, bottom, sampleB.Key, sampleB.Value - minDB, freqStart, freqStop, graph_startDB, graph_endDB);
 
-                    draw.AddLine(sampleAPosRef, sampleBPosRef, traceColor_uint, 1.0f);
-#endif
+                    draw.AddLine(sampleAPosRef, sampleBPosRef, fadedColorYellow, 1.0f);
                 }
                 var x = 1;
                 var currentActiveMarkers = tab_Marker.s_markers.Where(d => d.reference == x && d.isActive).ToArray();
                 traceColor_uint = ColorExtention.ToUint(Color.Cyan);
+                var fadedColorCyan = Color.FromArgb(100, Color.Cyan).ToUint();
                 plotData = tab_Trace.s_traces[x].plot.ToArray().AsSpan(); //asspan is fastest iteration
                 var referenceData = tab_Trace.s_traces[0].plot.ToArray().AsSpan();
                 for (int i = 1; i < plotData.Length; i++)
@@ -178,6 +180,9 @@ namespace SoapyRL.UI
                     };
 
                     draw.AddLine(sampleAPos, sampleBPos, traceColor_uint, 1.0f);
+                    Vector2 sampleAPosRef = scaleToGraph(left, top, right, bottom, sampleA.Key, sampleA.Value - minDB, freqStart, freqStop, graph_startDB, graph_endDB);
+                    Vector2 sampleBPosRef = scaleToGraph(left, top, right, bottom, sampleB.Key, sampleB.Value - minDB, freqStart, freqStop, graph_startDB, graph_endDB);
+                    draw.AddLine(sampleAPosRef, sampleBPosRef, fadedColorCyan, 1.0f);
                     currentActiveMarkers = currentActiveMarkers.Select(marker =>
                     {
                         //apply new db value for marker

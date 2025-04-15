@@ -217,6 +217,7 @@ namespace SoapyRL.UI
                     for (int i = 0; i < tab_Trace.s_traces.Length; i++)
                     {
                         tab_Trace.s_traces[i].viewStatus = tab_Trace.traceViewStatus.clear;
+                        tab_Trace.s_traces[i].plot.Clear();
                     }
                     tab_Trace.s_traces[0].viewStatus = tab_Trace.traceViewStatus.active;
                     PerformRL.beginRL();
