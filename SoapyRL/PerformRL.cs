@@ -87,7 +87,7 @@ namespace SoapyRL
             psd[1] = new float[segmentLength];
 
             // Calculate normalization factor for window (Hanning, Hamming, etc.)
-               var window = Window.Gauss(segmentLength,0.5);
+               var window = Window.BlackmanHarris(segmentLength);
             double windowPower = 0;
             for (int i = 0; i < window.Length; i++)
                 windowPower += window[i] * window[i];
@@ -179,11 +179,8 @@ namespace SoapyRL
 
         private static void calculateAutoFFTSize()
         {
-            var hops = ((double)Configuration.config[Configuration.saVar.freqStop] - (double)Configuration.config[Configuration.saVar.freqStart]) / ((double)Configuration.config[Configuration.saVar.rxSampleRate] / 2);
             FFT_size = Enumerable.Range(1, 15).Select(x => (int)Math.Pow(2, x)).OrderBy(i => i).First(x => x - (int)(((double)Configuration.config[Configuration.saVar.rxSampleRate] * (int)Configuration.config[Configuration.saVar.fftSegment]) / 1e6) >= 0);
-            
         }
-        static AlignedArrayComplex _fftwArray;
         
         private static void FFT_POOL()
         {

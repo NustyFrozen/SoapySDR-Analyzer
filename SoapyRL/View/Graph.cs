@@ -133,15 +133,15 @@ namespace SoapyRL.UI
             try
             {
                 var data = tab_Trace.s_traces[0].plot.ToArray();
-                var plotData = data.AsSpan();
+                var referenceData = data.AsSpan();
                 var minDB = data.MinBy(x=>x.Value).Value;
                 var traceColor_uint = ColorExtention.ToUint(Color.Yellow);
                 var fadedColorYellow = Color.FromArgb(100, Color.Yellow).ToUint();
-                for (int i = 1; i < plotData.Length; i++)
+                for (int i = 1; i < referenceData.Length; i++)
                 {
-                    var sampleA = plotData[i - 1];
+                    var sampleA = referenceData[i - 1];
                     var sampleADB = 0;
-                    var sampleB = plotData[i];
+                    var sampleB = referenceData[i];
                     var sampleBDB = 0;
                     Vector2 sampleAPos = scaleToGraph(left, top, right, bottom, sampleA.Key, sampleADB, freqStart, freqStop, graph_startDB, graph_endDB);
                     Vector2 sampleBPos = scaleToGraph(left, top, right, bottom, sampleB.Key, sampleBDB, freqStart, freqStop, graph_startDB, graph_endDB);
@@ -159,13 +159,14 @@ namespace SoapyRL.UI
                 var currentActiveMarkers = tab_Marker.s_markers.Where(d => d.reference == x && d.isActive).ToArray();
                 traceColor_uint = ColorExtention.ToUint(Color.Cyan);
                 var fadedColorCyan = Color.FromArgb(100, Color.Cyan).ToUint();
-                plotData = tab_Trace.s_traces[x].plot.ToArray().AsSpan(); //asspan is fastest iteration
-                var referenceData = tab_Trace.s_traces[0].plot.ToArray().AsSpan();
-                for (int i = 1; i < plotData.Length; i++)
+                var anntennaData = tab_Trace.s_traces[1].plot.ToArray().AsSpan(); //asspan is fastest iteration
+                Console.WriteLine($" {referenceData.Length},{anntennaData.Length}");
+                for (int i = 1; i < anntennaData.Length; i++)
                 {
-                    var sampleA = plotData[i - 1];
+                    if (referenceData.Length <= i) continue;
+                    var sampleA = anntennaData[i - 1];
                     var sampleARL = referenceData[i - 1].Value - sampleA.Value;
-                    var sampleB = plotData[i];
+                    var sampleB = anntennaData[i];
                     var valueRefB = referenceData[i].Value;
                     var sampleBRL = valueRefB - sampleB.Value;
 
@@ -237,7 +238,7 @@ namespace SoapyRL.UI
             catch (Exception ex)
             {
                 if (!ex.Message.Contains("Sequence"))
-                    _logger.Trace($"Render Error -> {ex.Message}");
+                    _logger.Trace($"Render Error -> {ex.Message} {ex.StackTrace}");
             }
         }
     }

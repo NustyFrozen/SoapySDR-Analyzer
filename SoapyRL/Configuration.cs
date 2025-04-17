@@ -60,7 +60,7 @@ namespace SoapyRL
             Configuration.config[saVar.freqStart] = 100e6;
             Configuration.config[saVar.freqStop] = 200e6;
             Configuration.config[saVar.fftSegment] = 400;
-            Configuration.config[saVar.fftOverlap] = 0.75;
+            Configuration.config[saVar.fftOverlap] = 0.95;
             Configuration.config[saVar.scalePerDivision] = 20;
         }
 
