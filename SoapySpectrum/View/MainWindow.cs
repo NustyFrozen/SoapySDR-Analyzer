@@ -1,16 +1,18 @@
 ﻿using ClickableTransparentOverlay;
 using Design_imGUINET;
 using ImGuiNET;
-using SoapySpectrum.Extentions;
+using SoapyRL.Extentions;
 using System.Numerics;
-namespace SoapySpectrum.UI
+
+namespace SoapyRL.UI
 {
     public partial class UI : Overlay
     {
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
-        static int tabID = 0;
-        string[] availableTabs = new string[] { $"\uf2db Device", $"\ue473 Amplitude", $"\uf1fe BW", $"{FontAwesome5.WaveSquare} Frequency", $"{FontAwesome5.Marker} Markers", $"\uf3c5 Trace", $"\uf085 Calibration" };
-        bool visble = true;
+        private static int tabID = 0;
+        private string[] availableTabs = new string[] { $"\uf2db Device", $"\ue473 Amplitude", $"\uf1fe BW", $"{FontAwesome5.WaveSquare} Frequency", $"{FontAwesome5.Marker} Markers", $"\uf3c5 Trace", $"\uf085 Calibration" };
+        private bool visble = true;
+
         public UI() : base(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height)
         {
             this.VSync = true;
@@ -21,6 +23,7 @@ namespace SoapySpectrum.UI
             VSync = false;
             return Task.CompletedTask;
         }
+
         public static uint ToUint(Color c)
         {
             uint u = (uint)c.A << 24;
@@ -32,7 +35,7 @@ namespace SoapySpectrum.UI
 
         private static ushort[] iconRange = new ushort[] { 0xe005, 0xf8ff, 0 };
 
-        static ImFontPtr PoppinsFont, IconFont;
+        private static ImFontPtr PoppinsFont, IconFont;
         public bool initializedResources = false;
 
         public unsafe void loadResources()
@@ -69,9 +72,27 @@ namespace SoapySpectrum.UI
             ImGui.GetForegroundDrawList().AddLine(new Vector2(cursorpos.X - 5, cursorpos.Y), new Vector2(cursorpos.X + 5, cursorpos.Y), Color.White.ToUint());
             ImGui.GetForegroundDrawList().AddLine(new Vector2(cursorpos.X, cursorpos.Y - 5), new Vector2(cursorpos.X, cursorpos.Y + 5), Color.White.ToUint());
         }
-        protected unsafe override void Render()
+
+        public static void drawToolTip()
         {
-            Thread.Sleep(1);
+            var draw = ImGui.GetForegroundDrawList();
+            var start = ImGui.GetWindowPos();
+            start.X = Configuration.positionOffset.X;
+            var end = start;
+            end.X += Configuration.graphSize.X;
+            draw.AddRectFilled(start, end, ColorExtention.ToUint(Color.FromArgb(12, 12, 12)));
+            ImGui.Text($"Selected Marker");
+            var currentMarker = tab_Marker.s_markers[tab_Marker.s_selectedMarker];
+            foreach (var marker in tab_Marker.s_markers)
+            {
+                ImGui.SameLine();
+                if (ImGui.RadioButton($"{marker.id + 1}", currentMarker.id == marker.id))
+                    tab_Marker.s_selectedMarker = marker.id;
+            }
+        }
+
+        protected override unsafe void Render()
+        {
             var inputTheme = Theme.getTextTheme();
             if (Imports.GetAsyncKeyState(Keys.Insert))
             {
@@ -81,9 +102,10 @@ namespace SoapySpectrum.UI
             if (!visble) return;
             if (!initializedResources)
             {
+                Theme.initDefaultTheme();
                 tab_Device.setupSoapyEnvironment();
                 tab_Device.refreshDevices();
-                Graph.waitForMouseClick.Start();
+                Graph.s_waitForMouseClick.Start();
                 tab_Marker.markerMoveKeys.Start();
                 Graph.initializeGraphElements();
                 loadResources();
@@ -95,9 +117,9 @@ namespace SoapySpectrum.UI
             Theme.drawExitButton(15, Color.Gray, Color.White);
 
             ImGui.BeginChild("Spectrum Graph", Configuration.graphSize);
+            drawToolTip();
             Graph.drawGraph();
             ImGui.EndChild();
-
 
             ImGui.SetCursorPos(new Vector2(Configuration.graphSize.X + 60 * Configuration.scaleSize.X, 10));
             ImGui.BeginChild("Spectrum Options", Configuration.optionSize);
@@ -111,21 +133,27 @@ namespace SoapySpectrum.UI
                 case 0:
                     tab_Device.renderDevice();
                     break;
+
                 case 1:
                     tab_Amplitude.renderAmplitude();
                     break;
+
                 case 2:
                     tab_Video.renderVideo();
                     break;
+
                 case 3:
                     tab_Frequency.renderFrequency();
                     break;
+
                 case 4:
                     tab_Marker.renderMarker();
                     break;
+
                 case 5:
                     tab_Trace.renderTrace();
                     break;
+
                 case 6:
                     tab_Cal.renderCalibration();
                     break;

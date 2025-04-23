@@ -1,0 +1,259 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+	 <ItemGroup>
+    <PackageReference Include="ClickableTransparentOverlay" Version="10.2.0" />
+    <PackageReference Include="FFTW.NET" Version="1.0.1" />
+    <PackageReference Include="ManagedCuda-CUFFT" Version="12.8.60" />
+    <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
+    <PackageReference Include="MathNet.Numerics.MKL.Win-x64" Version="3.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="NLog.Extensions.Logging" Version="5.3.12" />
+    <PackageReference Include="System.Management" Version="8.0.0" />
+  </ItemGroup>
+	 <ItemGroup>
+	   <Reference Include="Pothosware.SoapySDR">
+	     <HintPath>..\..\..\..\..\..\Program Files (x86)\SoapySDR\bin\Pothosware.SoapySDR.dll</HintPath>
+	   </Reference>
+	 </ItemGroup>
+	 <ItemGroup>
+	   <None Update="Fonts\fa-solid-900.ttf">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="Fonts\Poppins-Black.ttf">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="Fonts\Poppins-BlackItalic.ttf">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="Fonts\Poppins-Bold.ttf">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="Fonts\Poppins-BoldItalic.ttf">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="Fonts\Poppins-ExtraBold.ttf">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="Fonts\Poppins-ExtraBoldItalic.ttf">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="Fonts\Poppins-ExtraLight.ttf">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="Fonts\Poppins-ExtraLightItalic.ttf">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="Fonts\Poppins-Italic.ttf">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="Fonts\Poppins-Light.ttf">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="Fonts\Poppins-LightItalic.ttf">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="Fonts\Poppins-Medium.ttf">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="Fonts\Poppins-MediumItalic.ttf">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="Fonts\Poppins-Regular.ttf">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="Fonts\Poppins-SemiBold.ttf">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="Fonts\Poppins-SemiBoldItalic.ttf">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="Fonts\Poppins-Thin.ttf">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="Fonts\Poppins-ThinItalic.ttf">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="nlog.config">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\Libs\airspy.dll">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\Libs\boost_chrono-vc142-mt-x64-1_75.dll">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\Libs\boost_date_time-vc142-mt-x64-1_75.dll">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\Libs\boost_filesystem-vc142-mt-x64-1_75.dll">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\Libs\boost_program_options-vc142-mt-x64-1_75.dll">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\Libs\boost_regex-vc142-mt-x64-1_75.dll">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\Libs\boost_serialization-vc142-mt-x64-1_75.dll">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\Libs\boost_system-vc142-mt-x64-1_75.dll">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\Libs\boost_thread-vc142-mt-x64-1_75.dll">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\Libs\hackrf.dll">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\Libs\libiio.dll">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\Libs\libusb-1.0.dll">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\Libs\LimeSuite.dll">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\Libs\Pothosware.SoapySDR.dll">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\Libs\pthreadVC2.dll">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\Libs\rtlsdr.dll">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\Libs\SoapySDR.dll">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\Libs\SoapySDRCSharpSWIG.dll">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\Libs\soapySupport.dll">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\Libs\uhd.dll">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\cmake\SoapySDRConfig.cmake">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\cmake\SoapySDRConfigVersion.cmake">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\cmake\SoapySDRExport-release.cmake">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\cmake\SoapySDRExport.cmake">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\cmake\SoapySDRUtil.cmake">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\include\SoapySDR\Config.h">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\include\SoapySDR\Config.hpp">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\include\SoapySDR\Constants.h">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\include\SoapySDR\ConverterPrimitives.hpp">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\include\SoapySDR\ConverterRegistry.hpp">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\include\SoapySDR\Converters.h">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\include\SoapySDR\Device.h">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\include\SoapySDR\Device.hpp">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\include\SoapySDR\Errors.h">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\include\SoapySDR\Errors.hpp">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\include\SoapySDR\Formats.h">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\include\SoapySDR\Formats.hpp">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\include\SoapySDR\Logger.h">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\include\SoapySDR\Logger.hpp">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\include\SoapySDR\Modules.h">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\include\SoapySDR\Modules.hpp">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\include\SoapySDR\Registry.hpp">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\include\SoapySDR\Time.h">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\include\SoapySDR\Time.hpp">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\include\SoapySDR\Types.h">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\include\SoapySDR\Types.hpp">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\include\SoapySDR\Version.h">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\include\SoapySDR\Version.hpp">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\lib\pkgconfig\SoapySDR.pc">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\lib\site-packages\SoapySDR.py">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\lib\site-packages\_SoapySDR.pyd">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\lib\SoapySDR.lib">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\lib\SoapySDR\modules0.8-3\airspySupport.dll">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\lib\SoapySDR\modules0.8-3\HackRFSupport.dll">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\lib\SoapySDR\modules0.8-3\LMS7Support.dll">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\lib\SoapySDR\modules0.8-3\rtlsdrSupport.dll">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\lib\SoapySDR\modules0.8-3\uhdSupport.dll">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	   <None Update="SoapySDR\root\SoapySDR\share\man\man1\SoapySDRUtil.1">
+	     <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	   </None>
+	 </ItemGroup>
+</Project>

@@ -1,23 +1,34 @@
 ﻿using ImGuiNET;
 using Pothosware.SoapySDR;
-namespace SoapySpectrum.UI
+
+namespace SoapyRL.UI
 {
     public static class tab_Device
     {
-        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        public static int deviceID = -1;
-        public static string[] available_Devices = new string[] { "No Devices Found" };
-        public static string[] d_channels;
-        public static int d_selectedChannel = 0;
-        public static Device sdr_device;
-        public static float leakageSleep = 0;
-        public static bool correctIQ = true;
-        public static string[] sensorData;
+        //UI input pereference
+        private static int _comboSelectedDevice = -1;
 
-        //sdr data
+        private static string[] _comboAvailableDevices = new string[] { "No Devices Found" };
+        public static uint s_selectedChannel = 0;
+        public static string s_selectedAntenna = "TX/RX";
+        private static int _selectedSampleRate;
+        public static string s_customSampleRate = "0";
+        public static float s_osciliatorLeakageSleep = 0;
+        public static bool s_isCorrectIQEnabled = true;
 
-        public static Dictionary<uint, channelStreamData> availableChannels = new System.Collections.Generic.Dictionary<uint, channelStreamData>();
+        //SDR device Data
+        private static StringList _availableAntennas;
+
+        public static Device s_sdrDevice;
+        private static uint _availableChannels;
+        public static Tuple<string, Pothosware.SoapySDR.Range>[] s_deviceGains;
+        private static float[] _deviceGainValues;
+        private static string[] _deviceSensorData;
+        public static Dictionary<int, RangeList> s_deviceFrequencyRange = new Dictionary<int, RangeList>();
+        public static Dictionary<int, RangeList> s_deviceSampleRates = new Dictionary<int, RangeList>();
+
         public static void setupSoapyEnvironment()
         {
             var currentPath = System.IO.Path.GetDirectoryName(Application.ExecutablePath);
@@ -26,9 +37,9 @@ namespace SoapySpectrum.UI
             Environment.SetEnvironmentVariable("SOAPY_SDR_PLUGIN_PATH", Path.Combine(currentPath, @"SoapySDR\root\SoapySDR\lib\SoapySDR\modules0.8-3\"));
             Environment.SetEnvironmentVariable("SOAPY_SDR_ROOT", Path.Combine(currentPath, @"SoapySDR\root\SoapySDR"));
             Environment.SetEnvironmentVariable("PATH", $"{Environment.GetEnvironmentVariable("PATH")};{soapyPath};{libsPath}");
-
         }
-        static string InsertNewlines(string text, int X)
+
+        private static string InsertNewlines(string text, int X)
         {
             if (text.Length <= X) return text; // No need to wrap short items
 
@@ -43,10 +54,14 @@ namespace SoapySpectrum.UI
             }
             return new string(formattedText.ToArray());
         }
+
+        /// <summary>
+        /// enumrates over the available devices and updates the UI accordingly
+        /// </summary>
         public static void refreshDevices()
         {
             var devices = Device.Enumerate().ToList();
-            List<string> devices_label = new List<string>();
+            List<string> deviceLabels = new List<string>();
             foreach (var device in devices)
             {
                 string idenefiers = string.Empty;
@@ -61,148 +76,150 @@ namespace SoapySpectrum.UI
 
                 if (device.ContainsKey("hardware"))
                     idenefiers += $"hardware={device["hardware"]}";
-
-
-
-                devices_label.Add(InsertNewlines(idenefiers, 60));
+                if (idenefiers.EndsWith($","))
+                    idenefiers = idenefiers.Substring(0, idenefiers.Length - 1);
+                deviceLabels.Add(InsertNewlines(idenefiers, 60));
             }
-            if (devices_label.Count > 0)
+            if (deviceLabels.Count > 0)
             {
-                available_Devices = devices_label.ToArray();
-                deviceID = 0;
+                _comboAvailableDevices = deviceLabels.ToArray();
+                _comboSelectedDevice = 0;
                 updateDevice();
             }
-            else available_Devices = new string[] { "No Devices Found" };
-
+            else _comboAvailableDevices = new string[] { "No Devices Found" };
         }
+
         public static void updateDevice()
         {
             PerformFFT.isRunning = false;
             try
             {
-                sdr_device = new Device(available_Devices[deviceID]);
+                s_sdrDevice = new Device(_comboAvailableDevices[_comboSelectedDevice]);
                 fetchSDR_Data();
-
+                PerformFFT.beginFFT();
             }
             catch (Exception ex)
             {
-                Logger.Error($"Failed to open Device -> {ex.Message}");
+                _logger.Error($"Failed to open Device -> {ex.Message}");
             }
         }
 
-        static void fetchSDR_Data()
+        /// <summary>
+        /// gets all of the sdr data to the ui elements
+        /// </summary>
+        private static void fetchSDR_Data()
         {
-
-            uint availableChannels = sdr_device.GetNumChannels(Direction.Rx);
-            d_channels = Array.ConvertAll(Enumerable.Range(0, (int)availableChannels).ToArray(), Convert.ToString);
-            for (uint channel = 0; channel < availableChannels; channel++)
-            {
-                channelStreamData chan = new channelStreamData();
-                chan.anntenas = sdr_device.ListAntennas(Direction.Rx, channel);
-                var listgains = sdr_device.ListGains(Direction.Rx, channel);
-                chan.gains = new Tuple<string, Pothosware.SoapySDR.Range>[listgains.Count()];
-                chan.gains_values = new float[listgains.Count()];
-                int c = 0;
-                foreach (var gain in listgains)
-                {
-                    var range = sdr_device.GetGainRange(Direction.Rx, channel, gain);
-                    float value = (float)sdr_device.GetGain(Direction.Rx, channel, gain);
-                    chan.gains_values[c] = value;
-                    chan.gains[c++] = new Tuple<string, Pothosware.SoapySDR.Range>(gain, range);
-                };
-                c = 0;
-
-                chan.sample_rates = sdr_device.GetSampleRateRange(Direction.Rx, channel);
-                chan.sample_rates.Add(new Pothosware.SoapySDR.Range(0, double.MaxValue, 0));
-                chan.customSampleRate = chan.sample_rates.First().Maximum.ToString();
-                chan.frequencyRange = sdr_device.GetFrequencyRange(Direction.Rx, channel);
-                tab_Device.availableChannels[channel] = chan;
-            }
-
-            var sensors = sdr_device.ListSensors();
-            sensorData = new string[sensors.Count];
+            _availableAntennas = s_sdrDevice.ListAntennas(Direction.Rx, s_selectedChannel);
+            _availableChannels = s_sdrDevice.GetNumChannels(Direction.Rx);
+            var listgains = s_sdrDevice.ListGains(Direction.Rx, s_selectedChannel);
+            s_deviceGains = new Tuple<string, Pothosware.SoapySDR.Range>[listgains.Count()];
+            _deviceGainValues = new float[listgains.Count()];
             int i = 0;
+            foreach (var gain in listgains)
+            {
+                var range = s_sdrDevice.GetGainRange(Direction.Rx, s_selectedChannel, gain);
+                float value = (float)s_sdrDevice.GetGain(Direction.Rx, s_selectedChannel, gain);
+                _deviceGainValues[i] = value;
+                s_deviceGains[i++] = new Tuple<string, Pothosware.SoapySDR.Range>(gain, range);
+            };
+            var sensors = s_sdrDevice.ListSensors();
+            _deviceSensorData = new string[sensors.Count];
+            i = 0;
             foreach (var sensor in sensors)
             {
-                sensorData[i++] = $"{sensor}: {sdr_device.ReadSensor(sensor)}";
+                _deviceSensorData[i++] = $"{sensor}: {s_sdrDevice.ReadSensor(sensor)}";
             }
+            i = 0;
+            s_deviceSampleRates.Clear();
+            for (; i < _availableChannels; i++)
+            {
+                s_deviceSampleRates[i] = s_sdrDevice.GetSampleRateRange(Direction.Rx, (uint)i);
+                s_deviceSampleRates[i].Add(new Pothosware.SoapySDR.Range(0, double.MaxValue, 0));
+                s_customSampleRate = s_deviceSampleRates[i].First().Maximum.ToString();
+            }
+            i = 0;
+            s_deviceFrequencyRange.Clear();
+            for (; i < _availableChannels; i++)
+            {
+                s_deviceFrequencyRange.Add(i, s_sdrDevice.GetFrequencyRange(Direction.Rx, (uint)i));
+            }
+            i = 0;
         }
+
         public static void renderDeviceData()
         {
             var inputTheme = Theme.getTextTheme();
 
-            if (sdr_device == null) return;
+            if (s_sdrDevice == null) return;
+
             Theme.Text($"Channel", inputTheme);
-            if (Theme.glowingCombo("channels_Tab", ref d_selectedChannel, d_channels, inputTheme))
-                Global.selectedChannel = (uint)Convert.ToInt16(d_channels[(uint)d_selectedChannel]);
-            var channel = availableChannels[Global.selectedChannel];
-            ImGui.Checkbox($"Active", ref channel.active);
-            Theme.Text($"Anntena", inputTheme);
-            foreach (var antenna in channel.anntenas)
-                if (ImGui.RadioButton($"{antenna}", antenna == channel.selectedAnntena))
+            for (uint i = 0; i < _availableChannels; i++)
+                if (ImGui.RadioButton($"{i}", i == s_selectedChannel))
                 {
-                    channel.selectedAnntena = antenna;
-                    sdr_device.SetAntenna(Direction.Rx, Global.selectedChannel, channel.selectedAnntena);
+                    s_selectedChannel = i;
+                }
+
+            Theme.Text($"Anntena", inputTheme);
+            foreach (var antenna in _availableAntennas)
+                if (ImGui.RadioButton($"{antenna}", antenna == s_selectedAntenna))
+                {
+                    s_selectedAntenna = antenna;
+                    s_sdrDevice.SetAntenna(Direction.Rx, s_selectedChannel, s_selectedAntenna);
                 }
             Theme.Text($"Sample Rate", inputTheme);
 
-            List<string> sample_rates_choice = new List<string>();
-            List<Pothosware.SoapySDR.Range> sample_rate = new List<Pothosware.SoapySDR.Range>();
-            foreach (var samplerate in channel.sample_rates)
+            List<string> sampleRateComboData = new List<string>();
+            List<Pothosware.SoapySDR.Range> sampleRateInputData = new List<Pothosware.SoapySDR.Range>();
+            foreach (var samplerate in s_deviceSampleRates[(int)s_selectedChannel])
             {
-
-
                 if (samplerate.Minimum == samplerate.Maximum && samplerate.Step == 0)
                 {
                     //selection
-                    sample_rates_choice.Add(samplerate.Minimum.ToString());
+                    sampleRateComboData.Add(samplerate.Minimum.ToString());
                 }
                 else
                 {
                     //any value between min and max (Input)
-                    sample_rate.Add(samplerate);
+                    sampleRateInputData.Add(samplerate);
                 }
-
-
             }
-
-
-            if ((Theme.glowingCombo("sample_rate_Tab", ref channel.selectedSampleRate, sample_rates_choice.ToArray(), inputTheme)))
+            if ((Theme.glowingCombo("sample_rate_Tab", ref _selectedSampleRate, sampleRateComboData.ToArray(), inputTheme)))
             {
+                Configuration.config[Configuration.saVar.sampleRate] = Convert.ToDouble(sampleRateComboData[_selectedSampleRate]);
                 PerformFFT.resetIQFilter();
             }
+
             Theme.Text("Custom Sample Rates", inputTheme);
-            if (sample_rate.Count == 0)
+            if (sampleRateInputData.Count == 0)
             {
                 ImGui.Text("None");
             }
             else
             {
-                foreach (var rateRange in sample_rate)
+                foreach (var rateRange in sampleRateInputData)
                 {
                     if (rateRange.Step == 0)
                     {
                         //any value
                         Theme.Text($"Between {rateRange.Minimum} - {rateRange.Maximum}", inputTheme);
-                        if (Theme.glowingInput($"rate_range{rateRange.Minimum}_{rateRange.Maximum}", ref channel.customSampleRate, inputTheme))
+                        if (Theme.glowingInput($"rate_range{rateRange.Minimum}_{rateRange.Maximum}", ref s_customSampleRate, inputTheme))
                         {
                             double customSampleRate = 0;
-                            if (double.TryParse(channel.customSampleRate, out customSampleRate))
+                            if (double.TryParse(tab_Device.s_customSampleRate, out customSampleRate))
                             {
                                 if (rateRange.Minimum <= customSampleRate && rateRange.Maximum >= customSampleRate)
                                 {
-                                    channel.sample_rate = Convert.ToDouble(customSampleRate);
+                                    Configuration.config[Configuration.saVar.sampleRate] = Convert.ToDouble(customSampleRate);
                                     PerformFFT.resetIQFilter();
                                 }
                                 else
                                 {
-                                    Logger.Error($"Value is not in the range");
+                                    _logger.Error($"Value is not in the range");
                                 }
-
                             }
                             else
                             {
-                                Logger.Error($"Value is not A valid double");
+                                _logger.Error($"Value is not A valid double");
                             }
                         }
                     }
@@ -210,69 +227,69 @@ namespace SoapySpectrum.UI
                     {
                         //any value with relation to step
                         double customSampleRate = 0;
-                        if (double.TryParse(channel.customSampleRate, out customSampleRate))
+                        if (double.TryParse(tab_Device.s_customSampleRate, out customSampleRate))
                         {
                             customSampleRate = Math.Round(customSampleRate / rateRange.Step) * rateRange.Step;
                             if (rateRange.Minimum <= customSampleRate && rateRange.Maximum >= customSampleRate)
                             {
-                                channel.sample_rate = Convert.ToDouble(customSampleRate);
+                                Configuration.config[Configuration.saVar.sampleRate] = Convert.ToDouble(customSampleRate);
                                 PerformFFT.resetIQFilter();
                             }
                             else
                             {
-                                Logger.Error($"Value is not in the range");
+                                _logger.Error($"Value is not in the range");
                             }
-
                         }
                         else
                         {
-                            Logger.Error($"Value is not A valid double");
+                            _logger.Error($"Value is not A valid double");
                         }
                     }
                 }
             }
+
             Theme.Text($"Amplifiers", inputTheme);
-            for (int i = 0; i < channel.gains.Count(); i++)
+            for (int i = 0; i < s_deviceGains.Count(); i++)
             {
-                var gain = channel.gains[i];
+                var gain = s_deviceGains[i];
                 var range = gain.Item2;
                 ImGui.Text($"{gain.Item1}");
-                if (Theme.slider($"{gain.Item1}", (float)range.Minimum, (float)range.Maximum, ref channel.gains_values[i], sliderTheme))
+                if (Theme.slider($"{gain.Item1}", (float)range.Minimum, (float)range.Maximum, ref _deviceGainValues[i], sliderTheme))
                 {
                     if (range.Step != 0)
-                        sdr_device.SetGain(Direction.Rx, Global.selectedChannel, gain.Item1, Math.Round(channel.gains_values[i] / range.Step) * range.Step);
+                        s_sdrDevice.SetGain(Direction.Rx, s_selectedChannel, gain.Item1, Math.Round(_deviceGainValues[i] / range.Step) * range.Step);
                     else
                     { //free value
-                        sdr_device.SetGain(Direction.Rx, Global.selectedChannel, gain.Item1, channel.gains_values[i]);
+                        s_sdrDevice.SetGain(Direction.Rx, s_selectedChannel, gain.Item1, _deviceGainValues[i]);
                     }
-
                 }
             }
             Theme.Text($"Sensors Data", inputTheme);
             var buttonTheme = Theme.getButtonTheme();
 
-            foreach (var sensor in sensorData)
+            foreach (var sensor in _deviceSensorData)
                 ImGui.Text(sensor);
 
             buttonTheme.text = $"Refresh Sensors Data";
             if (Theme.button("Refresh_Sensors", buttonTheme))
             {
                 int i = 0;
-                foreach (var sensor in sdr_device.ListSensors())
+                foreach (var sensor in s_sdrDevice.ListSensors())
                 {
-                    sensorData[i++] = $"{sensor}: {sdr_device.ReadSensor(sensor)}";
+                    _deviceSensorData[i++] = $"{sensor}: {s_sdrDevice.ReadSensor(sensor)}";
                 }
             }
 
             Theme.newLine();
-
         }
-        static Theme.glowingInputConfigurator inputTheme = Theme.getTextTheme();
-        static Theme.ButtonConfigurator buttonTheme = Theme.getButtonTheme();
-        static Theme.SliderInputConfigurator sliderTheme = Theme.getSliderTheme();
+
+        private static Theme.glowingInputConfigurator inputTheme = Theme.getTextTheme();
+        private static Theme.ButtonConfigurator buttonTheme = Theme.getButtonTheme();
+        private static Theme.SliderInputConfigurator sliderTheme = Theme.getSliderTheme();
+
         public static void renderDevice()
         {
-
+            Theme.newLine();
             Theme.newLine();
             Theme.newLine();
             Theme.newLine();
@@ -281,23 +298,19 @@ namespace SoapySpectrum.UI
                 refreshDevices();
             Theme.newLine();
             Theme.Text("SDR", inputTheme);
-            if (Theme.glowingCombo("devicetabs", ref deviceID, available_Devices, inputTheme))
+            if (Theme.glowingCombo("devicetabs", ref _comboSelectedDevice, _comboAvailableDevices, inputTheme))
                 updateDevice();
-            if (ImGui.Button($"Begin sampling"))
-            {
-                PerformFFT.beginFFT();
-            }
             Theme.newLine();
             renderDeviceData();
             Theme.newLine();
             Theme.Text("LO/PLL Leakage sleep", inputTheme);
-            if (Theme.slider("Leakage", ref leakageSleep, sliderTheme))
+            if (Theme.slider("Leakage", ref s_osciliatorLeakageSleep, sliderTheme))
             {
-                Configuration.config[saVar.leakageSleep] = (int)(leakageSleep * 100);
-                Logger.Debug(Configuration.config[saVar.leakageSleep]);
+                Configuration.config[Configuration.saVar.leakageSleep] = (int)(s_osciliatorLeakageSleep * 100);
+                _logger.Debug(Configuration.config[Configuration.saVar.leakageSleep]);
             }
-            if (ImGui.Checkbox("IQ correction", ref correctIQ))
-                Configuration.config[saVar.iqCorrection] = correctIQ;
+            if (ImGui.Checkbox("IQ correction", ref s_isCorrectIQEnabled))
+                Configuration.config[Configuration.saVar.iqCorrection] = s_isCorrectIQEnabled;
         }
     }
 }

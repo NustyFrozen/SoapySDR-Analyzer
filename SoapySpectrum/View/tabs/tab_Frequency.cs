@@ -1,13 +1,16 @@
 ﻿using Design_imGUINET;
-using Pothosware.SoapySDR;
 
-namespace SoapySpectrum.UI
+namespace SoapyRL.UI
 {
     public static class tab_Frequency
     {
-        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
-        public static string d_FreqStart = "930M", d_FreqStop = "960M";
-        static string d_center = "945M", d_span = "30M";
+        private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+
+        //input start and stop OR center and span
+        public static string s_displayFreqStart = "930M", s_displayFreqStop = "960M";
+
+        private static string _displayFreqCenter = "945M", _displaySpan = "30M";
+
         public static void renderFrequency()
         {
             var childSize = Configuration.optionSize;
@@ -15,54 +18,51 @@ namespace SoapySpectrum.UI
 
             Theme.Text($"Center Frequency", inputTheme);
             inputTheme.prefix = $"Center Frequency";
-            bool changedFrequencyBySpan = Theme.glowingInput("frequency_center", ref d_center, inputTheme);
-            bool changedFrequencyByBand = false;
+            bool hasFrequencyChanged = Theme.glowingInput("frequency_center", ref _displayFreqCenter, inputTheme);
+
             Theme.Text($"Span", inputTheme);
             inputTheme.prefix = $"span";
-            changedFrequencyBySpan |= Theme.glowingInput("frequency_span", ref d_span, inputTheme);
-            if (changedFrequencyBySpan)
+            hasFrequencyChanged |= Theme.glowingInput("frequency_span", ref _displaySpan, inputTheme);
+            if (hasFrequencyChanged) //frequencyChangedByCenterSpan
             {
                 double center_frequency = 0, span = 0;
-                if (TryFormatFreq(d_center, out center_frequency) && TryFormatFreq(d_span, out span))
+                if (TryFormatFreq(_displayFreqCenter, out center_frequency) && TryFormatFreq(_displaySpan, out span))
                 {
-                    changedFrequencyByBand = true;
-                    d_FreqStart = (center_frequency - (span / 2.0)).ToString();
-                    d_FreqStop = (center_frequency + (span / 2.0)).ToString();
+                    s_displayFreqStart = (center_frequency - (span / 2.0)).ToString();
+                    s_displayFreqStop = (center_frequency + (span / 2.0)).ToString();
                 }
             }
 
             Theme.Text($"{FontAwesome5.ArrowLeft} Left Band", inputTheme);
             inputTheme.prefix = $" start Frequency";
-            changedFrequencyByBand |= Theme.glowingInput("InputSelectortext", ref d_FreqStart, inputTheme);
+            hasFrequencyChanged |= Theme.glowingInput("InputSelectortext", ref s_displayFreqStart, inputTheme);
             Theme.Text($"{FontAwesome5.ArrowRight} Right Band", inputTheme);
             inputTheme.prefix = "End Frequency";
-            changedFrequencyByBand |= Theme.glowingInput("InputSelectortext2", ref d_FreqStop, inputTheme);
+            hasFrequencyChanged |= Theme.glowingInput("InputSelectortext2", ref s_displayFreqStop, inputTheme);
 
-            if (changedFrequencyByBand)
+            if (hasFrequencyChanged) //apply frequency change in settings
             {
                 double freqStart, freqStop;
-                if (TryFormatFreq(d_FreqStart, out freqStart) && TryFormatFreq(d_FreqStop, out freqStop))
+                if (TryFormatFreq(s_displayFreqStart, out freqStart) && TryFormatFreq(s_displayFreqStop, out freqStop))
                 {
-                    if (freqStart >= freqStop || !tab_Device.availableChannels[Global.selectedChannel].frequencyRange.ToList().Exists(x => x.Minimum <= freqStart && x.Maximum >= freqStop))
+                    if (freqStart >= freqStop || !tab_Device.s_deviceFrequencyRange[(int)tab_Device.s_selectedChannel].ToList().Exists(x => x.Minimum <= freqStart && x.Maximum >= freqStop))
                     {
-                        Logger.Error("$ Start or End Frequency is not valid");
+                        _logger.Error("$ Start or End Frequency is not valid");
                     }
                     else
                     {
-                        var temp = tab_Device.availableChannels[Global.selectedChannel];
-                        temp.freqStart = freqStart;
-                        temp.freqStop = freqStop;
-                        tab_Device.availableChannels[Global.selectedChannel] = temp;
+                        Configuration.config[Configuration.saVar.freqStart] = freqStart;
+                        Configuration.config[Configuration.saVar.freqStop] = freqStop;
                     }
                     PerformFFT.resetIQFilter();
                 }
                 else
                 {
-                    Logger.Error("$ Start or End Frequency span is not a valid double");
+                    _logger.Error("$ Start or End Frequency span is not a valid double");
                 }
-
             }
         }
+
         public static bool TryFormatFreq(string input, out double value)
         {
             input = input.ToUpper();

@@ -14,131 +14,15 @@
   <ItemGroup>
     <Content Include="Untitled.ico" />
   </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="ClickableTransparentOverlay" Version="10.2.0" />
-    <PackageReference Include="Costura.Fody" Version="5.7.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="DecimalMath.DecimalEx" Version="1.0.2" />
-    <PackageReference Include="FFTW.NET" Version="1.0.1" />
-    <PackageReference Include="ManagedCuda-CUFFT" Version="12.8.60" />
-    <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
-    <PackageReference Include="MathNet.Numerics.MKL.Win-x64" Version="3.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.3" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.3" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.3" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.3" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="NLog.Extensions.Logging" Version="5.3.12" />
-    <PackageReference Include="OpenCL.Net" Version="2.2.9" />
-    <PackageReference Include="System.Management" Version="8.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Pothosware.SoapySDR">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\SoapySDR\bin\Pothosware.SoapySDR.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-<ItemGroup>
-    <Content Include="SoapySDR\**">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-</ItemGroup>
 <ItemGroup>
   <Compile Remove="Model\**" />
   <EmbeddedResource Remove="Model\**" />
   <None Remove="Model\**" />
 </ItemGroup>
   <ItemGroup>
-    <None Update="Fonts\fa-solid-900.ttf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Fonts\Poppins-Black.ttf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Fonts\Poppins-BlackItalic.ttf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Fonts\Poppins-Bold.ttf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Fonts\Poppins-BoldItalic.ttf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Fonts\Poppins-ExtraBold.ttf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Fonts\Poppins-ExtraBoldItalic.ttf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Fonts\Poppins-ExtraLight.ttf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Fonts\Poppins-ExtraLightItalic.ttf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Fonts\Poppins-Italic.ttf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Fonts\Poppins-Light.ttf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Fonts\Poppins-LightItalic.ttf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Fonts\Poppins-Medium.ttf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Fonts\Poppins-MediumItalic.ttf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Fonts\Poppins-Regular.ttf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Fonts\Poppins-SemiBold.ttf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Fonts\Poppins-SemiBoldItalic.ttf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Fonts\Poppins-Thin.ttf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Fonts\Poppins-ThinItalic.ttf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="SoapySDR\Libs\hackrf.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Update="libfftw3f-3.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="SoapySDR\Libs\libiio.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="SoapySDR\Libs\libusb-1.0.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="SoapySDR\Libs\LimeSuite.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="nlog.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="SoapySDR\Libs\pthreadVC2.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="SoapySDR\Libs\rtlsdr.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="SoapySDR\Libs\SoapySDR.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="SoapySDR\Libs\SoapySDRCSharpSWIG.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
 
   </ItemGroup>
 
@@ -184,20 +68,16 @@
 
   <ItemGroup>
     <None Remove="C:\Users\NU\.nuget\packages\fftw.net\1.0.1\build\netstandard1.3\libfftw3-3-x64.dll" />
-    <None Remove="SoapySDR\Libs\boost_chrono-vc142-mt-x64-1_75.dll" />
-    <None Remove="SoapySDR\Libs\boost_date_time-vc142-mt-x64-1_75.dll" />
-    <None Remove="SoapySDR\Libs\boost_filesystem-vc142-mt-x64-1_75.dll" />
-    <None Remove="SoapySDR\Libs\boost_program_options-vc142-mt-x64-1_75.dll" />
-    <None Remove="SoapySDR\Libs\boost_regex-vc142-mt-x64-1_75.dll" />
-    <None Remove="SoapySDR\Libs\boost_serialization-vc142-mt-x64-1_75.dll" />
-    <None Remove="SoapySDR\Libs\boost_system-vc142-mt-x64-1_75.dll" />
-    <None Remove="SoapySDR\Libs\boost_thread-vc142-mt-x64-1_75.dll" />
-    <None Remove="SoapySDR\airspy.dll" />
-    <None Remove="SoapySDR\Libs\uhd.dll" />
-    <None Remove="SoapySDR\root\SoapySDR\lib\SoapySDR\modules0.8-3\airspySupport.dll" />
-    <None Remove="SoapySDR\soapySupport.dll" />
-    <None Remove="SoapySDR\uhd.dll" />
-    <None Remove="SoapySDR\uhdSupport.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SoapyVNACommon\SoapyVNACommon.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Pothosware.SoapySDR">
+      <HintPath>..\SoapyVNACommon\SoapySDR\Libs\Pothosware.SoapySDR.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>
