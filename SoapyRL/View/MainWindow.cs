@@ -73,24 +73,6 @@ namespace SoapyRL.UI
             ImGui.GetForegroundDrawList().AddLine(new Vector2(cursorpos.X, cursorpos.Y - 5), new Vector2(cursorpos.X, cursorpos.Y + 5), Color.White.ToUint());
         }
 
-        public static void drawToolTip()
-        {
-            var draw = ImGui.GetForegroundDrawList();
-            var start = ImGui.GetWindowPos();
-            start.X = Configuration.positionOffset.X;
-            var end = start;
-            end.X += Configuration.graphSize.X;
-            draw.AddRectFilled(start, end, ColorExtention.ToUint(Color.FromArgb(12, 12, 12)));
-            ImGui.Text($"Selected Marker");
-            var currentMarker = tab_Marker.s_markers[tab_Marker.s_selectedMarker];
-            foreach (var marker in tab_Marker.s_markers)
-            {
-                ImGui.SameLine();
-                if (ImGui.RadioButton($"{marker.id + 1}", currentMarker.id == marker.id))
-                    tab_Marker.s_selectedMarker = marker.id;
-            }
-        }
-
         protected override unsafe void Render()
         {
             var inputTheme = Theme.getTextTheme();
@@ -106,7 +88,6 @@ namespace SoapyRL.UI
                 tab_Device.setupSoapyEnvironment();
                 tab_Device.refreshDevices();
                 Graph.s_waitForMouseClick.Start();
-                tab_Marker.markerMoveKeys.Start();
                 Graph.initializeGraphElements();
                 loadResources();
                 ImGui.SetNextWindowPos(Configuration.mainWindowPos);
@@ -117,7 +98,6 @@ namespace SoapyRL.UI
             Theme.drawExitButton(15, Color.Gray, Color.White);
 
             ImGui.BeginChild("Spectrum Graph", Configuration.graphSize);
-            drawToolTip();
             Graph.drawGraph();
             ImGui.EndChild();
 
@@ -131,10 +111,6 @@ namespace SoapyRL.UI
             {
                 case 0:
                     tab_Device.renderDevice();
-                    break;
-
-                case 1:
-                    tab_Marker.renderMarker();
                     break;
             }
             ImGui.EndChild();

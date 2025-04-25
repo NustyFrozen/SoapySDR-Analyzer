@@ -9,12 +9,10 @@ namespace SoapyRL.UI
         private static int _selectedFFTLength = 2, _selectedFFTWindow = 0;
         private static double _additionalWindowArgument = 0.5;
         private static string _additionalText, _displayRefreshRate = "1000";
-        private static bool _hasWindowArgument = false;
 
-        public static string[] s_fftLengthCombo = new string[] { "Auto", "256", "512", "1024", "2048", "4096", "8192", "16384", "32768", "65535", "131072", "262144", "524288", "1048576" },
-                               s_fftWindowCombo = new string[] { "Gauss", "FlatTop", "None" };
+        public static string[] s_fftWindowCombo = new string[] {"FlatTop", "None" };
 
-        public static string s_fftSegments = "1600", s_fftOverlap = "50%", s_fftWindowAdditionalArgument = "0.5";
+        public static string s_rbw = "1M", s_vbw = "10M";
 
         public static double[] noWindowFunction(int length)
         {
@@ -26,7 +24,7 @@ namespace SoapyRL.UI
 
         public static void selectWindow()
         {
-            if (_selectedFFTWindow is 2)
+            if (_selectedFFTWindow is 1)
             {
                 Func<int, double[]> noFunc = length => noWindowFunction(length);
                 Configuration.config[Configuration.saVar.fftWindow] = noFunc;
@@ -35,25 +33,12 @@ namespace SoapyRL.UI
             }
             var windowClass = Type.GetType("MathNet.Numerics.Window,MathNet.Numerics");
             var method = windowClass.GetMethod(s_fftWindowCombo[_selectedFFTWindow]);
-            var methodPeriodic = method;
             Func<int, double[]> windowFunction;
 
             //check if has a periodic function for non bounded segment
-            if (windowClass.GetMethod($"{s_fftWindowCombo[_selectedFFTWindow]}Periodic") is not null)
-                methodPeriodic = windowClass.GetMethod($"{s_fftWindowCombo[_selectedFFTWindow]}Periodic");
 
-            //check if required additional argument
-            if (_selectedFFTWindow == 0)
-            {
-                _additionalText = "Sigma:";
-                _hasWindowArgument = true;
-                windowFunction = length => (double[])method.Invoke(null, new object[] { length, _additionalWindowArgument });
-            }
-            else
-            {
-                _hasWindowArgument = false;
-                windowFunction = length => (double[])method.Invoke(null, new object[] { length });
-            }
+        windowFunction = length => (double[])method.Invoke(null, new object[] { length });
+            
             PerformFFT.resetIQFilter();
             Configuration.config[Configuration.saVar.fftWindow] = windowFunction;
         }
@@ -61,19 +46,6 @@ namespace SoapyRL.UI
         public static void renderVideo()
         {
             var inputTheme = Theme.getTextTheme();
-            Theme.Text($"\uf1fb FFT Length", inputTheme);
-            inputTheme.prefix = "FFT Length";
-            if (Theme.glowingCombo("fft Length", ref _selectedFFTLength, s_fftLengthCombo, inputTheme))
-            {
-                if (_selectedFFTLength == 0)
-                {
-                    //auto
-                    Configuration.config[Configuration.saVar.fftSize] = 0;
-                }
-                else
-                    Configuration.config[Configuration.saVar.fftSize] = int.Parse(s_fftLengthCombo[_selectedFFTLength]);
-                PerformFFT.resetIQFilter();
-            }
 
             Theme.newLine();
             Theme.Text($"\uf1fb FFT WINDOW Size", inputTheme);
@@ -81,58 +53,24 @@ namespace SoapyRL.UI
             if (Theme.glowingCombo("fft Window Function", ref _selectedFFTWindow, s_fftWindowCombo, inputTheme))
                 selectWindow();
 
-            if (_hasWindowArgument)
-            {
-                Theme.newLine();
-                Theme.Text($"\uf1fb {_additionalText}", inputTheme);
-                inputTheme.prefix = $"0.5";
-                if (Theme.glowingInput("FFT_WINDOW_additional_text", ref s_fftWindowAdditionalArgument, inputTheme))
-                    if (double.TryParse(s_fftWindowAdditionalArgument, out _additionalWindowArgument))
-                        selectWindow();
-            }
-
             Theme.newLine();
-            Theme.Text($"\uf1fb Welch FFT segments", inputTheme);
-            inputTheme.prefix = $"How many segments should be in the FFT";
-            if (Theme.glowingInput("fftsegments", ref s_fftSegments, inputTheme))
+            Theme.Text($"\uf1fb RBW", inputTheme);
+            inputTheme.prefix = $"RBW";
+            if (Theme.glowingInput("RBW", ref s_rbw, inputTheme) || Theme.glowingInput("VBW", ref s_vbw, inputTheme))
             {
-                int fft_segements = 0;
-                if (int.TryParse(s_fftSegments, out fft_segements))
-                    if (fft_segements > 0)
+                double fft_rbw = 0,fft_vbw = 0;
+                if (tab_Frequency.TryFormatFreq(s_rbw, out fft_rbw) && tab_Frequency.TryFormatFreq(s_vbw, out fft_vbw))
+                    if (fft_rbw > 0 && fft_vbw > 0)
                     {
-                        Configuration.config[Configuration.saVar.fftSegment] = fft_segements;
+                        Configuration.config[Configuration.saVar.fftRBW] = fft_rbw;
+                        Configuration.config[Configuration.saVar.fftVBW] = fft_vbw;
+
                         PerformFFT.resetIQFilter();
                     }
                     else
                     {
-                        _logger.Debug($"Invalid Amount Of FFT_segments");
+                        _logger.Debug($"Invalid variable");
                     }
-                else
-                {
-                    _logger.Debug($"Invalid Integer for value segments");
-                }
-            }
-
-            Theme.newLine();
-            Theme.Text($"\uf1fb Welch FFT overlap (precentage)", inputTheme);
-            inputTheme.prefix = $"Overlap Between Segments";
-            if (Theme.glowingInput("fftoverlap", ref s_fftOverlap, inputTheme))
-            {
-                double fft_overlap = 0;
-                if (double.TryParse(s_fftOverlap.Replace($"%", ""), out fft_overlap))
-                    if (fft_overlap <= 80 && fft_overlap >= 0)
-                    {
-                        Configuration.config[Configuration.saVar.fftOverlap] = fft_overlap / 100.0;
-                        PerformFFT.resetIQFilter();
-                    }
-                    else
-                    {
-                        _logger.Debug($"overlay is not between 0-80%");
-                    }
-                else
-                {
-                    _logger.Debug($"Invalid Integer for value overlap");
-                }
             }
             Theme.newLine();
             Theme.Text($"\uf1fb FFT Refresh Rate (hz)", inputTheme);
@@ -154,9 +92,6 @@ namespace SoapyRL.UI
                     _logger.Debug($"Invalid value for refresh rate");
                 }
             }
-            ImGui.NewLine();
-            Theme.Text($"RBW: {PerformFFT.RBW}Hz", inputTheme);
-            Theme.Text($"VBW: {PerformFFT.VBW}Hz", inputTheme);
         }
     }
 }
