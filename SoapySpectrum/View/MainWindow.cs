@@ -87,13 +87,31 @@ namespace SoapyRL.UI
             {
                 ImGui.SameLine();
                 if (ImGui.RadioButton($"{marker.id + 1}", currentMarker.id == marker.id))
+                {
+                    if (currentMarker.id == marker.id)
+                        tab_Marker.s_markers[marker.id].isActive = !tab_Marker.s_markers[marker.id].isActive;
+                    else
+                        tab_Marker.s_markers[marker.id].isActive = true;
                     tab_Marker.s_selectedMarker = marker.id;
+                    
+                }
             }
         }
-
+        void renderTabSelector()
+        {
+            var buttonTheme = Theme.getButtonTheme();
+            for (int i = 0;i<availableTabs.Length;i++)
+            {
+                buttonTheme.text = $"{availableTabs[i]}";
+                if(Theme.button(availableTabs[i], buttonTheme))
+                    tabID = i;
+                Theme.newLine();
+            }
+        }
         protected override unsafe void Render()
         {
             var inputTheme = Theme.getTextTheme();
+            var buttonTheme = Theme.getButtonTheme();
             if (Imports.GetAsyncKeyState(Keys.Insert))
             {
                 Thread.Sleep(200);
@@ -123,13 +141,22 @@ namespace SoapyRL.UI
 
             ImGui.SetCursorPos(new Vector2(Configuration.graphSize.X + 60 * Configuration.scaleSize.X, 10));
             ImGui.BeginChild("Spectrum Options", Configuration.optionSize);
-            Theme.newLine();
-            Theme.newLine();
             inputTheme.prefix = "RBW";
-            Theme.glowingCombo("InputSelectortext4", ref tabID, availableTabs, inputTheme);
+            Theme.newLine();
+            if (tabID != -1)
+            {
+                buttonTheme.text = $"{availableTabs[tabID]}";
+                if (Theme.button(availableTabs[tabID], buttonTheme))
+                {
+                    tabID = -1;
+                }
+            }
             Theme.newLine();
             switch (tabID)
             {
+                case -1:
+                    renderTabSelector();
+                    break;
                 case 0:
                     tab_Device.renderDevice();
                     break;

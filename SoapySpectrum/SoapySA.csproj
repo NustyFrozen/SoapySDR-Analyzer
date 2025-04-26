@@ -14,12 +14,6 @@
   <ItemGroup>
     <Content Include="Untitled.ico" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Pothosware.SoapySDR">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\SoapySDR\bin\Pothosware.SoapySDR.dll</HintPath>
-    </Reference>
-  </ItemGroup>
 <ItemGroup>
   <Compile Remove="Model\**" />
   <EmbeddedResource Remove="Model\**" />
@@ -78,6 +72,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SoapyVNACommon\SoapyVNACommon.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Pothosware.SoapySDR">
+      <HintPath>..\SoapyVNACommon\SoapySDR\Libs\Pothosware.SoapySDR.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

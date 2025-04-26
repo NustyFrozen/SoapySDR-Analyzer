@@ -1,4 +1,5 @@
-﻿using ImGuiNET;
+﻿using Design_imGUINET;
+using ImGuiNET;
 using Pothosware.SoapySDR;
 
 namespace SoapyRL.UI
@@ -21,8 +22,10 @@ namespace SoapyRL.UI
         public static Device s_sdrDevice;
         public static Tuple<string, Pothosware.SoapySDR.Range>[] s_deviceGains;
         private static float[] _deviceGainValues;
-        public static Dictionary<int, RangeList> s_deviceFrequencyRange = new Dictionary<int, RangeList>();
-        public static Dictionary<int, RangeList> s_deviceSampleRates = new Dictionary<int, RangeList>();
+        private static RangeList s_transmitRange,s_receiveRange;
+
+
+        public static string s_displayFreqStart = "800M", s_displayFreqStop = "1000M";
 
         public static void setupSoapyEnvironment()
         {
@@ -119,12 +122,13 @@ namespace SoapyRL.UI
             {
                 tempList.Add(new Tuple<string, Pothosware.SoapySDR.Range>(ga, s_sdrDevice.GetGainRange(Direction.Tx, 0, ga)));
             }
-            var transmitRange = s_sdrDevice.GetFrequencyRange(Direction.Tx, 0);
-            var receiveRange = s_sdrDevice.GetFrequencyRange(Direction.Rx, 0);
+            s_transmitRange = s_sdrDevice.GetFrequencyRange(Direction.Tx, 0);
+            s_receiveRange = s_sdrDevice.GetFrequencyRange(Direction.Rx, 0);
 
             //clipping frequency ranges
-            Configuration.config[Configuration.saVar.freqStart] = Math.Max(transmitRange.OrderBy(x => x.Minimum).First().Minimum, receiveRange.OrderBy(x => x.Minimum).First().Minimum);
-            Configuration.config[Configuration.saVar.freqStop] = Math.Min(transmitRange.OrderByDescending(x => x.Maximum).First().Maximum, receiveRange.OrderByDescending(x => x.Maximum).First().Maximum);
+            Configuration.config[Configuration.saVar.freqStart] = Math.Max(s_transmitRange.OrderBy(x => x.Minimum).First().Minimum, s_receiveRange.OrderBy(x => x.Minimum).First().Minimum);
+            Configuration.config[Configuration.saVar.freqStop] = Math.Min(s_transmitRange.OrderByDescending(x => x.Maximum).First().Maximum, s_receiveRange.OrderByDescending(x => x.Maximum).First().Maximum);
+            
             Configuration.config[Configuration.saVar.txSampleRate] = s_sdrDevice.GetSampleRateRange(Direction.Tx, 0).OrderBy(x => x.Maximum).Last().Maximum;
             Configuration.config[Configuration.saVar.rxSampleRate] = s_sdrDevice.GetSampleRateRange(Direction.Rx, 0).OrderBy(x => x.Maximum).Last().Maximum;
 
@@ -184,7 +188,25 @@ namespace SoapyRL.UI
         private static Theme.glowingInputConfigurator inputTheme = Theme.getTextTheme();
         private static Theme.ButtonConfigurator buttonTheme = Theme.getButtonTheme();
         private static Theme.SliderInputConfigurator sliderTheme = Theme.getSliderTheme();
-
+        static bool tryFormatFreq(string input, out double value)
+        {
+            input = input.ToUpper();
+            double exponent = 1;
+            if (input.Contains("K"))
+                exponent = 1e3;
+            if (input.Contains("M"))
+                exponent = 1e6;
+            if (input.Contains("G"))
+                exponent = 1e9;
+            double results = 80000000;
+            if (!double.TryParse(input.Replace("K", "").Replace("M", "").Replace("G", ""), out results))
+            {
+                value = 0;
+                return false;
+            }
+            value = results * exponent;
+            return true;
+        }
         public static void renderDevice()
         {
             Theme.newLine();
@@ -198,6 +220,36 @@ namespace SoapyRL.UI
             Theme.Text("SDR", inputTheme);
             if (Theme.glowingCombo("devicetabs", ref _comboSelectedDevice, _comboAvailableDevices, inputTheme))
                 updateDevice();
+            Theme.newLine();
+            Theme.Text($"{FontAwesome5.ArrowLeft} Left Band", inputTheme);
+            inputTheme.prefix = $" start Frequency";
+            bool hasFrequencyChanged = Theme.glowingInput("InputSelectortext", ref s_displayFreqStart, inputTheme);
+            Theme.Text($"{FontAwesome5.ArrowRight} Right Band", inputTheme);
+            inputTheme.prefix = "End Frequency";
+            hasFrequencyChanged |= Theme.glowingInput("InputSelectortext2", ref s_displayFreqStop, inputTheme);
+
+            if (hasFrequencyChanged) //apply frequency change in settings
+            {
+                double freqStart, freqStop;
+                if (tryFormatFreq(s_displayFreqStart, out freqStart) && tryFormatFreq(s_displayFreqStop, out freqStop))
+                {
+                    if (freqStart >= freqStop ||
+                        !(Math.Max(s_transmitRange.OrderBy(x => x.Minimum).First().Minimum, s_receiveRange.OrderBy(x => x.Minimum).First().Minimum) <= freqStart
+                        && Math.Min(s_transmitRange.OrderByDescending(x => x.Maximum).First().Maximum, s_receiveRange.OrderByDescending(x => x.Maximum).First().Maximum) >= freqStop))
+                    {
+                        _logger.Error("$ Start or End Frequency is not valid");
+                    }
+                    else
+                    {
+                        Configuration.config[Configuration.saVar.freqStart] = freqStart;
+                        Configuration.config[Configuration.saVar.freqStop] = freqStop;
+                    }
+                }
+                else
+                {
+                    _logger.Error("$ Start or End Frequency span is not a valid double");
+                }
+            }
             Theme.newLine();
             renderDeviceData();
             Theme.newLine();
@@ -217,6 +269,7 @@ namespace SoapyRL.UI
                     for (int i = 0; i < tab_Trace.s_traces.Length; i++)
                     {
                         tab_Trace.s_traces[i].viewStatus = tab_Trace.traceViewStatus.clear;
+                        tab_Trace.s_traces[i].plot.Clear();
                     }
                     tab_Trace.s_traces[0].viewStatus = tab_Trace.traceViewStatus.active;
                     PerformRL.beginRL();

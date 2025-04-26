@@ -3,6 +3,7 @@ using MathNet.Numerics;
 using MathNet.Numerics.Random;
 using NLog;
 using Pothosware.SoapySDR;
+using SoapyRL.Extentions;
 using SoapyRL.UI;
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -26,6 +27,7 @@ namespace SoapyRL
         {
             device = tab_Device.s_sdrDevice;
             isRunning = true;
+            calculateAutoFFTSize();
             new Thread(() =>
             {
                 FFT_POOL();
@@ -75,10 +77,7 @@ namespace SoapyRL
             }
         }
 
-        //CalculateFrequency(i, next.Item3, fft_size, next.Item1);
-        private static double[] window = Window.BlackmanHarris(1024);
-
-        private static float[][] WelchPSD(Complex[] inputSignal, int segmentLength, int overlap, float sample_rate, float center)
+        private static float[][] WelchPSD(Complex[] inputSignal, FftwArrayComplex bufferInput, FftwArrayComplex bufferOutput, FftwPlanC2C plan, int segmentLength, int overlap, float sampleRate, float center)
         {
             var signal = inputSignal.AsSpan();
             int numSegments = (signal.Length - overlap) / (segmentLength - overlap);
@@ -87,8 +86,7 @@ namespace SoapyRL
             psd[1] = new float[segmentLength];
 
             // Calculate normalization factor for window (Hanning, Hamming, etc.)
-            if (window.Length != segmentLength)
-                window = Window.BlackmanHarris(segmentLength);
+            var window = Window.BlackmanHarris(segmentLength);
             double windowPower = 0;
             for (int i = 0; i < window.Length; i++)
                 windowPower += window[i] * window[i];
@@ -97,27 +95,20 @@ namespace SoapyRL
                 int start = seg * (segmentLength - overlap);
                 var segment = signal.Slice(start, segmentLength);
                 for (int i = 0; i < segmentLength; i++)
-                    segment[i] *= window[i];
-                var input = segment.ToArray();
-                var output = new Complex[input.Length];
+                    bufferInput[i] = segment[i] * window[i];
                 // Perform FFT
-                using (var pinIn = new PinnedArray<Complex>(input))
-                using (var pinOut = new PinnedArray<Complex>(output))
-                {
-                    DFT.FFT(pinIn, pinOut);  // Perform FFT here
-                }
-
+                plan.Execute();
                 // Compute periodogram (magnitude squared)
                 for (int k = 0; k < segmentLength; k++)
                 {
-                    psd[0][k] += (float)((output[k].MagnitudeSquared())); // Normalize by window and segment length
+                    psd[0][k] += (float)((bufferOutput[k].MagnitudeSquared())); // Normalize by window and segment length
                 }
             }
 
             // Average over segments and convert to dBm if needed
-            float scale = (float)(sample_rate * windowPower * numSegments);
-            var freqStart = center - sample_rate / 2.0;
-            var freqStop = center + sample_rate / 2.0;
+            float scale = (float)(sampleRate * windowPower * numSegments);
+            var freqStart = center - sampleRate / 2.0;
+            var freqStop = center + sampleRate / 2.0;
             var frequencyBinScale = inputSignal.Length / segmentLength;
             // Convert to dBm
             for (int k = 0; k < segmentLength; k++)
@@ -131,12 +122,12 @@ namespace SoapyRL
                 if (k < (segmentLength / 2.0))
                 {
                     // Positive frequencies with center frequency offset
-                    frequency = ((k * sample_rate) / (float)segmentLength) + center;
+                    frequency = ((k * sampleRate) / (float)segmentLength) + center;
                 }
                 else
                 {
                     // Negative frequencies with center frequency offset
-                    frequency = (((k - segmentLength) * sample_rate) / (float)segmentLength) + center;
+                    frequency = (((k - segmentLength) * sampleRate) / (float)segmentLength) + center;
                 }
 
                 psd[1][k] = frequency;
@@ -152,8 +143,6 @@ namespace SoapyRL
 
         private static void calculateRBWVBW()
         {
-            calculateAutoFFTSize();
-
             var sample_rate = (double)Configuration.config[Configuration.saVar.rxSampleRate];
             double overlap = (double)Configuration.config[Configuration.saVar.fftOverlap];
             var neff = FFT_size / (1 - overlap);
@@ -187,12 +176,18 @@ namespace SoapyRL
 
         private static void calculateAutoFFTSize()
         {
-            var hops = ((double)Configuration.config[Configuration.saVar.freqStop] - (double)Configuration.config[Configuration.saVar.freqStart]) / ((double)Configuration.config[Configuration.saVar.rxSampleRate] / 2);
-            FFT_size = Enumerable.Range(1, 15).Select(x => (int)Math.Pow(2, x)).OrderBy(i => i).First(x => x / (int)Configuration.config[Configuration.saVar.fftSegment] - ((double)Configuration.config[Configuration.saVar.rxSampleRate] / 10e6) >= 0);
+            FFT_size = Enumerable.Range(1, 15).Select(x => (int)Math.Pow(2, x)).OrderBy(i => i).First(x => x - (int)(((double)Configuration.config[Configuration.saVar.rxSampleRate] * (int)Configuration.config[Configuration.saVar.fftSegment]) / 1e6) >= 0);
         }
 
         private static void FFT_POOL()
         {
+            int segmentLength = Math.Max(1, FFT_size / (int)Configuration.config[Configuration.saVar.fftSegment]);
+            int overlap = (int)(segmentLength * (double)Configuration.config[Configuration.saVar.fftOverlap]);
+            int stepSize = segmentLength - overlap; // Step size
+            int numSegments = (FFT_size - overlap) / stepSize; // Number of segments
+            var fftwArrayInput = new FftwArrayComplex(segmentLength);
+            var fftwArrayOuput = new FftwArrayComplex(segmentLength);
+            var _fftwPlanContext = FFTW.NET.FftwPlanC2C.Create(fftwArrayInput, fftwArrayOuput, DftDirection.Forwards, PlannerFlags.Default);
             while (isRunning || !FFTQueue.IsEmpty)
             {
                 Tuple<double, Complex[], double> next;
@@ -202,12 +197,8 @@ namespace SoapyRL
                     continue;
                 }
                 var fft_samples = next.Item2;
-                int segmentLength = Math.Max(1, FFT_size / (int)Configuration.config[Configuration.saVar.fftSegment]);
-                int overlap = (int)(segmentLength * (double)Configuration.config[Configuration.saVar.fftOverlap]);
-                int stepSize = segmentLength - overlap; // Step size
-                int numSegments = (FFT_size - overlap) / stepSize; // Number of segments
 
-                float[][] psd = WelchPSD(fft_samples, segmentLength, overlap, (float)next.Item3, (float)next.Item1);
+                float[][] psd = WelchPSD(fft_samples, fftwArrayInput, fftwArrayOuput, _fftwPlanContext, segmentLength, overlap, (float)next.Item3, (float)next.Item1);
 
                 if (resetData)
                 {
@@ -215,6 +206,9 @@ namespace SoapyRL
                 }
                 Graph.updateData(psd);
             }
+            _fftwPlanContext.Dispose();
+            fftwArrayInput.Dispose();
+            fftwArrayOuput.Dispose();
         }
 
         //the noise is static so it will be used the same for every sweep both reference and actual RL measure
@@ -222,9 +216,9 @@ namespace SoapyRL
 
         private static unsafe void IQSampler(Device sdr)
         {
-            calculateAutoFFTSize();
             var sample_rate = (double)Configuration.config[Configuration.saVar.rxSampleRate];
             sdr.SetSampleRate(Direction.Rx, 0, sample_rate);
+            sdr.SetSampleRate(Direction.Tx, 0, sample_rate);
             sdr.SetGain(Direction.Rx, 0, 0);
             double frequency = (double)Configuration.config[Configuration.saVar.freqStart] + sample_rate / 2;
             sdr.SetFrequency(Direction.Rx, 0, frequency);
@@ -256,7 +250,7 @@ namespace SoapyRL
 #if DEBUG_VERBOSE
                                     Logger.Error($"WriteStream Error Code {errorCode}");
 #endif
-                            continue;
+                          
                         }
                     }
                 }
@@ -308,7 +302,8 @@ namespace SoapyRL
             });
             readingThread.Start();
             for (double f_center = (double)Configuration.config[Configuration.saVar.freqStart] + (sample_rate / 2);
-                f_center - (sample_rate / 2) < (double)Configuration.config[Configuration.saVar.freqStop];
+                f_center - (sample_rate / 2) < (double)Configuration.config[Configuration.saVar.freqStop]
+                && !Imports.GetAsyncKeyState(Keys.End);
                 f_center += sample_rate)
             {
                 //some sdrs are slow with hopping so it is preferable if we sample without hopping (just the span of the sample rate) we wont call setFrequency as it will slow the algorithm
@@ -335,6 +330,7 @@ namespace SoapyRL
                 {
                     Thread.Sleep(10); //waiting for samples to fill up;
                 }
+                Console.WriteLine(FFT_size);
                 var currentTotalSamples = 0;
                 currentTotalSamples += totalSamples; // like this so its not a ref and actual copy
                 while (currentTotalSamples > FFT_size)

@@ -1,4 +1,5 @@
 ﻿using ImGuiNET;
+using NLog;
 
 namespace SoapyRL.UI
 {
@@ -6,13 +7,12 @@ namespace SoapyRL.UI
     {
         private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
 
-        private static int _selectedFFTLength = 2, _selectedFFTWindow = 0;
+        private static int _selectedFFTWindow = 0;
         private static double _additionalWindowArgument = 0.5;
-        private static string _additionalText, _displayRefreshRate = "1000";
+        private static string _additionalText, _displayRefreshRate = "1000",_fftRBW = "1M";
         private static bool _hasWindowArgument = false;
 
-        public static string[] s_fftLengthCombo = new string[] { "Auto", "256", "512", "1024", "2048", "4096", "8192", "16384", "32768", "65535", "131072", "262144", "524288", "1048576" },
-                               s_fftWindowCombo = new string[] { "Gauss", "FlatTop", "None" };
+        public static string[] s_fftWindowCombo = new string[] { "Gauss", "FlatTop", "None" };
 
         public static string s_fftSegments = "1600", s_fftOverlap = "50%", s_fftWindowAdditionalArgument = "0.5";
 
@@ -61,18 +61,17 @@ namespace SoapyRL.UI
         public static void renderVideo()
         {
             var inputTheme = Theme.getTextTheme();
-            Theme.Text($"\uf1fb FFT Length", inputTheme);
-            inputTheme.prefix = "FFT Length";
-            if (Theme.glowingCombo("fft Length", ref _selectedFFTLength, s_fftLengthCombo, inputTheme))
+            Theme.Text($"\uf1fb RBW", inputTheme);
+            inputTheme.prefix = "RBW";
+            if (Theme.glowingInput("RBW", ref _fftRBW, inputTheme))
             {
-                if (_selectedFFTLength == 0)
+                double rbw = 0;
+                if (tab_Frequency.TryFormatFreq(_fftRBW, out rbw))
                 {
-                    //auto
-                    Configuration.config[Configuration.saVar.fftSize] = 0;
+                    if (rbw == 0) return;
+                    Configuration.config[Configuration.saVar.fftRBW] = rbw;
+                    PerformFFT.resetIQFilter();
                 }
-                else
-                    Configuration.config[Configuration.saVar.fftSize] = int.Parse(s_fftLengthCombo[_selectedFFTLength]);
-                PerformFFT.resetIQFilter();
             }
 
             Theme.newLine();
@@ -92,8 +91,8 @@ namespace SoapyRL.UI
             }
 
             Theme.newLine();
-            Theme.Text($"\uf1fb Welch FFT segments", inputTheme);
-            inputTheme.prefix = $"How many segments should be in the FFT";
+            Theme.Text($"\uf1fb Segment Averaging", inputTheme);
+            inputTheme.prefix = $"averaging";
             if (Theme.glowingInput("fftsegments", ref s_fftSegments, inputTheme))
             {
                 int fft_segements = 0;
@@ -112,9 +111,10 @@ namespace SoapyRL.UI
                     _logger.Debug($"Invalid Integer for value segments");
                 }
             }
-
+            Theme.Text("(Simillar Effect to VBW)\n" +
+                "more = less noisy, shows less\nnon-periodic signals\nless = show more non-periodic signals\nalso more noisy");
             Theme.newLine();
-            Theme.Text($"\uf1fb Welch FFT overlap (precentage)", inputTheme);
+            Theme.Text($"\uf1fb overlapping", inputTheme);
             inputTheme.prefix = $"Overlap Between Segments";
             if (Theme.glowingInput("fftoverlap", ref s_fftOverlap, inputTheme))
             {
@@ -134,6 +134,7 @@ namespace SoapyRL.UI
                     _logger.Debug($"Invalid Integer for value overlap");
                 }
             }
+            Theme.Text($"Range: 0-80%");
             Theme.newLine();
             Theme.Text($"\uf1fb FFT Refresh Rate (hz)", inputTheme);
             inputTheme.prefix = $"Overlap Between Segments";
@@ -154,9 +155,6 @@ namespace SoapyRL.UI
                     _logger.Debug($"Invalid value for refresh rate");
                 }
             }
-            ImGui.NewLine();
-            Theme.Text($"RBW: {PerformFFT.RBW}Hz", inputTheme);
-            Theme.Text($"VBW: {PerformFFT.VBW}Hz", inputTheme);
         }
     }
 }
