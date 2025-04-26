@@ -15,13 +15,10 @@ namespace SoapyRL.UI
             {
                 tab_Trace.s_traces[i] = new tab_Trace.Trace();
             }
-            for (int i = 0; i < tab_Marker.s_markers.Length; i++)
-            {
-                tab_Marker.s_markers[i] = new tab_Marker.marker();
-                tab_Marker.s_markers[i].id = i;
-            }
-            tab_Marker.s_markerTraceCombo = tab_Trace.s_comboTraces;
+            tab_Marker.s_Marker = new tab_Marker.marker();
+            tab_Marker.s_Marker.id = 0;
             tab_Trace.s_traces[0].viewStatus = tab_Trace.traceViewStatus.active;
+            tab_Marker.s_Marker.isActive = true;
         }
 
         public static void clearPlotData()
@@ -156,7 +153,6 @@ namespace SoapyRL.UI
                     draw.AddLine(sampleAPosRef, sampleBPosRef, fadedColorYellow, 1.0f);
                 }
                 var x = 1;
-                var currentActiveMarkers = tab_Marker.s_markers.Where(d => d.reference == x && d.isActive).ToArray();
                 traceColor_uint = ColorExtention.ToUint(Color.Green);
                 var fadedColorGreen = Color.FromArgb(100, Color.Gray).ToUint();
                 var anntennaData = tab_Trace.s_traces[1].plot.ToArray().AsSpan(); //asspan is fastest iteration
@@ -182,55 +178,53 @@ namespace SoapyRL.UI
                     Vector2 sampleAPosRef = scaleToGraph(left, top, right, bottom, sampleA.Key, sampleA.Value - minDB + (float)graph_startDB / 2, freqStart, freqStop, graph_startDB, graph_endDB);
                     Vector2 sampleBPosRef = scaleToGraph(left, top, right, bottom, sampleB.Key, sampleB.Value - minDB + (float)graph_startDB / 2, freqStart, freqStop, graph_startDB, graph_endDB);
                     draw.AddLine(sampleAPosRef, sampleBPosRef, fadedColorGreen, 1.0f);
-                    currentActiveMarkers = currentActiveMarkers.Select(marker =>
-                    {
+                    
                         //apply new db value for marker
-                        if (marker.position >= sampleA.Key && marker.position <= sampleB.Key)
+                        if (tab_Marker.s_Marker.position >= sampleA.Key && tab_Marker.s_Marker.position <= sampleB.Key)
                         {
-                            marker.value = sampleB.Value;
-                            marker.valueRef = valueRefB;
+                        tab_Marker.s_Marker.value = sampleB.Value;
+                        tab_Marker.s_Marker.valueRef = valueRefB;
                         }
-                        return marker;
-                    }).ToArray();
                 }
-                if (tab_Marker.s_markers[tab_Marker.s_selectedMarker].isActive)
-                {
+                
                     if (ImGui.IsMouseDown(ImGuiMouseButton.Left) && ImGui.IsMouseHoveringRect(new Vector2(left, top), new Vector2(right, bottom))
                                 && s_waitForMouseClick.ElapsedMilliseconds > 100)
                     {
-                        tab_Marker.s_markers[tab_Marker.s_selectedMarker].position = tab_Trace.getClosestSampeledFrequency(tab_Marker.s_markers[tab_Marker.s_selectedMarker].reference, mousePosFreq).Key;
+                    tab_Marker.s_Marker.position = tab_Trace.getClosestSampeledFrequency(tab_Marker.s_Marker.reference, mousePosFreq).Key;
                     }
                     if (mouseRange.X != 0 && ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left))
                     {
-                        tab_Marker.s_markers[tab_Marker.s_selectedMarker].position = tab_Trace.findMaxHoldRange(tab_Trace.s_traces[x].plot, mouseRange.X, mouseRange.Y).Key;
+                    tab_Marker.s_Marker.position = tab_Trace.findMaxHoldRange(tab_Trace.s_traces[x].plot, mouseRange.X, mouseRange.Y).Key;
                         s_waitForMouseClick.Restart();
                     }
-                }
+                
 
-                for (int c = 0; c < currentActiveMarkers.Length; c++)
-                {
-                    var markerPosOnGraph = scaleToGraph(left, top, right, bottom, (float)currentActiveMarkers[c].position, (float)currentActiveMarkers[c].value, freqStart, freqStop, graph_startDB, graph_endDB);
-                    draw.AddCircleFilled(markerPosOnGraph, 4f, Color.White.ToUint());
-                    draw.AddCircle(markerPosOnGraph, 4.1f, ColorExtention.ToUint(Color.Black)); //outline
-                    double markerValue = currentActiveMarkers[c].value;
-                    double markerPosition = currentActiveMarkers[c].position;
-                    double markerRefValue = currentActiveMarkers[c].valueRef;
+                
+                    
+                    double markerValue = tab_Marker.s_Marker.value;
+                    double markerPosition = tab_Marker.s_Marker.position;
+                    double markerRefValue = tab_Marker.s_Marker.valueRef;
                     double RL = markerRefValue - markerValue,
                         RC = Math.Pow(10, (markerValue - markerRefValue) / 20.0),
                         VSWR = (1.0 + RC) / (1.0 - RC),
                         mismatchLoss = -10 * Math.Log10(1 - Math.Pow(RC, 2));
-                    currentActiveMarkers[c].txtStatus += $"Marker {c + 1} \n" +
+
+                var markerPosOnGraph = scaleToGraph(left, top, right, bottom, (float)tab_Marker.s_Marker.position, (float)RL, freqStart, freqStop, graph_startDB, graph_endDB);
+                draw.AddCircleFilled(markerPosOnGraph, 4f, traceColor_uint);
+                draw.AddCircle(markerPosOnGraph, 4.1f, ColorExtention.ToUint(Color.Black)); //outline
+
+                tab_Marker.s_Marker.txtStatus += $"Marker\n" +
                         $"Freq {(markerPosition / 1e6).ToString().TruncateLongString(5)}" +
                         $"\nReturn Loss: {RL.ToString().TruncateLongString(5)}dB" +
                         $"\nReflection Coefficient: {RC.ToString().TruncateLongString(5)}" +
                         $"\nVSWR: {VSWR.ToString().TruncateLongString(5)}\n" +
                         $"\nMismatch Loss {mismatchLoss.ToString().TruncateLongString(5)}";
 
-                    string markerstatusText = currentActiveMarkers[c].txtStatus;
+                    string markerstatusText = tab_Marker.s_Marker.txtStatus;
                     var textStatusSize = ImGui.CalcTextSize(markerstatusText);
                     draw.AddText(new Vector2(left, bottom - graphStatus.Y - textStatusSize.Y), traceColor_uint, markerstatusText);
-                    currentActiveMarkers[c].txtStatus = string.Empty; //clear
-                }
+                tab_Marker.s_Marker.txtStatus = string.Empty; //clear
+                
             }
             catch (Exception ex)
             {

@@ -60,103 +60,90 @@ namespace SoapyRL
         //CalculateFrequency(i, next.Item3, fft_size, next.Item1);
         private static float[][] WelchPSD(Complex[] inputSignal, FftwArrayComplex bufferInput, FftwArrayComplex bufferOutput, FftwPlanC2C plan, int segmentLength, int overlap, float sample_rate, float center)
         {
-            var signal = inputSignal.AsSpan();
-            int numSegments = (signal.Length - overlap) / (segmentLength - overlap);
-            float[][] psd = new float[2][];
-            psd[0] = new float[signal.Length];
-            psd[1] = new float[signal.Length];
-
-            // Calculate normalization factor for window (Hanning, Hamming, etc.)
-            double[] window = getWindowFunction(segmentLength);
-            double normalizationFactor_regular = 0.0;
-            for (int i = 0; i < segmentLength; i++)
-                normalizationFactor_regular += window[i] * window[i];
-
-            for (int seg = 0; seg < numSegments; seg++)
+            try
             {
-                int start = seg * (segmentLength - overlap);
-                var segment = signal.Slice(start, segmentLength);
+                var signal = inputSignal.AsSpan();
+                int numSegments = (signal.Length - overlap) / (segmentLength - overlap);
+                float[][] psd = new float[2][];
+                psd[0] = new float[signal.Length];
+                psd[1] = new float[signal.Length];
 
-                // Apply window to segment
+                // Calculate normalization factor for window (Hanning, Hamming, etc.)
+                double[] window = getWindowFunction(segmentLength);
+                double normalizationFactor_regular = 0.0;
                 for (int i = 0; i < segmentLength; i++)
-                    bufferInput[i] = segment[i] * window[i];
+                    normalizationFactor_regular += window[i] * window[i];
 
-                plan.Execute();
-
-                // Compute periodogram (magnitude squared)
-                for (int k = 0; k < signal.Length; k++)
+                for (int seg = 0; seg < numSegments; seg++)
                 {
-                    psd[0][k] += (float)((bufferOutput[k].MagnitudeSquared()) / (normalizationFactor_regular * segmentLength)); // Normalize by window and segment length
-                }
-            }
+                    int start = seg * (segmentLength - overlap);
+                    if (start + segmentLength > signal.Length) break;//out of boundaries
+                    var segment = signal.Slice(start, segmentLength);
 
-            // Average over segments and convert to dBm if needed
-            var calibration = 0.0f;
-            if (tab_Cal.s_currentCalData.Count > 0)
+                    // Apply window to segment
+                    for (int i = 0; i < segmentLength; i++)
+                        bufferInput[i] = segment[i] * window[i];
+
+                    plan.Execute();
+
+                    // Compute periodogram (magnitude squared)
+                    for (int k = 0; k < segment.Length; k++)
+                    {
+                        psd[0][k] += (float)((bufferOutput[k].MagnitudeSquared()) / (normalizationFactor_regular * segmentLength)); // Normalize by window and segment length
+                    }
+                }
+
+                // Average over segments and convert to dBm if needed
+                var calibration = 0.0f;
+                if (tab_Cal.s_currentCalData.Count > 0)
+                {
+                    calibration = tab_Cal.s_currentCalData.OrderBy(x => Math.Abs(x.frequency - center)).First().results;
+                }
+
+                // Convert to dBm
+                for (int k = 0; k < segmentLength; k++)
+                {
+                    // Convert the power to dBm (if applicable)
+                    psd[0][k] /= numSegments;
+                    psd[0][k] = (float)(10 * Math.Log10(psd[0][k])) + calibration;
+
+                    // Calculate frequency for each bin
+                    float frequency = 0;
+                    if (k < (segmentLength / 2.0))
+                    {
+                        // Positive frequencies with center frequency offset
+                        frequency = ((k * sample_rate) / (float)segmentLength) + center;
+                    }
+                    else
+                    {
+                        // Negative frequencies with center frequency offset
+                        frequency = (((k - segmentLength) * sample_rate) / (float)segmentLength) + center;
+                    }
+
+                    psd[1][k] = frequency;
+                }
+
+                return psd;
+            } catch (Exception ex)
             {
-                calibration = tab_Cal.s_currentCalData.OrderBy(x => Math.Abs(x.frequency - center)).First().results;
+                Logger.Error($"FFT ERROR {ex.Message} {ex.StackTrace}");
+                return null;
             }
-
-            // Convert to dBm
-            for (int k = 0; k < segmentLength; k++)
-            {
-                // Convert the power to dBm (if applicable)
-                psd[0][k] /= numSegments;
-                psd[0][k] = (float)(10 * Math.Log10(psd[0][k])) + calibration;
-
-                // Calculate frequency for each bin
-                float frequency = 0;
-                if (k < (segmentLength / 2.0))
-                {
-                    // Positive frequencies with center frequency offset
-                    frequency = ((k * sample_rate) / (float)segmentLength) + center;
-                }
-                else
-                {
-                    // Negative frequencies with center frequency offset
-                    frequency = (((k - segmentLength) * sample_rate) / (float)segmentLength) + center;
-                }
-
-                psd[1][k] = frequency;
-            }
-
-            return psd;
         }
 
         //https://github.com/ghostop14/gr-correctiq
         private static double ratio = 1e-05f;
 
         private static double avg_real = 0.0, avg_img = 0.0;
-        public static double RBW, VBW, ENBW, EN;
 
         private static void calculateRBWVBW()
         {
-            double BW = 0;
-            if (0 == (int)Configuration.config[Configuration.saVar.fftSize])
-            {
-                //auto
-                calculateAutoFFTSize();
-            }
-            else
-                FFT_size = (int)Configuration.config[Configuration.saVar.fftSize];
-            double[] window = getWindowFunction(FFT_size);
-            for (int j = 0; j < window.Length; j++)
-            {
-                EN += window[j] * window[j];
-                BW += window[j];
-            }
-            BW *= BW;
-            ENBW = (EN / BW) * (double)FFT_size;
-            var sample_rate = (double)Configuration.config[Configuration.saVar.sampleRate];
-            double overlap = (double)Configuration.config[Configuration.saVar.fftOverlap];
-            var neff = FFT_size / (1 - overlap);
-            RBW = ENBW * sample_rate / neff;
-            int segmentLength = Math.Max(1, FFT_size / (int)Configuration.config[Configuration.saVar.fftSegment]);
-            double stepSize = segmentLength - overlap;
-            double numSegments = (FFT_size - overlap) / stepSize;
-            VBW = RBW / Math.Sqrt(numSegments);
-            RBW = (double)(int)RBW;
-            VBW = (double)(int)VBW;
+            var rbw = (double)Configuration.config[Configuration.saVar.fftRBW];
+            var numberOfSegments = (int)Configuration.config[Configuration.saVar.fftSegment];
+            var desiredSegmentLength = (double)Configuration.config[Configuration.saVar.sampleRate] / rbw;
+            var desiredfftLength = desiredSegmentLength * numberOfSegments;
+            FFT_size = (int)Math.Pow(2, ((int)Math.Ceiling(Math.Log(desiredfftLength, 2))));
+            Logger.Info($"RBW {rbw} FFTSIZE {FFT_size}");
         }
 
         public static void resetIQFilter()
@@ -164,14 +151,8 @@ namespace SoapyRL
             avg_real = 0;
             avg_img = 0;
             if (device == null) return;
+            
             calculateRBWVBW();
-            //anything that affects the bin width,frequencies,welching method,etc... can and will affect the dc bias position on the IQ chart therfore we need to reset it
-            //in addition we might aswell reset the plot since the functions that calls it will also change the bin spacing and frequency positioning which might not be in our span
-            //man i've been coding this spectrum for so long it hurts, but it is fun!
-            while (!((double)Configuration.config[Configuration.saVar.sampleRate]).Equals(device.GetSampleRate(Direction.Rx, 0)))
-            {
-                Thread.Sleep(20);
-            }
             resetData = true;
         }
 
@@ -185,13 +166,6 @@ namespace SoapyRL
                 samples[i] = new Complex(samples[i].Real - avg_real, samples[i].Imaginary - avg_img);
             }
         }
-
-        private static void calculateAutoFFTSize()
-        {
-            var hops = ((double)Configuration.config[Configuration.saVar.freqStop] - (double)Configuration.config[Configuration.saVar.freqStart]) / ((double)Configuration.config[Configuration.saVar.sampleRate] / 2);
-            FFT_size = Array.ConvertAll(tab_Video.s_fftLengthCombo.Skip(1).ToArray(), s => int.Parse(s)).OrderBy(i => i).First(x => x / (float)(int)Configuration.config[Configuration.saVar.fftSegment] > Configuration.graphSize.X / hops);
-        }
-
         private static void FFT_POOL()
         {
             var fftwArrayInput = new FftwArrayComplex(1024);
@@ -208,7 +182,7 @@ namespace SoapyRL
                 var fft_samples = next.Item2;
                 int fft_size = next.Item2.Length;
                 int segmentLength = Math.Max(1, fft_size / (int)Configuration.config[Configuration.saVar.fftSegment]);
-                if(fftwArrayInput.Length != segmentLength)
+                if(fftwArrayInput.Length != segmentLength || resetData)
                 {
                     fftwPlanContext.Dispose();
                     fftwArrayInput.Dispose();
@@ -216,17 +190,14 @@ namespace SoapyRL
                      fftwArrayInput = new FftwArrayComplex(segmentLength);
                      fftwArrayOuput = new FftwArrayComplex(segmentLength);
                     fftwPlanContext = FFTW.NET.FftwPlanC2C.Create(fftwArrayInput, fftwArrayOuput, DftDirection.Forwards, PlannerFlags.Default);
+                    continue;
                 }
                 int overlap = (int)(segmentLength * (double)Configuration.config[Configuration.saVar.fftOverlap]);
                 int stepSize = segmentLength - overlap; // Step size
                 int numSegments = (fft_size - overlap) / stepSize; // Number of segments
 
-                float[][] psd = WelchPSD(fft_samples,fftwArrayInput,fftwArrayOuput,fftwPlanContext, segmentLength, overlap, (float)next.Item3, (float)next.Item1);
-
-                if (resetData)
-                {
-                    continue;
-                }
+                float[][]? psd = WelchPSD(fft_samples,fftwArrayInput,fftwArrayOuput,fftwPlanContext, segmentLength, overlap, (float)next.Item3, (float)next.Item1);
+                if (psd != null)
                 Graph.updateData(psd);
             }
         }

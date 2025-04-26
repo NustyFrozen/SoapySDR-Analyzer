@@ -75,14 +75,14 @@ namespace SoapyRL.UI
             s_markers[markerid].DeltadB = s_markers[markerid].value;
         }
 
-        public static float peakSearch(marker marker, float minimumFreq, float maxFreq)
+        public static void peakSearch(marker marker, float minimumFreq, float maxFreq)
         {
-            float peak = 0;
             lock (tab_Trace.s_traces[marker.reference].plot) //could get updateData so we gotta lock it up
             {
-                peak = tab_Trace.s_traces[marker.reference].plot.Where(x => x.Key >= minimumFreq && x.Key <= maxFreq).MaxBy(entry => entry.Value).Key;
+                var peakPointArry = tab_Trace.s_traces[marker.reference].plot.Where(x => x.Key >= minimumFreq && x.Key <= maxFreq).OrderByDescending(entry => entry.Value).ToList();
+                    s_markers[marker.id].position = peakPointArry[0].Key;
+                    s_markers[marker.id].value = peakPointArry[0].Value;
             }
-            return peak;
         }
 
         public static void renderMarker()
@@ -112,19 +112,19 @@ namespace SoapyRL.UI
                 buttonTheme.text = $"{Design_imGUINET.FontAwesome5.ArrowUp} Peak Search";
                 if (Theme.button("peakSearch", buttonTheme) || Imports.GetAsyncKeyState(Keys.Enter))
                 {
-                    s_markers[s_selectedMarker].position = peakSearch(s_markers[s_selectedMarker], (float)(double)Configuration.config[Configuration.saVar.freqStart], (float)(double)(Configuration.config[Configuration.saVar.freqStop]));
+                    peakSearch(s_markers[s_selectedMarker], (float)(double)Configuration.config[Configuration.saVar.freqStart], (float)(double)(Configuration.config[Configuration.saVar.freqStop]));
                 }
                 Theme.newLine();
                 buttonTheme.text = $"{Design_imGUINET.FontAwesome5.ArrowUp} Next Pk Right";
                 if (Theme.button("Next ", buttonTheme))
                 {
-                    s_markers[s_selectedMarker].position = peakSearch(s_markers[s_selectedMarker], (float)(double)s_markers[s_selectedMarker].position, (float)(double)(Configuration.config[Configuration.saVar.freqStop]));
+                    peakSearch(s_markers[s_selectedMarker], (float)(double)s_markers[s_selectedMarker].position, (float)(double)(Configuration.config[Configuration.saVar.freqStop]));
                 }
                 Theme.newLine();
                 buttonTheme.text = $"{Design_imGUINET.FontAwesome5.ArrowUp} Next Pk Left";
                 if (Theme.button("peakSearch", buttonTheme))
                 {
-                    s_markers[s_selectedMarker].position = peakSearch(s_markers[s_selectedMarker], (float)(double)Configuration.config[Configuration.saVar.freqStart], (float)(double)s_markers[s_selectedMarker].position);
+                    peakSearch(s_markers[s_selectedMarker], (float)(double)Configuration.config[Configuration.saVar.freqStart], (float)(double)s_markers[s_selectedMarker].position);
                 }
                 Theme.newLine();
                 buttonTheme.text = $"{Design_imGUINET.FontAwesome5.Mountain} Set Delta";

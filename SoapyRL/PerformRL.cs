@@ -250,7 +250,7 @@ namespace SoapyRL
 #if DEBUG_VERBOSE
                                     Logger.Error($"WriteStream Error Code {errorCode}");
 #endif
-                            continue;
+                          
                         }
                     }
                 }
