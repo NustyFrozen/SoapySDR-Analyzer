@@ -80,12 +80,8 @@ namespace SoapyRL.UI
             lock (tab_Trace.s_traces[marker.reference].plot) //could get updateData so we gotta lock it up
             {
                 var peakPointArry = tab_Trace.s_traces[marker.reference].plot.Where(x => x.Key >= minimumFreq && x.Key <= maxFreq).OrderByDescending(entry => entry.Value).ToList();
-                for (int i = 0; i < peakPointArry.Count(); i++)
-                {
-                    if (float.IsInfinity(peakPointArry[i].Value)) continue;
-                    s_markers[marker.id].position = peakPointArry[i].Key;
-                    return;
-                }
+                    s_markers[marker.id].position = peakPointArry[0].Key;
+                    s_markers[marker.id].value = peakPointArry[0].Value;
             }
         }
 
@@ -116,7 +112,7 @@ namespace SoapyRL.UI
                 buttonTheme.text = $"{Design_imGUINET.FontAwesome5.ArrowUp} Peak Search";
                 if (Theme.button("peakSearch", buttonTheme) || Imports.GetAsyncKeyState(Keys.Enter))
                 {
-                   peakSearch(s_markers[s_selectedMarker], (float)(double)Configuration.config[Configuration.saVar.freqStart], (float)(double)(Configuration.config[Configuration.saVar.freqStop]));
+                    peakSearch(s_markers[s_selectedMarker], (float)(double)Configuration.config[Configuration.saVar.freqStart], (float)(double)(Configuration.config[Configuration.saVar.freqStop]));
                 }
                 Theme.newLine();
                 buttonTheme.text = $"{Design_imGUINET.FontAwesome5.ArrowUp} Next Pk Right";
@@ -128,7 +124,7 @@ namespace SoapyRL.UI
                 buttonTheme.text = $"{Design_imGUINET.FontAwesome5.ArrowUp} Next Pk Left";
                 if (Theme.button("peakSearch", buttonTheme))
                 {
-                   peakSearch(s_markers[s_selectedMarker], (float)(double)Configuration.config[Configuration.saVar.freqStart], (float)(double)s_markers[s_selectedMarker].position);
+                    peakSearch(s_markers[s_selectedMarker], (float)(double)Configuration.config[Configuration.saVar.freqStart], (float)(double)s_markers[s_selectedMarker].position);
                 }
                 Theme.newLine();
                 buttonTheme.text = $"{Design_imGUINET.FontAwesome5.Mountain} Set Delta";

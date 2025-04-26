@@ -36,8 +36,7 @@ namespace SoapyRL
             freqStart, freqStop,
             sampleRate, leakageSleep, deviecOptions, iqCorrection,
             graphStartDB, graphStopDB, graphOffsetDB, graphRefLevel,
-            fftWindow, fftSize, fftSegmentLength, fftOverlap, refreshRate, automaticLevel, scalePerDivision,
-            fftRBW,fftVBW
+            fftWindow,fftRBW, fftSegment, fftOverlap, refreshRate, automaticLevel, scalePerDivision
         }
 
         public static ObservableDictionary<saVar, object> config = new ObservableDictionary<saVar, object>();
@@ -73,15 +72,12 @@ namespace SoapyRL
             Func<int, double[]> windowFunction = length => Window.Hamming(length);
             Func<int, double[]> windowFunction_Periodic = length => Window.HammingPeriodic(length);
             Configuration.config.Add(saVar.fftWindow, windowFunction);
-            Configuration.config[saVar.fftSize] = 4096;
-            Configuration.config[saVar.fftSegmentLength] = 13;
+            Configuration.config[saVar.fftRBW] = 1e6;
+            Configuration.config[saVar.fftSegment] = 13;
             Configuration.config[saVar.fftOverlap] = 0.5;
             Configuration.config[saVar.refreshRate] = (long)0;
             Configuration.config[saVar.automaticLevel] = false;
             Configuration.config[saVar.scalePerDivision] = 20;
-            Configuration.config[saVar.fftRBW] = 1e3;
-            Configuration.config[saVar.fftVBW] = 5e5;
-            PerformFFT.calculateRBWVBW();
         }
 
         private static void updateUIElementsOnConfigChanged(object? sender, keyOfChangedValueEventArgs e)
@@ -123,6 +119,11 @@ namespace SoapyRL
                 case Configuration.saVar.graphRefLevel:
                     tab_Amplitude.s_displayRefLevel = config[Configuration.saVar.graphRefLevel].ToString();
                     break;
+
+                case Configuration.saVar.fftSegment:
+                    tab_Video.s_fftSegments = Configuration.config[saVar.fftSegment].ToString();
+                    break;
+
                 case Configuration.saVar.automaticLevel:
                     tab_Amplitude.s_automaticLevelingEnabled = (bool)Configuration.config[Configuration.saVar.automaticLevel];
                     break;

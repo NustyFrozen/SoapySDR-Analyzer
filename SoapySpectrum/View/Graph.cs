@@ -198,7 +198,7 @@ namespace SoapyRL.UI
             {
                 for (int x = 0; x < tab_Trace.s_traces.Length; x++)
                 {
-                    
+
                     if (tab_Trace.s_traces[x].viewStatus == tab_Trace.traceViewStatus.clear) continue;
                     var currentActiveMarkers = tab_Marker.s_markers.Where(d => d.reference == x && d.isActive).ToArray();
                     List<float> bandPowerDBList = new List<float>();
@@ -263,8 +263,9 @@ namespace SoapyRL.UI
                             //apply new db value for marker
                             if (marker.position >= sampleA.Key && marker.position <= sampleB.Key)
                             {
+                                marker.value = (Math.Abs(marker.position - sampleA.Key) >= Math.Abs(marker.position - sampleB.Key))
+                                ? sampleA.Value: sampleB.Value; //to which point is he closer
                                 tab_Marker.s_markers[marker.id].value = marker.value;
-                                marker.value = sampleB.Value;
                             }
 
                             //apply bandPower List
@@ -302,14 +303,11 @@ namespace SoapyRL.UI
                         double markerPosition = currentActiveMarkers[c].position;
                         if (currentActiveMarkers[c].deltaReference != 0)
                         {
-                            var findReference = currentActiveMarkers.Where(x => x.id == currentActiveMarkers[c].deltaReference - 1);
-                            if (findReference.Any())
-                            {
-                                markerValue = currentActiveMarkers[c].value - findReference.First().value;
-                            }
+
+                            markerValue = currentActiveMarkers[c].value - tab_Marker.s_markers[currentActiveMarkers[c].deltaReference - 1].value;
                             markerPosition = currentActiveMarkers[c].position - tab_Marker.s_markers[currentActiveMarkers[c].deltaReference - 1].position;
                         }
-                        currentActiveMarkers[c].txtStatus += $"Marker {c + 1} \n Freq {(markerPosition / 1e6).ToString().TruncateLongString(5)}M \n {(markerValue + dbOffset).ToString().TruncateLongString(5)} dB\n";
+                        currentActiveMarkers[c].txtStatus += $"Marker {currentActiveMarkers[c].id + 1} \n Freq {(markerPosition / 1e6).ToString().TruncateLongString(5)}M \n {(markerValue + dbOffset).ToString().TruncateLongString(5)} dB\n";
                         if (currentActiveMarkers[c].delta)
                         {
                             var deltaPosition = scaleToGraph(left, top, right, bottom, (float)currentActiveMarkers[c].DeltaFreq, (float)currentActiveMarkers[c].DeltadB, freqStart, freqStop, graph_startDB, graph_endDB);
@@ -318,7 +316,7 @@ namespace SoapyRL.UI
                             draw.AddLine(new Vector2(deltaPosition.X + 5, deltaPosition.Y), new Vector2(deltaPosition.X - 5, deltaPosition.Y), traceColor_uint);
                             draw.AddLine(new Vector2(deltaPosition.X, deltaPosition.Y + 5), new Vector2(deltaPosition.X, deltaPosition.Y - 5), traceColor_uint);
                             draw.AddText(new Vector2(deltaPosition.X - textSize.X / 2, deltaPosition.Y - (textSize.Y) - 2), Color.White.ToUint(), $"Delta Marker {c + 1}");
-                            
+
                             var deltaDB = (currentActiveMarkers[c].value - currentActiveMarkers[c].DeltadB).ToString().TruncateLongString(5);
                             currentActiveMarkers[c].txtStatus += $"Delta \n Freq {((currentActiveMarkers[c].position - currentActiveMarkers[c].DeltaFreq) / 1e6).ToString().TruncateLongString(5)} Mhz \n {deltaDB} dB\n";
                         }

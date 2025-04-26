@@ -102,8 +102,7 @@ namespace SoapyRL.UI
         public static void beginCalibration()
         {
             //apply a stable fft
-            Configuration.config[Configuration.saVar.fftSize] = 4096;
-            Configuration.config[Configuration.saVar.fftSegmentLength] = 20;
+            Configuration.config[Configuration.saVar.fftSegment] = 20;
             Configuration.config[Configuration.saVar.fftOverlap] = 0.5;
 
             List<CalibrationPoint> calibrationResults = new List<CalibrationPoint>();
