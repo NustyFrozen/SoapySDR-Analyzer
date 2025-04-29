@@ -1,19 +1,14 @@
-﻿using SoapyRL.UI;
+﻿namespace SoapySA.View.tabs;
 
-namespace SoapyRL.View.tabs
+internal class tab_Trigger
 {
-    internal class tab_Trigger
+    public static void renderTrigger()
     {
-        private struct trigger
-        {
-            public double freqstart, freqstop, mindB;
-        }
+        Theme.button("Add");
+    }
 
-        public static void renderTrigger()
-        {
-            var inputTheme = Theme.getTextTheme();
-            var buttonTheme = Theme.getButtonTheme();
-            Theme.button("Add");
-        }
+    private struct trigger
+    {
+        public double freqstart, freqstop, mindB;
     }
 }

@@ -1,7 +1,5 @@
-﻿namespace SoapyVNACommon
-{
-    public class Class1
-    {
+﻿namespace SoapyVNACommon;
 
-    }
+public class Class1
+{
 }

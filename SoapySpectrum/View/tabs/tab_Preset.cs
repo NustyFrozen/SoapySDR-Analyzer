@@ -1,10 +1,8 @@
-﻿namespace SoapyRL.View.tabs
-{
-    internal class tab_Preset
-    {
-        public static void renderPreset()
-        {
+﻿namespace SoapySA.View.tabs;
 
-        }
+internal class tab_Preset
+{
+    public static void renderPreset()
+    {
     }
 }

@@ -1,6 +1,6 @@
 using SoapyRL;
 using SoapyRL.Extentions;
-using SoapyRL.UI;
+using SoapyRL.View;
 
 Imports.AllocConsole();
 // To customize application configuration such as set high DPI settings or default font,
