@@ -84,7 +84,7 @@ public static class tab_Cal
         //ImGui.Text($"Calibration Status:\n FFT Window {FFTWindow[selectedFFTWINDOW]}\nstill calibrating: {calibrating}");
         if (ImGui.Button("Begin calibration")) beginCalibration();
         return;
-        calibrateData:
+    calibrateData:
         ImGui.Text("Press Enter to go to next step:");
         ImGui.Text($"Calibrating: {s_calInfo}");
     }

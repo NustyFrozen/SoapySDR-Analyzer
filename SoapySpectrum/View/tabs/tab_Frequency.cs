@@ -16,7 +16,6 @@ public static class tab_Frequency
     {
         var childSize = Configuration.optionSize;
 
-
         Theme.Text("Center Frequency", Theme.inputTheme);
         Theme.inputTheme.prefix = "Center Frequency";
         var hasFrequencyChanged = Theme.glowingInput("frequency_center", ref _displayFreqCenter, Theme.inputTheme);

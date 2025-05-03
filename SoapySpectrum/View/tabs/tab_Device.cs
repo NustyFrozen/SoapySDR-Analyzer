@@ -262,7 +262,6 @@ public static class tab_Device
 
         Theme.Text("Sensors Data", Theme.inputTheme);
 
-
         foreach (var sensor in _deviceSensorData)
             ImGui.Text(sensor);
 

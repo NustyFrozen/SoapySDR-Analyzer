@@ -9,6 +9,7 @@
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <ApplicationIcon>Untitled.ico</ApplicationIcon>
     <Configurations>Debug;Release;debug-verbose</Configurations>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>

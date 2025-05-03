@@ -8,7 +8,7 @@ public static class tab_Video
 
     private static int _selectedFFTWindow;
     private static double _additionalWindowArgument = 0.5;
-    private static string _additionalText, _displayRefreshRate = "1000", _fftRBW = "1M";
+    private static string _additionalText, _displayRefreshRate = "1000", _fftRBW = "0.01M";
     private static bool _hasWindowArgument;
 
     public static string[] s_fftWindowCombo = new[] { "Gauss", "FlatTop", "None" };

@@ -9,11 +9,14 @@ namespace SoapySA;
 public static class Configuration
 {
 #if DEBUG
-        public static ImGuiWindowFlags mainWindowFlags = ImGuiWindowFlags.NoScrollbar;
-        private static Vector2 screenSize =
- new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.ToInt16(Screen.PrimaryScreen.Bounds.Height / 1.5));
-        public static Vector2 mainWindowPos = new Vector2(600, 0);
+    public static ImGuiWindowFlags mainWindowFlags = ImGuiWindowFlags.NoScrollbar;
+
+    private static Vector2 screenSize =
+new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.ToInt16(Screen.PrimaryScreen.Bounds.Height / 1.5));
+
+    public static Vector2 mainWindowPos = new Vector2(600, 0);
 #else
+
     public static ImGuiWindowFlags mainWindowFlags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoTitleBar |
                                                      ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoMove;
 
@@ -25,7 +28,7 @@ public static class Configuration
 
     public static Vector2
         scaleSize = new(screenSize.X / 1920.0f, screenSize.Y / 1080.0f),
-        positionOffset = new(50 * scaleSize.X, 20 * scaleSize.Y),
+        positionOffset = new(50 * scaleSize.X, 10 * scaleSize.Y),
         mainWindowSize = screenSize,
         graphSize = new(Convert.ToInt16(mainWindowSize.X * .8), Convert.ToInt16(mainWindowSize.Y * .95)),
         optionSize = new(Convert.ToInt16(mainWindowSize.X * .2), Convert.ToInt16(mainWindowSize.Y));
@@ -35,21 +38,40 @@ public static class Configuration
 
     public enum saVar
     {
+        //frequency
         freqStart,
+
         freqStop,
+
+        //device
         sampleRate,
+
         leakageSleep,
         deviecOptions,
         iqCorrection,
+
+        //amplitude
         graphStartDB,
+
         graphStopDB,
         graphOffsetDB,
         graphRefLevel,
+
+        ///vbw
         fftWindow,
+
         fftRBW,
         fftSegment,
         fftOverlap,
+
+        //measurement Channel
+        channelBW,
+
+        channelOCP,
+
+        //others
         refreshRate,
+
         automaticLevel,
         scalePerDivision
     }
@@ -70,8 +92,8 @@ public static class Configuration
 
         tab_Cal.s_AvailableCal = calibrations.ToArray();
         config.CollectionChanged += updateUIElementsOnConfigChanged;
-        config.Add(saVar.freqStart, 930e6);
-        config.Add(saVar.freqStop, 960e6);
+        config.Add(saVar.freqStart, 933.4e6);
+        config.Add(saVar.freqStop, 943.4e6);
 
         config.Add(saVar.sampleRate, 20e6);
         config[saVar.leakageSleep] = 5;
@@ -85,12 +107,14 @@ public static class Configuration
         Func<int, double[]> windowFunction = length => Window.Hamming(length);
         Func<int, double[]> windowFunction_Periodic = length => Window.HammingPeriodic(length);
         config.Add(saVar.fftWindow, windowFunction);
-        config[saVar.fftRBW] = 1e6;
+        config[saVar.fftRBW] = 0.01e6;
         config[saVar.fftSegment] = 13;
         config[saVar.fftOverlap] = 0.5;
         config[saVar.refreshRate] = (long)0;
         config[saVar.automaticLevel] = false;
         config[saVar.scalePerDivision] = 20;
+        config[saVar.channelBW] = 5e6;
+        config[saVar.channelOCP] = 0.9;
     }
 
     private static void updateUIElementsOnConfigChanged(object? sender, keyOfChangedValueEventArgs e)

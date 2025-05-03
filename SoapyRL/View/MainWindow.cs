@@ -3,7 +3,6 @@ using ImGuiNET;
 using NLog;
 using SoapyRL.Extentions;
 using SoapyRL.View.tabs;
-using SoapyVNACommon.Fonts;
 using System.Numerics;
 
 namespace SoapyRL.View;
@@ -11,14 +10,10 @@ namespace SoapyRL.View;
 public class UI : Overlay
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-    private static int tabID;
 
     private static ushort[] iconRange = new ushort[] { 0xe005, 0xf8ff, 0 };
 
     private static ImFontPtr PoppinsFont, IconFont;
-
-    private readonly string[] availableTabs = new[]
-        { "\uf2db Device", $"{FontAwesome5.Marker} Markers", "\uf3c5 Trace" };
 
     public bool initializedResources;
     private bool visble = true;
@@ -101,10 +96,11 @@ public class UI : Overlay
             loadResources();
             ImGui.SetNextWindowPos(Configuration.mainWindowPos);
             ImGui.SetNextWindowSize(Configuration.mainWindowSize);
+            ImGui.GetIO().FontGlobalScale = 1.4f;
             initializedResources = true;
         }
 
-        ImGui.Begin("Spectrum Analyzer", Configuration.mainWindowFlags);
+        ImGui.Begin("Return Loss", Configuration.mainWindowFlags);
         Theme.drawExitButton(15, Color.Gray, Color.White);
 
         ImGui.BeginChild("Spectrum Graph", Configuration.graphSize);
@@ -112,17 +108,9 @@ public class UI : Overlay
         ImGui.EndChild();
 
         ImGui.SetCursorPos(new Vector2(Configuration.graphSize.X + 60 * Configuration.scaleSize.X, 10));
-        ImGui.BeginChild("Spectrum Options", Configuration.optionSize);
+        ImGui.BeginChild("Options", Configuration.optionSize);
         Theme.newLine();
-        Theme.newLine();
-        Theme.glowingCombo("InputSelectortext4", ref tabID, availableTabs, inputTheme);
-        Theme.newLine();
-        switch (tabID)
-        {
-            case 0:
-                tab_Device.renderDevice();
-                break;
-        }
+        tab_Device.renderDevice();
 
         ImGui.EndChild();
         drawCursor();

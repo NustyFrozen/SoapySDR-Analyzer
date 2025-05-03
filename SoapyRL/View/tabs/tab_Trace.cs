@@ -1,4 +1,5 @@
 ﻿using NLog;
+using SoapyRL.Extentions;
 
 namespace SoapyRL.View.tabs;
 
@@ -12,12 +13,13 @@ public static class tab_Trace
     }
 
     private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
-    public static Trace[] s_traces = new Trace[2];
+    public static Trace[] s_traces = new Trace[3];
 
     public static KeyValuePair<float, float> getClosestSampeledFrequency(int traceID, float Mhz)
     {
         lock (s_traces[traceID].plot)
         {
+            if (s_traces[traceID].plot.Count == 0) return new KeyValuePair<float, float>(0, 0);
             return s_traces[traceID].plot.MinBy(x => Math.Abs((long)x.Key - Mhz));
         }
     }
@@ -40,6 +42,29 @@ public static class tab_Trace
         {
             plot = new SortedDictionary<float, float>();
             viewStatus = traceViewStatus.clear;
+        }
+
+        private uint m_color, m_liteColor;
+
+        public uint color
+        {
+            get
+            {
+                return m_color;
+            }
+            set
+            {
+                m_color = value;
+                m_liteColor = Color.FromArgb(100, m_color.toColor()).ToUint();
+            }
+        }
+
+        public readonly uint liteColor
+        {
+            get
+            {
+                return m_liteColor;
+            }
         }
 
         public traceViewStatus viewStatus;

@@ -1,7 +1,7 @@
-﻿using System.Numerics;
-using ImGuiNET;
+﻿using ImGuiNET;
 using SoapyRL.Extentions;
 using SoapyRL.View.tabs;
+using System.Numerics;
 
 namespace SoapyRL;
 
@@ -13,6 +13,7 @@ public static class Configuration
  new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.ToInt16(Screen.PrimaryScreen.Bounds.Height / 1.5));
         public static Vector2 mainWindowPos = new Vector2(600, 0);
 #else
+
     public static ImGuiWindowFlags mainWindowFlags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoTitleBar |
                                                      ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoMove;
 
@@ -43,7 +44,8 @@ public static class Configuration
         rxSampleRate,
         fftSegment,
         fftOverlap,
-        scalePerDivision
+        scalePerDivision,
+        validImpedanceTol
     }
 
     public static ObservableDictionary<saVar, object> config = new();
@@ -61,7 +63,6 @@ public static class Configuration
                     .Replace(".cal", ""));
 
         config.CollectionChanged += updateUIElementsOnConfigChanged;
-
         config[saVar.leakageSleep] = 5;
         config.Add(saVar.deviecOptions, new string[] { });
         config[saVar.iqCorrection] = true;
@@ -70,6 +71,7 @@ public static class Configuration
         config[saVar.fftSegment] = 400;
         config[saVar.fftOverlap] = 0.95;
         config[saVar.scalePerDivision] = 20;
+        config[saVar.validImpedanceTol] = 0.9f;
     }
 
     private static void updateUIElementsOnConfigChanged(object? sender, keyOfChangedValueEventArgs e)

@@ -17,7 +17,22 @@ public static class Graph
 
     public static void initializeGraphElements()
     {
-        for (var i = 0; i < tab_Trace.s_traces.Length; i++) tab_Trace.s_traces[i] = new tab_Trace.Trace();
+        for (var i = 0; i < tab_Trace.s_traces.Length; i++)
+        {
+            tab_Trace.s_traces[i] = new tab_Trace.Trace();
+            var color = Color.White.ToUint();
+            switch (i)
+            {
+                case 1:
+                    color = Color.LimeGreen.ToUint();
+                    break;
+
+                case 2:
+                    color = Color.Red.ToUint();
+                    break;
+            }
+            tab_Trace.s_traces[i].color = color;
+        }
         tab_Marker.s_Marker = new tab_Marker.marker();
         tab_Marker.s_Marker.id = 0;
         tab_Trace.s_traces[0].viewStatus = tab_Trace.traceViewStatus.active;
@@ -136,9 +151,9 @@ public static class Graph
         {
             var data = tab_Trace.s_traces[0].plot.ToArray();
             var referenceData = data.AsSpan();
-            var minDB = data.MinBy(x => x.Value).Value;
-            var traceColor_uint = Color.White.ToUint();
-            var fadedColorYellow = Color.FromArgb(100, Color.White).ToUint();
+            var minDB = (data.Length == 0) ? 0 : data.MinBy(x => x.Value).Value;
+            var traceColor_uint = tab_Trace.s_traces[0].color;
+            var fadedColorYellow = tab_Trace.s_traces[0].liteColor;
             for (var i = 1; i < referenceData.Length; i++)
             {
                 var sampleA = referenceData[i - 1];
@@ -152,20 +167,20 @@ public static class Graph
                 //bounds check
                 if (sampleBPos.X > right || sampleAPos.X < left) continue;
 
-                draw.AddLine(sampleAPos, sampleBPos, traceColor_uint, 1.0f);
+                draw.AddLine(sampleAPos, sampleBPos, tab_Trace.s_traces[0].color, 1.0f);
 
                 var sampleAPosRef = scaleToGraph(left, top, right, bottom, sampleA.Key,
                     sampleA.Value - minDB + (float)graph_startDB / 2, freqStart, freqStop, graph_startDB, graph_endDB);
                 var sampleBPosRef = scaleToGraph(left, top, right, bottom, sampleB.Key,
                     sampleB.Value - minDB + (float)graph_startDB / 2, freqStart, freqStop, graph_startDB, graph_endDB);
 
-                draw.AddLine(sampleAPosRef, sampleBPosRef, fadedColorYellow, 1.0f);
+                draw.AddLine(sampleAPosRef, sampleBPosRef, tab_Trace.s_traces[0].liteColor, 1.0f);
             }
-
-            var x = 1;
-            traceColor_uint = Color.Green.ToUint();
-            var fadedColorGreen = Color.FromArgb(100, Color.Gray).ToUint();
+            var impedanceTol = (float)Configuration.config[Configuration.saVar.validImpedanceTol];
             var anntennaData = tab_Trace.s_traces[1].plot.ToArray().AsSpan(); //asspan is fastest iteration
+            double rangeStart = 0.0, RangeEnd = 0.0;
+            var iscalculatingValidRange = false;
+            List<Tuple<double, double>> validRanges = new List<Tuple<double, double>>();
             for (var i = 1; i < anntennaData.Length; i++)
             {
                 var sampleA = anntennaData[i - 1];
@@ -186,14 +201,41 @@ public static class Graph
                     sampleBPos.Y = sampleBPos.Y < top ? top : sampleBPos.Y > bottom ? bottom : sampleBPos.Y;
                 }
 
-                ;
-
-                draw.AddLine(sampleAPos, sampleBPos, traceColor_uint, 1.0f);
                 var sampleAPosRef = scaleToGraph(left, top, right, bottom, sampleA.Key,
                     sampleA.Value - minDB + (float)graph_startDB / 2, freqStart, freqStop, graph_startDB, graph_endDB);
                 var sampleBPosRef = scaleToGraph(left, top, right, bottom, sampleB.Key,
                     sampleB.Value - minDB + (float)graph_startDB / 2, freqStart, freqStop, graph_startDB, graph_endDB);
-                draw.AddLine(sampleAPosRef, sampleBPosRef, fadedColorGreen, 1.0f);
+                if (tab_Device.s_showValidRange)
+                {
+                    double foward = 1 - ((double)-(valueRefB - sampleB.Value)).toMW();
+                    if (foward >= impedanceTol)
+                    {
+                        if (iscalculatingValidRange)
+                            RangeEnd = sampleB.Key;
+                        else
+                        {
+                            iscalculatingValidRange = true;
+                            rangeStart = sampleB.Key;
+                            tab_Trace.s_traces[1].color = Color.White.ToUint();
+                        }
+                    }
+                    else
+                    {
+                        if (iscalculatingValidRange)
+                        {
+                            iscalculatingValidRange = false;
+                            tab_Trace.s_traces[1].color = Color.LimeGreen.ToUint();
+                            validRanges.Add(new Tuple<double, double>(rangeStart, RangeEnd));
+                        }
+                    }
+                    if (i + 1 > anntennaData.Length && iscalculatingValidRange)
+                    {
+                        validRanges.Add(new Tuple<double, double>(rangeStart, RangeEnd));
+                        tab_Trace.s_traces[1].color = Color.LimeGreen.ToUint();
+                    }
+                }
+                draw.AddLine(sampleAPos, sampleBPos, tab_Trace.s_traces[1].color, 1.0f);
+                draw.AddLine(sampleAPosRef, sampleBPosRef, tab_Trace.s_traces[1].liteColor, 1.0f);
 
                 //apply new db value for marker
                 if (tab_Marker.s_Marker.position >= sampleA.Key && tab_Marker.s_Marker.position <= sampleB.Key)
@@ -211,41 +253,51 @@ public static class Graph
             if (mouseRange.X != 0 && ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left))
             {
                 tab_Marker.s_Marker.position =
-                    tab_Trace.findMaxHoldRange(tab_Trace.s_traces[x].plot, mouseRange.X, mouseRange.Y).Key;
+                    tab_Trace.findMaxHoldRange(tab_Trace.s_traces[1].plot, mouseRange.X, mouseRange.Y).Key;
                 s_waitForMouseClick.Restart();
             }
-
 
             var markerValue = tab_Marker.s_Marker.value;
             var markerPosition = tab_Marker.s_Marker.position;
             var markerRefValue = tab_Marker.s_Marker.valueRef;
+
             double RL = markerRefValue - markerValue,
                 RC = Math.Pow(10, (markerValue - markerRefValue) / 20.0),
                 VSWR = (1.0 + RC) / (1.0 - RC),
                 mismatchLoss = -10 * Math.Log10(1 - Math.Pow(RC, 2));
-
+            double reflected = (-RL).toMW();
+            double forwarded = 1 - reflected;
             var markerPosOnGraph = scaleToGraph(left, top, right, bottom, (float)tab_Marker.s_Marker.position,
                 (float)RL, freqStart, freqStop, graph_startDB, graph_endDB);
-            draw.AddCircleFilled(markerPosOnGraph, 4f, traceColor_uint);
+            draw.AddCircleFilled(markerPosOnGraph, 4f, tab_Trace.s_traces[1].color);
             draw.AddCircle(markerPosOnGraph, 4.1f, Color.Black.ToUint()); //outline
 
             tab_Marker.s_Marker.txtStatus += $"Marker\n" +
                                              $"Freq {(markerPosition / 1e6).ToString().TruncateLongString(5)}" +
                                              $"\nReturn Loss: {RL.ToString().TruncateLongString(5)}dB" +
                                              $"\nReflection Coefficient: {RC.ToString().TruncateLongString(5)}" +
-                                             $"\nVSWR: {VSWR.ToString().TruncateLongString(5)}\n" +
-                                             $"\nMismatch Loss {mismatchLoss.ToString().TruncateLongString(5)}";
-
+                                             $"\nVSWR: {VSWR.ToString().TruncateLongString(5)}" +
+                                             $"\nMismatch Loss {mismatchLoss.ToString().TruncateLongString(5)}" +
+                                             $"\nForward {(forwarded * 100).ToString().TruncateLongString(5)}% reflected {(reflected * 100).ToString().TruncateLongString(5)}%";
             var markerstatusText = tab_Marker.s_Marker.txtStatus;
             var textStatusSize = ImGui.CalcTextSize(markerstatusText);
-            draw.AddText(new Vector2(left, bottom - graphStatus.Y - textStatusSize.Y), traceColor_uint,
+            draw.AddText(new Vector2(left + Configuration.graphSize.X / 2 - textStatusSize.X / 2,
+                                    bottom - graphStatus.Y - textStatusSize.Y), tab_Trace.s_traces[1].color,
                 markerstatusText);
             tab_Marker.s_Marker.txtStatus = string.Empty; //clear
+            if (tab_Device.s_showValidRange)
+            {
+                var text = "Valid Ranges\n";
+                foreach (var range in validRanges)
+                    text += $"{range.Item1.ToString()} - {range.Item2.ToString()}\n";
+                var textSize = ImGui.CalcTextSize(text);
+                draw.AddText(new Vector2(left,
+                                    bottom - graphStatus.Y - textSize.Y), tab_Trace.s_traces[1].color, text);
+            }
         }
         catch (Exception ex)
         {
-            if (!ex.Message.Contains("Sequence"))
-                _logger.Trace($"Render Error -> {ex.Message} {ex.StackTrace}");
+            Console.WriteLine($"Render Error -> {ex.Message} {ex.StackTrace}");
         }
     }
 }

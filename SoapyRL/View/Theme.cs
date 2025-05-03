@@ -1,6 +1,6 @@
-﻿using System.Numerics;
-using ImGuiNET;
+﻿using ImGuiNET;
 using SoapyRL.Extentions;
+using System.Numerics;
 
 namespace SoapyRL.View;
 

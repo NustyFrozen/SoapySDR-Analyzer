@@ -16,8 +16,9 @@ public static class tab_Device
 
     private static string[] _comboAvailableDevices = new[] { "No Devices Found" };
     public static string s_selectedReflectAntenna = "TX/RX", s_selectedForwardAntenna = "TX/RX";
-    public static float s_osciliatorLeakageSleep;
+    public static float s_osciliatorLeakageSleep, s_validRangeTolerance = 90.0f;
     public static bool s_isCorrectIQEnabled = true;
+    public static bool s_showValidRange;
 
     //SDR device Data
     private static StringList _availableReflectAntennas, _availableForwardAntennas;
@@ -26,7 +27,6 @@ public static class tab_Device
     public static Tuple<string, Range>[] s_deviceTxGains, s_deviceRxGains;
     private static float[] _deviceTxGainValues, _deviceRxGainValues;
     private static RangeList s_transmitRange, s_receiveRange;
-
 
     public static string s_displayFreqStart = "800M", s_displayFreqStop = "1000M";
 
@@ -290,7 +290,15 @@ public static class tab_Device
                 _logger.Error("$ Start or End Frequency span is not a valid double");
             }
         }
-
+        ImGui.Checkbox("Show Valid Impedance Range", ref s_showValidRange);
+        if (s_showValidRange)
+        {
+            Theme.Text("Valid Impedance min forward", inputTheme);
+            if (Theme.slider("valid Impadance Range", ref s_validRangeTolerance, sliderTheme))
+            {
+                Configuration.config[Configuration.saVar.validImpedanceTol] = s_validRangeTolerance;
+            }
+        }
         Theme.newLine();
         renderDeviceData();
         Theme.newLine();
@@ -305,7 +313,7 @@ public static class tab_Device
             Configuration.config[Configuration.saVar.iqCorrection] = s_isCorrectIQEnabled;
         if (PerformRL.isFFTQueueEmpty() && !PerformRL.isRunning)
         {
-            buttonTheme.text = "Sweep Reference";
+            buttonTheme.text = "Sweep Reference (open port)";
             if (Theme.button("Sweep", buttonTheme))
             {
                 for (var i = 0; i < tab_Trace.s_traces.Length; i++)
@@ -317,7 +325,19 @@ public static class tab_Device
                 tab_Trace.s_traces[0].viewStatus = tab_Trace.traceViewStatus.active;
                 PerformRL.beginRL();
             }
+            Theme.newLine();
+            buttonTheme.text = "Sweep range (closed port, optional)";
+            if (Theme.button("Sweep", buttonTheme))
+            {
+                for (var i = 0; i < tab_Trace.s_traces.Length; i++)
+                {
+                    tab_Trace.s_traces[i].viewStatus = tab_Trace.traceViewStatus.clear;
+                    tab_Trace.s_traces[i].plot.Clear();
+                }
 
+                tab_Trace.s_traces[2].viewStatus = tab_Trace.traceViewStatus.active;
+                PerformRL.beginRL();
+            }
             Theme.newLine();
             buttonTheme.text = "Sweep Results";
             if (Theme.button("Sweep", buttonTheme))
@@ -329,7 +349,12 @@ public static class tab_Device
                 PerformRL.beginRL();
             }
         }
+        else
+        {
+            Theme.Text("Performing sweep...");
+            Theme.Text("(to abort click End)");
+        }
         Theme.newLine();
-        ImGui.Checkbox((PerformRL.continous) ? "Enable continuous sweep" : "Disable continuous sweep", ref PerformRL.continous);
+        ImGui.Checkbox("Enable continuous sweep", ref PerformRL.continous);
     }
 }

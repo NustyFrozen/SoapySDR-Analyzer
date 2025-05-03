@@ -1,6 +1,6 @@
-﻿using System.Numerics;
-using ImGuiNET;
+﻿using ImGuiNET;
 using SoapySA.Extentions;
+using System.Numerics;
 
 namespace SoapySA.View;
 

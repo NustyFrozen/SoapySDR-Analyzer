@@ -324,7 +324,6 @@ public static class PerformRL
 
                 while (totalSamples < FFT_size) Thread.Sleep(10); //waiting for samples to fill up;
 
-                Console.WriteLine(FFT_size);
                 var currentTotalSamples = 0;
                 currentTotalSamples += totalSamples; // like this so its not a ref and actual copy
                 while (currentTotalSamples > FFT_size)
@@ -339,7 +338,7 @@ public static class PerformRL
                     currentTotalSamples -= FFT_size;
                 }
             }
-        } while (continous && tab_Trace.s_traces[0].viewStatus != tab_Trace.traceViewStatus.active);
+        } while (continous && tab_Trace.s_traces[1].viewStatus == tab_Trace.traceViewStatus.active);
         Logger.Info("Sweep Finished stopping transmission...");
         keepTransmission = false;
         transmitThread.Join();

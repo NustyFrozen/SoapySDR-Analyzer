@@ -1,16 +1,16 @@
-﻿using System.Numerics;
-using ClickableTransparentOverlay;
+﻿using ClickableTransparentOverlay;
 using ImGuiNET;
 using NLog;
 using SoapySA.Extentions;
 using SoapySA.View.tabs;
 using SoapyVNACommon.Fonts;
+using System.Numerics;
 
 namespace SoapySA.View;
 
 public class UI : Overlay
 {
-    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+    private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
     private static int tabID;
 
     private static ushort[] iconRange = new ushort[] { 0xe005, 0xf8ff, 0 };
@@ -20,7 +20,7 @@ public class UI : Overlay
     private readonly string[] availableTabs = new[]
     {
         "\uf2db Device", "\ue473 Amplitude", "\uf1fe BW", $"{FontAwesome5.WaveSquare} Frequency",
-        $"{FontAwesome5.Marker} Markers", "\uf3c5 Trace", "\uf085 Calibration"
+        $"{FontAwesome5.Marker} Markers", "\uf3c5 Trace", "\uf085 Calibration", $"{ FontAwesome5.Calculator} Measurement"
     };
 
     public bool initializedResources;
@@ -48,7 +48,7 @@ public class UI : Overlay
 
     public unsafe void loadResources()
     {
-        Logger.Debug("Loading Application Resources");
+        _logger.Debug("Loading Application Resources");
         var io = ImGui.GetIO();
 
         ReplaceFont(config =>
@@ -67,7 +67,7 @@ public class UI : Overlay
                 io.Fonts.AddFontFromFileTTF("Fonts\\fa-solid-900.ttf", 16, config, new IntPtr(p));
             }
         });
-        Logger.Debug("Replaced font");
+        _logger.Debug("Replaced font");
 
         PoppinsFont = io.Fonts.AddFontFromFileTTF(@"Fonts\Poppins-Light.ttf", 16);
         //IconFont = io.Fonts.AddFontFromFileTTF(@"Fonts\fa-solid-900.ttf", 16,, new ushort[] { 0xe005,
@@ -136,32 +136,42 @@ public class UI : Overlay
             Theme.initDefaultTheme();
             tab_Device.setupSoapyEnvironment();
             tab_Device.refreshDevices();
-            Graph.s_waitForMouseClick.Start();
+            measurements.NormalMeasurement.s_waitForMouseClick.Start();
+
             tab_Marker.markerMoveKeys.Start();
             Graph.initializeGraphElements();
             loadResources();
             ImGui.SetNextWindowPos(Configuration.mainWindowPos);
             ImGui.SetNextWindowSize(Configuration.mainWindowSize);
+            Configuration.config.CollectionChanged += View.measurements.NormalMeasurement.updateCanvasData;
+            Configuration.config.CollectionChanged += View.measurements.ChannelPower.updateCanvasData;
+
+            View.measurements.NormalMeasurement.updateCanvasData(null, null);
+            View.measurements.ChannelPower.updateCanvasData(null, null);
             initializedResources = true;
             ImGui.GetIO().FontGlobalScale = 1.4f;
         }
 
         ImGui.Begin("Spectrum Analyzer", Configuration.mainWindowFlags);
         Theme.drawExitButton(15, Color.Gray, Color.White);
-
-        ImGui.BeginChild("Spectrum Graph", Configuration.graphSize);
         drawToolTip();
+        ImGui.BeginChild("Spectrum Graph", Configuration.graphSize);
+
         Graph.drawGraph();
         ImGui.EndChild();
 
         ImGui.SetCursorPos(new Vector2(Configuration.graphSize.X + 60 * Configuration.scaleSize.X,
-            ImGui.GetWindowPos().Y + Configuration.positionOffset.Y));
+            Configuration.positionOffset.Y + 30 * Configuration.scaleSize.Y));
         ImGui.BeginChild("Spectrum Options", Configuration.optionSize);
         Theme.inputTheme.prefix = "RBW";
         if (tabID != -1)
         {
             Theme.buttonTheme.text = $"{availableTabs[tabID]}";
-            if (Theme.button(availableTabs[tabID], Theme.buttonTheme)) tabID = -1;
+            if (Theme.button(availableTabs[tabID], Theme.buttonTheme))
+            {
+                tabID = -1;
+                tab_Measurement.s_selectedPage = 0;
+            }
         }
 
         Theme.newLine();
@@ -170,6 +180,7 @@ public class UI : Overlay
             case -1:
                 renderTabSelector();
                 break;
+
             case 0:
                 tab_Device.renderDevice();
                 break;
@@ -196,6 +207,10 @@ public class UI : Overlay
 
             case 6:
                 tab_Cal.renderCalibration();
+                break;
+
+            case 7:
+                tab_Measurement.renderMeasurements();
                 break;
         }
 
