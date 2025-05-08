@@ -2,6 +2,7 @@
 using ImGuiNET;
 using NLog;
 using SoapySA.Extentions;
+using SoapySA.View.measurements;
 using SoapySA.View.tabs;
 using SoapyVNACommon.Fonts;
 using System.Numerics;
@@ -145,9 +146,10 @@ public class UI : Overlay
             ImGui.SetNextWindowSize(Configuration.mainWindowSize);
             Configuration.config.CollectionChanged += View.measurements.NormalMeasurement.updateCanvasData;
             Configuration.config.CollectionChanged += View.measurements.ChannelPower.updateCanvasData;
-
+            Configuration.config.CollectionChanged += FilterBandwith.updateCanvasData;
             View.measurements.NormalMeasurement.updateCanvasData(null, null);
             View.measurements.ChannelPower.updateCanvasData(null, null);
+            View.measurements.FilterBandwith.updateCanvasData(null, null);
             initializedResources = true;
             ImGui.GetIO().FontGlobalScale = 1.4f;
         }

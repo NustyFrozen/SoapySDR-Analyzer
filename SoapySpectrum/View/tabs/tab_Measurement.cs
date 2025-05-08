@@ -5,7 +5,7 @@ namespace SoapySA.View.tabs
 {
     internal class tab_Measurement
     {
-        private static string[] _availableMeasurements = { "None", "Channel Power", "Adjacent Channel Power" };
+        private static string[] _availableMeasurements = { "None", "Channel Power", "Filter Bandwidth", "Adjacent Channel Power" };
         public static measurementMode s_selectedMeasurementMode = measurementMode.none;
         public static int s_selectedPage = 0;
 
@@ -13,6 +13,7 @@ namespace SoapySA.View.tabs
         {
             none,
             channelPower,
+            filterBW,
             ACP,
         }
 

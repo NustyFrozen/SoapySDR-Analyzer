@@ -118,6 +118,9 @@ public static class Graph
             case tab_Measurement.measurementMode.channelPower:
                 ChannelPower.renderChannelPower();
                 break;
+            case tab_Measurement.measurementMode.filterBW:
+                FilterBandwith.renderFilterBandwith();
+                break;
         }
     }
 }

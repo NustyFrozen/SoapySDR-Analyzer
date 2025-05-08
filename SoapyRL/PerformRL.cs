@@ -56,8 +56,9 @@ public static class PerformRL
 
         for (var i = 0; i < count; i++)
         {
-            var iSample = rng.NextDouble() * 2.0 - 1.0; // [-1.0, +1.0]
-            var qSample = rng.NextDouble() * 2.0 - 1.0;
+            var phase = rng.NextDouble() * 360.0;
+            var iSample = Math.Cos(phase);
+            var qSample = Math.Sin(phase);
             buffer[i] = new Complex(iSample, qSample);
         }
 
@@ -222,12 +223,12 @@ public static class PerformRL
         var txStream = sdr.SetupTxStream(StreamFormat.ComplexFloat32, new uint[] { 0 }, "");
         rxStream.Activate();
         txStream.Activate();
-        var rxMTU = rxStream.MTU / 2;
+        var rxMTU = rxStream.MTU / 6;
         var txMTU = 4096;
         var results = new StreamResult();
         var rxFloatBuffer = new float[rxMTU * 2];
         if (_whiteNoise is null)
-            _whiteNoise = generateWhiteNoise(txMTU);
+            _whiteNoise = generateWhiteNoise((int)txMTU);
 
         var rxBufferHandle = GCHandle.Alloc(rxFloatBuffer, GCHandleType.Pinned);
         var txBufferHandle = GCHandle.Alloc(_whiteNoise, GCHandleType.Pinned);

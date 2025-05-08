@@ -66,8 +66,8 @@ public static class Configuration
         config[saVar.leakageSleep] = 5;
         config.Add(saVar.deviecOptions, new string[] { });
         config[saVar.iqCorrection] = true;
-        config[saVar.freqStart] = 100e6;
-        config[saVar.freqStop] = 200e6;
+        config[saVar.freqStart] = 800e6;
+        config[saVar.freqStop] = 3000e6;
         config[saVar.fftSegment] = 400;
         config[saVar.fftOverlap] = 0.95;
         config[saVar.scalePerDivision] = 20;

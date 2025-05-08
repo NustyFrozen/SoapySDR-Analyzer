@@ -142,12 +142,7 @@ public static class tab_Device
         s_receiveRange = s_sdrDevice.GetFrequencyRange(Direction.Rx, 0);
 
         //clipping frequency ranges
-        Configuration.config[Configuration.saVar.freqStart] = Math.Max(
-            s_transmitRange.OrderBy(x => x.Minimum).First().Minimum,
-            s_receiveRange.OrderBy(x => x.Minimum).First().Minimum);
-        Configuration.config[Configuration.saVar.freqStop] = Math.Min(
-            s_transmitRange.OrderByDescending(x => x.Maximum).First().Maximum,
-            s_receiveRange.OrderByDescending(x => x.Maximum).First().Maximum);
+
 
         Configuration.config[Configuration.saVar.txSampleRate] = s_sdrDevice.GetSampleRateRange(Direction.Tx, 0)
             .OrderBy(x => x.Maximum).Last().Maximum;

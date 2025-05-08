@@ -3,6 +3,8 @@ using NLog;
 using SoapySA.Extentions;
 using SoapySA.View.tabs;
 using System.Numerics;
+using Logger = NLog.Logger;
+using Range = Pothosware.SoapySDR.Range;
 
 namespace SoapySA.View.measurements
 {
@@ -11,8 +13,100 @@ namespace SoapySA.View.measurements
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
         public static double dbOffset, refLevel, freqStart, freqStop, graph_startDB, graph_endDB;
         public static float graphLabelIdx, left, right, top, bottom;
+        static float _leftTransitionWidth, _rightTransitionWidth, _leftBW, _rightBW, _filterCenterFreq;
+        private static bool _calculatingFilterBW, _calculateSideLobes;
+        private static readonly uint c_colorPass = Color.FromArgb(0, 255, 0).ToUint(),
+                                     c_ColorDeny = Color.Red.ToUint(),
+                                     c_colorTransition = Color.Yellow.ToUint();
+        public static void updateCanvasData(object? sender, keyOfChangedValueEventArgs e)
+        {
+            #region Canvas_Data
 
-        public void renderFilterBandwith()
+            try
+            {
+                dbOffset = (double)Configuration.config[Configuration.saVar.graphOffsetDB];
+                refLevel = (double)Configuration.config[Configuration.saVar.graphRefLevel];
+                graphLabelIdx = (float)tab_Amplitude.s_scalePerDivision;
+
+                freqStart = (double)Configuration.config[Configuration.saVar.freqStart];
+                freqStop = (double)Configuration.config[Configuration.saVar.freqStop];
+
+                graph_startDB = (double)Configuration.config[Configuration.saVar.graphStartDB] + refLevel;
+                graph_endDB = (double)Configuration.config[Configuration.saVar.graphStopDB] + refLevel;
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"error on updateCanvasData -> {ex.Message}");
+            }
+
+            #endregion Canvas_Data
+        }
+        public static Task calculateMeasurements(SortedDictionary<float, float> span)
+        {
+            if (_calculatingFilterBW) //another task is doing it, i dont want to fill threadpool
+                return Task.CompletedTask;
+            _calculatingFilterBW = true;
+            try
+            {
+                int maxIdx = -1, minIdx = -1;
+                float maxDb = -9999, minDb = 9999;
+                var range = span.ToList();
+                foreach (var sample in range)
+                {
+                    if (sample.Value > maxDb && sample.Key >= freqStart && sample.Key <= freqStop)
+                    {
+                        if (sample.Key == 0) continue;//some bug
+                        maxDb = sample.Value;
+                        maxIdx = range.FindIndex(x => x.Key == sample.Key);
+                    }
+                    if (sample.Value > maxDb && sample.Key >= span.First().Key && sample.Key <= span.Last().Key)
+                    {
+                        minDb = sample.Value;
+                    }
+                }
+                int leftBwIdx = 0, leftLobeStopIdx = 0;
+                for (int i = maxIdx; i != -1; i--)
+                {
+                    if (leftBwIdx == 0)
+                    {
+                        if (Math.Abs(maxDb - range[i].Value) >= 5)
+                            leftBwIdx = i;
+                    }
+                    else if (Math.Abs(range[i].Value - minDb) >= 0.2) //a bit higher of floor level
+                    {
+                        leftLobeStopIdx = i;
+                        break;
+                    }
+                }
+                int rightBwIdx = range.Count, rightLobeStopIdx = range.Count;
+                for (int i = maxIdx; i != range.Count; i++)
+                {
+                    if (rightBwIdx == range.Count)
+                    {
+                        if (Math.Abs(maxDb - range[i].Value) >= 5)
+                            rightBwIdx = i;
+                    }
+                    else if (Math.Abs(range[i].Value - minDb) >= 0.2)
+                    {
+                        rightLobeStopIdx = i;
+                        break;
+                    }
+                }
+                _leftTransitionWidth = range[leftBwIdx].Key - range[leftLobeStopIdx].Key;
+                _leftTransitionWidth = range[rightLobeStopIdx].Key - range[rightBwIdx].Key;
+                _leftBW = range[maxIdx].Key - range[leftBwIdx].Key;
+                _rightBW = range[rightBwIdx].Key - range[maxIdx].Key;
+                _filterCenterFreq = range[maxIdx].Key;
+            }
+            catch (Exception e)
+            {
+                _logger.Trace($"FilterBandwith Measurement Error -> {e.Message}");
+            }
+
+            _calculatingFilterBW = false;
+            return Task.CompletedTask;
+        }
+        public static void renderFilterBandwith()
         {
             #region Canvas_Data
 
@@ -75,93 +169,57 @@ namespace SoapySA.View.measurements
 
             try
             {
-                for (var x = 0; x < tab_Trace.s_traces.Length; x++)
+
+                var plot = tab_Trace.s_traces[0].plot;
+                var plotData = plot.ToArray().AsSpan(); //asspan is fastest iteration
+                if (!_calculatingFilterBW)
+                    calculateMeasurements(plot);
+                List<Range> transitionWidths =
+                new List<Range>(){
+                    new Range(_filterCenterFreq - _leftBW - _leftTransitionWidth, _filterCenterFreq - _leftBW),
+                    new Range(_filterCenterFreq + _rightBW, _filterCenterFreq + _rightBW + _rightTransitionWidth)
+                };
+                Range passRange = new Range(_filterCenterFreq - _leftBW, _filterCenterFreq + _rightBW);
+                for (var i = 1; i < plotData.Length; i++)
                 {
-                    if (tab_Trace.s_traces[x].viewStatus == tab_Trace.traceViewStatus.clear) continue;
-                    var currentActiveMarkers = tab_Marker.s_markers.Where(d => d.reference == x && d.isActive).ToArray();
-                    var bandPowerDBList = new List<float>();
-                    var traceColor = Color.Yellow;
-                    switch (x)
+                    var sampleA = plotData[i - 1];
+                    var sampleB = plotData[i];
+                    var traceColor = c_ColorDeny;
+                    if (transitionWidths.Exists(x => (x.Minimum <= sampleA.Key && x.Maximum >= sampleB.Key)))
+                        traceColor = c_colorTransition;
+                    if (passRange.Minimum <= sampleA.Key && passRange.Maximum >= sampleB.Key)
+                        traceColor = c_colorPass;
+
+
+                    var sampleAPos = Graph.scaleToGraph(left, top, right, bottom, sampleA.Key, sampleA.Value, freqStart,
+                        freqStop, graph_startDB, graph_endDB);
+                    var sampleBPos = Graph.scaleToGraph(left, top, right, bottom, sampleB.Key, sampleB.Value, freqStart,
+                        freqStop, graph_startDB, graph_endDB);
+                    //bounds check
+                    if (sampleBPos.X > right || sampleAPos.X < left) continue;
+                    if (sampleAPos.Y < top || sampleBPos.Y < top || sampleAPos.Y > bottom || sampleBPos.Y > bottom)
                     {
-                        case 1:
-                            traceColor = Color.FromArgb(0, 255, 255);
-                            break;
-
-                        case 2:
-                            traceColor = Color.FromArgb(255, 0, 255);
-                            break;
-
-                        case 3:
-                            traceColor = Color.FromArgb(0, 255, 0);
-                            break;
-
-                        case 4:
-                            traceColor = Color.FromArgb(0, 0, 255);
-                            break;
-
-                        case 5:
-                            traceColor = Color.FromArgb(255, 0, 0);
-                            break;
+                        if (!(bool)Configuration.config[Configuration.saVar.automaticLevel]) continue;
+                        if (sampleAPos.Y < top || sampleBPos.Y < top)
+                            Configuration.config[Configuration.saVar.graphStartDB] =
+                                (double)Math.Min(sampleA.Value, sampleB.Value);
+                        else
+                            Configuration.config[Configuration.saVar.graphStopDB] =
+                                (double)Math.Max(sampleA.Value, sampleB.Value);
                     }
-
-                    if (tab_Trace.s_traces[x].viewStatus == tab_Trace.traceViewStatus.view)
-                        traceColor = Color.FromArgb(100, traceColor);
-                    var plot = tab_Trace.s_traces[x].plot;
-                    var traceColor_uint = traceColor.ToUint();
-                    var plotData = plot.ToArray().AsSpan(); //asspan is fastest iteration
-                    for (var i = 1; i < plotData.Length; i++)
-                    {
-                        var sampleA = plotData[i - 1];
-                        var sampleB = plotData[i];
-
-                        var sampleAPos = Graph.scaleToGraph(left, top, right, bottom, sampleA.Key, sampleA.Value, freqStart,
-                            freqStop, graph_startDB, graph_endDB);
-                        var sampleBPos = Graph.scaleToGraph(left, top, right, bottom, sampleB.Key, sampleB.Value, freqStart,
-                            freqStop, graph_startDB, graph_endDB);
-                        //bounds check
-                        if (sampleBPos.X > right || sampleAPos.X < left) continue;
-                        if (sampleAPos.Y < top || sampleBPos.Y < top || sampleAPos.Y > bottom || sampleBPos.Y > bottom)
-                        {
-                            if (!(bool)Configuration.config[Configuration.saVar.automaticLevel]) continue;
-                            if (sampleAPos.Y < top || sampleBPos.Y < top)
-                                Configuration.config[Configuration.saVar.graphStartDB] =
-                                    (double)Math.Min(sampleA.Value, sampleB.Value);
-                            else
-                                Configuration.config[Configuration.saVar.graphStopDB] =
-                                    (double)Math.Max(sampleA.Value, sampleB.Value);
-                        }
-
-                        draw.AddLine(sampleAPos, sampleBPos, traceColor_uint, 1.0f);
-                        currentActiveMarkers = currentActiveMarkers.Select(marker =>
-                        {
-                            //apply new db value for marker
-                            if (marker.position >= sampleA.Key && marker.position <= sampleB.Key)
-                            {
-                                marker.value = Math.Abs(marker.position - sampleA.Key) >=
-                                               Math.Abs(marker.position - sampleB.Key)
-                                    ? sampleA.Value
-                                    : sampleB.Value; //to which point is he closer
-                                tab_Marker.s_markers[marker.id].value = marker.value;
-                            }
-
-                            //apply bandPower List
-                            if (marker.bandPower)
-                                if (sampleA.Key >= (float)(marker.position - marker.bandPowerSpan / 2) && sampleA.Key <=
-                                    (float)(tab_Marker.s_markers[marker.id].position + marker.bandPowerSpan / 2))
-                                {
-                                    draw.AddLine(sampleAPos, sampleBPos, Color.White.ToUint(), 1.0f);
-                                    bandPowerDBList.Add(sampleA.Value);
-                                }
-
-                            return marker;
-                        }).ToArray();
-                    }
+                    draw.AddLine(sampleAPos, sampleBPos, traceColor, 1.0f);
                 }
+
+                var text = $"Center BW: {_filterCenterFreq}Hz\n" +
+                           $"Start: {_filterCenterFreq - _leftBW}Hz\n" +
+                           $"Stop: {_filterCenterFreq + _rightBW}Hz\n" +
+                           $"Span: {passRange.Maximum - passRange.Minimum}Hz";
+                draw.AddText(new Vector2(left, top), 0XFFFFFFFF, text);
             }
+
             catch (Exception ex)
             {
-                if (!ex.Message.Contains("Sequence"))
-                    _logger.Trace($"NormalMeasurement Render Error -> {ex.Message}");
+                _logger.Trace($"FilterBandwith Render Error -> {ex.Message}");
             }
         }
     }

@@ -148,6 +148,7 @@ public static class tab_Device
         for (; i < _availableChannels; i++)
             s_deviceFrequencyRange.Add(i, s_sdrDevice.GetFrequencyRange(Direction.Rx, (uint)i));
         i = 0;
+        s_sdrDevice.SetAntenna(Direction.Rx, s_selectedChannel, s_selectedAntenna);
     }
 
     public static void renderDeviceData()
