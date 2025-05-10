@@ -30,7 +30,7 @@ new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.To
         scaleSize = new(screenSize.X / 1920.0f, screenSize.Y / 1080.0f),
         positionOffset = new(50 * scaleSize.X, 10 * scaleSize.Y),
         mainWindowSize = screenSize,
-        graphSize = new(Convert.ToInt16(mainWindowSize.X * .8), Convert.ToInt16(mainWindowSize.Y * .95)),
+        graphSize = new(Convert.ToInt16(mainWindowSize.X * .8), Convert.ToInt16(mainWindowSize.Y * .9)),
         optionSize = new(Convert.ToInt16(mainWindowSize.X * .2), Convert.ToInt16(mainWindowSize.Y));
 
     public static string presetPath = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "Preset");
@@ -49,6 +49,7 @@ new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.To
         leakageSleep,
         deviecOptions,
         iqCorrection,
+        freqInterleaving, //big credit to hackrf_sweep by the gsg team for this method to remove DC bias and nyquist alaiasing
 
         //amplitude
         graphStartDB,
@@ -99,7 +100,7 @@ new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.To
         config[saVar.leakageSleep] = 5;
         config.Add(saVar.deviecOptions, new string[] { });
         config[saVar.iqCorrection] = true;
-
+        config[saVar.freqInterleaving] = true;
         config.Add(saVar.graphStartDB, (double)-136);
         config.Add(saVar.graphStopDB, (double)0);
         config.Add(saVar.graphOffsetDB, (double)0);

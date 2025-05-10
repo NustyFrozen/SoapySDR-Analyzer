@@ -26,7 +26,7 @@ public static class PerformFFT
     //https://github.com/ghostop14/gr-correctiq
     private static readonly double ratio = 1e-05f;
 
-    private static double avg_real, avg_img;
+    private static double avg_real, avg_img, hopSize;
 
     public static void beginFFT()
     {
@@ -44,16 +44,6 @@ public static class PerformFFT
             Configuration.config[Configuration.saVar.fftWindow])(size);
     }
 
-    private static double CalculateFrequency(double index, double Fs, double N, double f_center)
-    {
-        if (index < N / 2)
-            // Positive frequencies with center frequency offset
-            return index * Fs / N + f_center;
-
-        // Negative frequencies with center frequency offset
-        return (index - N) * Fs / N + f_center;
-    }
-
     //CalculateFrequency(i, next.Item3, fft_size, next.Item1);
     private static float[][] WelchPSD(Complex[] inputSignal, FftwArrayComplex bufferInput,
         FftwArrayComplex bufferOutput, FftwPlanC2C plan, int segmentLength, int overlap, float sample_rate,
@@ -64,15 +54,18 @@ public static class PerformFFT
             var signal = inputSignal.AsSpan();
             var numSegments = (signal.Length - overlap) / (segmentLength - overlap);
             var psd = new float[2][];
-            psd[0] = new float[signal.Length];
-            psd[1] = new float[signal.Length];
+            psd[0] = new float[segmentLength];
+            psd[1] = new float[segmentLength];
 
             // Calculate normalization factor for window (Hanning, Hamming, etc.)
             var window = getWindowFunction(segmentLength);
-            var normalizationFactor_regular = 0.0;
-            for (var i = 0; i < segmentLength; i++)
-                normalizationFactor_regular += window[i] * window[i];
 
+            double sum_w2 = 0;
+            for (int i = 0; i < segmentLength; i++)
+            {
+                sum_w2 += window[i] * window[i];
+            }
+            double scale = segmentLength * sample_rate * sum_w2;
             for (var seg = 0; seg < numSegments; seg++)
             {
                 var start = seg * (segmentLength - overlap);
@@ -87,9 +80,7 @@ public static class PerformFFT
 
                 // Compute periodogram (magnitude squared)
                 for (var k = 0; k < segment.Length; k++)
-                    psd[0][k] += (float)(bufferOutput[k].MagnitudeSquared() /
-                                         (normalizationFactor_regular *
-                                          segmentLength)); // Normalize by window and segment length
+                    psd[0][k] += (float)(bufferOutput[k].MagnitudeSquared() / scale); // Normalize by window and segment length
             }
 
             // Average over segments and convert to dBm if needed
@@ -115,7 +106,23 @@ public static class PerformFFT
 
                 psd[1][k] = frequency;
             }
+            if ((bool)Configuration.config[Configuration.saVar.freqInterleaving])
+            {
+                var newpsd = new float[psd[0].Length / 2];
+                var newpsdFreq = new float[psd[1].Length / 2];
+                for (int i = 0; i < psd[0].Length / 4; i++)
+                {
+                    newpsd[i] = psd[0][psd[0].Length / 8 + i]; //first interleaved
 
+                    newpsd[i + newpsd.Length / 2] = psd[0][psd[0].Length / 8 + i + psd[0].Length / 2]; //second interleaved
+
+                    newpsdFreq[i] = psd[1][psd[1].Length / 8 + i]; //first interleaved
+                    newpsdFreq[i + newpsdFreq.Length / 2] = psd[1][psd[1].Length / 8 + i + psd[1].Length / 2]; //second interleaved
+                    //Console.WriteLine($"freq: {newpsdFreq[i]}, dBm: {newpsd[i]}");
+                }
+                psd[0] = newpsd;
+                psd[1] = newpsdFreq;
+            }
             return psd;
         }
         catch (Exception ex)
@@ -132,6 +139,7 @@ public static class PerformFFT
         var desiredSegmentLength = (double)Configuration.config[Configuration.saVar.sampleRate] / rbw;
         var desiredfftLength = desiredSegmentLength * numberOfSegments;
         FFT_size = (int)Math.Pow(2, (int)Math.Ceiling(Math.Log(desiredfftLength, 2)));
+
         Logger.Info($"RBW {rbw} FFTSIZE {FFT_size}");
     }
 
@@ -142,6 +150,8 @@ public static class PerformFFT
         if (device == null) return;
 
         calculateRBWVBW();
+        var sampleRate = (double)Configuration.config[Configuration.saVar.sampleRate];
+        hopSize = ((bool)Configuration.config[Configuration.saVar.freqInterleaving]) ? sampleRate / 4.0 : sampleRate;
         resetData = true;
     }
 
@@ -197,11 +207,8 @@ public static class PerformFFT
 
     private static unsafe void IQSampler(Device sdr)
     {
-        var sample_rate = (double)Configuration.config[Configuration.saVar.sampleRate];
-        sdr.SetSampleRate(Direction.Rx, 0, sample_rate);
+        double sample_rate = 0.0, frequency = 0.0;
         sdr.SetGain(Direction.Rx, 0, 0);
-        var frequency = (double)Configuration.config[Configuration.saVar.freqStart] + sample_rate / 2;
-        sdr.SetFrequency(Direction.Rx, 0, frequency);
         var stream = sdr.SetupRxStream(StreamFormat.ComplexFloat32, new uint[] { 0 }, "");
         stream.Activate();
         var MTU = stream.MTU;
@@ -210,20 +217,35 @@ public static class PerformFFT
         var bufferHandle = GCHandle.Alloc(floatBuffer, GCHandleType.Pinned);
         Logger.Info($"Begining Stream MTU: {stream.MTU}");
         var sw = new Stopwatch();
+
         while (isRunning)
         {
             if (sample_rate != (double)Configuration.config[Configuration.saVar.sampleRate])
             {
                 sample_rate = (double)Configuration.config[Configuration.saVar.sampleRate];
                 sdr.SetSampleRate(Direction.Rx, 0, sample_rate);
+                resetIQFilter();
             }
 
             var noHopping =
                 (double)Configuration.config[Configuration.saVar.freqStop] -
                 (double)Configuration.config[Configuration.saVar.freqStart] <= sample_rate;
-            for (var f_center = (double)Configuration.config[Configuration.saVar.freqStart] + sample_rate / 2;
-                 f_center - sample_rate / 2 < (double)Configuration.config[Configuration.saVar.freqStop] || noHopping;
-                 f_center += sample_rate)
+            var f_center = ((bool)Configuration.config[Configuration.saVar.freqInterleaving]) ?
+                (double)Configuration.config[Configuration.saVar.freqStart] + sample_rate / 2 - sample_rate
+                :
+                (double)Configuration.config[Configuration.saVar.freqStart] + sample_rate / 2;
+            Func<bool> stopHopping = new Func<bool>(() =>
+            {
+                if ((bool)Configuration.config[Configuration.saVar.freqInterleaving])
+                {
+                    return f_center - sample_rate / 2 < (double)Configuration.config[Configuration.saVar.freqStop] + sample_rate;
+                }
+                else
+                    return f_center - sample_rate / 2 < (double)Configuration.config[Configuration.saVar.freqStop];
+            });
+            for (;
+                 stopHopping();
+                 f_center += hopSize)
             {
                 //some sdrs are slow with hopping so it is preferable if we sample without hopping (just the span of the sample rate) we wont call setFrequency as it will slow the algorithm
                 if (frequency != f_center)
@@ -291,9 +313,6 @@ public static class PerformFFT
                 if ((bool)Configuration.config[Configuration.saVar.iqCorrection])
                     correctIQ(IQCorrectionSamples);
                 FFTQueue.Enqueue(new Tuple<double, Complex[], double>(frequency, IQCorrectionSamples, sample_rate));
-
-                if (noHopping)
-                    break;
             }
 
             sw.Restart();

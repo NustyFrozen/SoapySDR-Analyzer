@@ -19,7 +19,7 @@ public static class tab_Device
     private static int _selectedSampleRate;
     public static string s_customSampleRate = "0";
     public static float s_osciliatorLeakageSleep;
-    public static bool s_isCorrectIQEnabled = true;
+    public static bool s_isCorrectIQEnabled = true, s_isinterleavingEnabled = true;
 
     //SDR device Data
     private static StringList _availableAntennas;
@@ -298,5 +298,10 @@ public static class tab_Device
 
         if (ImGui.Checkbox("IQ correction", ref s_isCorrectIQEnabled))
             Configuration.config[Configuration.saVar.iqCorrection] = s_isCorrectIQEnabled;
+        if (ImGui.Checkbox("sweep Interleaving", ref s_isinterleavingEnabled))
+        {
+            Configuration.config[Configuration.saVar.freqInterleaving] = s_isinterleavingEnabled;
+            PerformFFT.resetIQFilter();
+        }
     }
 }

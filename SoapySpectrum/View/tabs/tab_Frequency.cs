@@ -52,6 +52,8 @@ public static class tab_Frequency
                 }
                 else
                 {
+                    _displaySpan = (freqStop - freqStart).ToString();
+                    _displayFreqCenter = ((freqStop - freqStart) / 2.0 + freqStart).ToString();
                     Configuration.config[Configuration.saVar.freqStart] = freqStart;
                     Configuration.config[Configuration.saVar.freqStop] = freqStop;
                 }

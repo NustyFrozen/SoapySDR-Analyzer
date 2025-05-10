@@ -155,7 +155,7 @@ public class UI : Overlay
         }
 
         ImGui.Begin("Spectrum Analyzer", Configuration.mainWindowFlags);
-        Theme.drawExitButton(15, Color.Gray, Color.White);
+        Theme.drawExitButton(10, Color.Gray, Color.White);
         drawToolTip();
         ImGui.BeginChild("Spectrum Graph", Configuration.graphSize);
 
