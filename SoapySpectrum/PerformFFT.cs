@@ -2,6 +2,7 @@
 using MathNet.Numerics;
 using NLog;
 using Pothosware.SoapySDR;
+using SoapySA.Extentions;
 using SoapySA.View;
 using SoapySA.View.tabs;
 using System.Collections.Concurrent;
@@ -207,6 +208,7 @@ public static class PerformFFT
 
     private static unsafe void IQSampler(Device sdr)
     {
+        IQDCBlocker dcBlock = new IQDCBlocker();
         double sample_rate = 0.0, frequency = 0.0;
         sdr.SetGain(Direction.Rx, 0, 0);
         var stream = sdr.SetupRxStream(StreamFormat.ComplexFloat32, new uint[] { 0 }, "");
@@ -311,7 +313,11 @@ public static class PerformFFT
                     continue;
                 var IQCorrectionSamples = samples.Take(FFTSIZE).ToArray();
                 if ((bool)Configuration.config[Configuration.saVar.iqCorrection])
+                {
                     correctIQ(IQCorrectionSamples);
+                    dcBlock.ProcessSignal(IQCorrectionSamples);
+                }
+
                 FFTQueue.Enqueue(new Tuple<double, Complex[], double>(frequency, IQCorrectionSamples, sample_rate));
             }
 
