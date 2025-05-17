@@ -1,14 +1,16 @@
 ﻿using ImGuiNET;
 using NLog;
-using SoapySA.Extentions;
+using SoapyVNACommon;
+using SoapyVNACommon.Extentions;
 using SoapyVNACommon.Fonts;
 using System.Diagnostics;
 
 namespace SoapySA.View.tabs;
 
-public static class tab_Marker
+public class tab_Marker(MainWindow initiator)
 {
-    private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+    private MainWindow parent = initiator;
+    private readonly Logger _logger = LogManager.GetCurrentClassLogger();
     public static Stopwatch markerMoveKeys = new();
 
     private static readonly string[] _markerCombo = new[]
@@ -16,14 +18,14 @@ public static class tab_Marker
 
     public static string[] s_markerTraceCombo;
     public static string[] s_markerRefPoint = new[] { "trace" }.Concat(_markerCombo).ToArray();
-    public static int s_selectedMarker;
-    public static marker[] s_markers = new marker[9];
+    public int s_selectedMarker;
+    public marker[] s_markers = new marker[9];
 
-    public static void markerMoveNext(marker marker)
+    public void markerMoveNext(marker marker)
     {
-        lock (tab_Trace.s_traces[marker.reference].plot) //could get updateData so we gotta lock it up
+        lock (parent.tab_Trace.s_traces[marker.reference].plot) //could get updateData so we gotta lock it up
         {
-            var plotData = tab_Trace.s_traces[marker.reference].plot.ToArray();
+            var plotData = parent.tab_Trace.s_traces[marker.reference].plot.ToArray();
             for (var i = 0; i < plotData.Length; i++)
                 if (plotData[i].Key == marker.position)
                 {
@@ -34,11 +36,11 @@ public static class tab_Marker
         }
     }
 
-    public static void markerMovePrevious(marker marker)
+    public void markerMovePrevious(marker marker)
     {
-        lock (tab_Trace.s_traces[marker.reference].plot) //could get updateData so we gotta lock it up
+        lock (parent.tab_Trace.s_traces[marker.reference].plot) //could get updateData so we gotta lock it up
         {
-            var plotData = tab_Trace.s_traces[marker.reference].plot.ToArray();
+            var plotData = parent.tab_Trace.s_traces[marker.reference].plot.ToArray();
             for (var i = 0; i < plotData.Length; i++)
                 if (plotData[i].Key == marker.position)
                 {
@@ -49,24 +51,24 @@ public static class tab_Marker
         }
     }
 
-    public static void markerSetDelta(int markerid)
+    public void markerSetDelta(int markerid)
     {
         s_markers[markerid].DeltaFreq = s_markers[markerid].position;
         s_markers[markerid].DeltadB = s_markers[markerid].value;
     }
 
-    public static void peakSearch(marker marker, float minimumFreq, float maxFreq)
+    public void peakSearch(marker marker, float minimumFreq, float maxFreq)
     {
-        lock (tab_Trace.s_traces[marker.reference].plot) //could get updateData so we gotta lock it up
+        lock (parent.tab_Trace.s_traces[marker.reference].plot) //could get updateData so we gotta lock it up
         {
-            var peakPointArry = tab_Trace.s_traces[marker.reference].plot
+            var peakPointArry = parent.tab_Trace.s_traces[marker.reference].plot
                 .Where(x => x.Key >= minimumFreq && x.Key <= maxFreq).OrderByDescending(entry => entry.Value).ToList();
             s_markers[marker.id].position = peakPointArry[0].Key;
             s_markers[marker.id].value = peakPointArry[0].Value;
         }
     }
 
-    public static void renderMarker()
+    public void renderMarker()
     {
         Theme.inputTheme.prefix = "Marker";
         Theme.glowingCombo("marker_combo", ref s_selectedMarker, _markerCombo, Theme.inputTheme);
@@ -78,9 +80,9 @@ public static class tab_Marker
                 Theme.inputTheme);
             if (markerMoveKeys.ElapsedMilliseconds > 25)
             {
-                if (Imports.GetAsyncKeyState(Keys.A))
+                if (Imports.GetAsyncKeyState(Imports.Keys.A))
                     markerMovePrevious(s_markers[s_selectedMarker]);
-                if (Imports.GetAsyncKeyState(Keys.D))
+                if (Imports.GetAsyncKeyState(Imports.Keys.D))
                     markerMoveNext(s_markers[s_selectedMarker]);
                 markerMoveKeys.Restart();
             }
@@ -93,24 +95,24 @@ public static class tab_Marker
             //In Case markers[selectedMarker] is enabled we show markers[selectedMarker] features
 
             Theme.buttonTheme.text = $"{FontAwesome5.ArrowUp} Peak Search";
-            if (Theme.button("peakSearch", Theme.buttonTheme) || Imports.GetAsyncKeyState(Keys.Enter))
+            if (Theme.button("peakSearch", Theme.buttonTheme) || Imports.GetAsyncKeyState(Imports.Keys.Enter))
                 peakSearch(s_markers[s_selectedMarker],
-                    (float)(double)Configuration.config[Configuration.saVar.freqStart],
-                    (float)(double)Configuration.config[Configuration.saVar.freqStop]);
+                    (float)(double)parent.Configuration.config[Configuration.saVar.freqStart],
+                    (float)(double)parent.Configuration.config[Configuration.saVar.freqStop]);
             Theme.newLine();
             Theme.buttonTheme.text = $"{FontAwesome5.ArrowUp} Next Pk Right";
             if (Theme.button("Next ", Theme.buttonTheme))
                 peakSearch(s_markers[s_selectedMarker], (float)s_markers[s_selectedMarker].position,
-                    (float)(double)Configuration.config[Configuration.saVar.freqStop]);
+                    (float)(double)parent.Configuration.config[Configuration.saVar.freqStop]);
             Theme.newLine();
             Theme.buttonTheme.text = $"{FontAwesome5.ArrowUp} Next Pk Left";
             if (Theme.button("peakSearch", Theme.buttonTheme))
                 peakSearch(s_markers[s_selectedMarker],
-                    (float)(double)Configuration.config[Configuration.saVar.freqStart],
+                    (float)(double)parent.Configuration.config[Configuration.saVar.freqStart],
                     (float)s_markers[s_selectedMarker].position);
             Theme.newLine();
             Theme.buttonTheme.text = $"{FontAwesome5.Mountain} Set Delta";
-            if (Theme.button("markerDelta", Theme.buttonTheme) || Imports.GetAsyncKeyState(Keys.Enter))
+            if (Theme.button("markerDelta", Theme.buttonTheme) || Imports.GetAsyncKeyState(Imports.Keys.Enter))
             {
                 s_markers[s_selectedMarker].delta = true;
                 markerSetDelta(s_selectedMarker);
@@ -118,7 +120,7 @@ public static class tab_Marker
 
             Theme.newLine();
             Theme.buttonTheme.text = $"{FontAwesome5.Eraser} Clear Delta";
-            if (Theme.button("markerDelta", Theme.buttonTheme) || Imports.GetAsyncKeyState(Keys.Enter))
+            if (Theme.button("markerDelta", Theme.buttonTheme) || Imports.GetAsyncKeyState(Imports.Keys.Enter))
                 s_markers[s_selectedMarker].delta = false;
             Theme.newLine();
             Theme.newLine();

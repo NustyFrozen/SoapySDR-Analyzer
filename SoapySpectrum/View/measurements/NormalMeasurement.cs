@@ -2,34 +2,36 @@
 using NLog;
 using SoapySA.Extentions;
 using SoapySA.View.tabs;
+using SoapyVNACommon.Extentions;
 using System.Diagnostics;
 using System.Numerics;
 
 namespace SoapySA.View.measurements
 {
-    internal class NormalMeasurement
+    public class NormalMeasurement(MainWindow initiator)
     {
+        private MainWindow parent = initiator;
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
         public static double dbOffset, refLevel, freqStart, freqStop, graph_startDB, graph_endDB;
         public static float graphLabelIdx, left, right, top, bottom;
         private static Thread? _calculateBandPowerThread;
         public static Stopwatch s_waitForMouseClick = new();
 
-        public static void updateCanvasData(object? sender, keyOfChangedValueEventArgs e)
+        public void updateCanvasData(object? sender, keyOfChangedValueEventArgs e)
         {
             #region Canvas_Data
 
             try
             {
-                dbOffset = (double)Configuration.config[Configuration.saVar.graphOffsetDB];
-                refLevel = (double)Configuration.config[Configuration.saVar.graphRefLevel];
-                graphLabelIdx = (float)tab_Amplitude.s_scalePerDivision;
+                dbOffset = (double)parent.Configuration.config[Configuration.saVar.graphOffsetDB];
+                refLevel = (double)parent.Configuration.config[Configuration.saVar.graphRefLevel];
+                graphLabelIdx = (float)parent.tab_Amplitude.s_scalePerDivision;
 
-                freqStart = (double)Configuration.config[Configuration.saVar.freqStart];
-                freqStop = (double)Configuration.config[Configuration.saVar.freqStop];
+                freqStart = (double)parent.Configuration.config[Configuration.saVar.freqStart];
+                freqStop = (double)parent.Configuration.config[Configuration.saVar.freqStop];
 
-                graph_startDB = (double)Configuration.config[Configuration.saVar.graphStartDB] + refLevel;
-                graph_endDB = (double)Configuration.config[Configuration.saVar.graphStopDB] + refLevel;
+                graph_startDB = (double)parent.Configuration.config[Configuration.saVar.graphStartDB] + refLevel;
+                graph_endDB = (double)parent.Configuration.config[Configuration.saVar.graphStopDB] + refLevel;
             }
             catch (Exception ex)
             {
@@ -39,7 +41,7 @@ namespace SoapySA.View.measurements
             #endregion Canvas_Data
         }
 
-        public static void calculateBandPower(tab_Marker.marker marker, List<float> dBArray)
+        public void calculateBandPower(tab_Marker.marker marker, List<float> dBArray)
         {
             if (_calculateBandPowerThread is not null)
                 if (_calculateBandPowerThread.IsAlive)
@@ -49,13 +51,13 @@ namespace SoapySA.View.measurements
                 double tempMarkerBandPowerDecimal = 0;
                 foreach (var b in dBArray) tempMarkerBandPowerDecimal += ((double)b).toMW();
                 if (tempMarkerBandPowerDecimal != 0) //not enough values in dbArray --> log(0) --> overflow -inf
-                    tab_Marker.s_markers[marker.id].bandPowerValue = tempMarkerBandPowerDecimal.toDBm();
+                    parent.tab_Marker.s_markers[marker.id].bandPowerValue = tempMarkerBandPowerDecimal.toDBm();
             })
             { Priority = ThreadPriority.Lowest };
             _calculateBandPowerThread.Start();
         }
 
-        public static void renderNormal()
+        public void renderNormal()
         {
             #region Canvas_Data
 
@@ -118,10 +120,10 @@ namespace SoapySA.View.measurements
 
             try
             {
-                for (var x = 0; x < tab_Trace.s_traces.Length; x++)
+                for (var x = 0; x < parent.tab_Trace.s_traces.Length; x++)
                 {
-                    if (tab_Trace.s_traces[x].viewStatus == tab_Trace.traceViewStatus.clear) continue;
-                    var currentActiveMarkers = tab_Marker.s_markers.Where(d => d.reference == x && d.isActive).ToArray();
+                    if (parent.tab_Trace.s_traces[x].viewStatus == tab_Trace.traceViewStatus.clear) continue;
+                    var currentActiveMarkers = parent.tab_Marker.s_markers.Where(d => d.reference == x && d.isActive).ToArray();
                     var bandPowerDBList = new List<float>();
                     var traceColor = Color.Yellow;
                     switch (x)
@@ -147,9 +149,9 @@ namespace SoapySA.View.measurements
                             break;
                     }
 
-                    if (tab_Trace.s_traces[x].viewStatus == tab_Trace.traceViewStatus.view)
+                    if (parent.tab_Trace.s_traces[x].viewStatus == tab_Trace.traceViewStatus.view)
                         traceColor = Color.FromArgb(100, traceColor);
-                    var plot = tab_Trace.s_traces[x].plot;
+                    var plot = parent.tab_Trace.s_traces[x].plot;
                     var traceColor_uint = traceColor.ToUint();
                     var plotData = plot.ToArray().AsSpan(); //asspan is fastest iteration
 
@@ -158,20 +160,20 @@ namespace SoapySA.View.measurements
                         var sampleA = plotData[i - 1];
                         var sampleB = plotData[i];
 
-                        var sampleAPos = Graph.scaleToGraph(left, top, right, bottom, sampleA.Key, sampleA.Value, freqStart,
+                        var sampleAPos = parent.Graph.scaleToGraph(left, top, right, bottom, sampleA.Key, sampleA.Value, freqStart,
                             freqStop, graph_startDB, graph_endDB);
-                        var sampleBPos = Graph.scaleToGraph(left, top, right, bottom, sampleB.Key, sampleB.Value, freqStart,
+                        var sampleBPos = parent.Graph.scaleToGraph(left, top, right, bottom, sampleB.Key, sampleB.Value, freqStart,
                             freqStop, graph_startDB, graph_endDB);
                         //bounds check
                         if (sampleBPos.X > right || sampleAPos.X < left) continue;
                         if (sampleAPos.Y < top || sampleBPos.Y < top || sampleAPos.Y > bottom || sampleBPos.Y > bottom)
                         {
-                            if (!(bool)Configuration.config[Configuration.saVar.automaticLevel]) continue;
+                            if (!(bool)parent.Configuration.config[Configuration.saVar.automaticLevel]) continue;
                             if (sampleAPos.Y < top || sampleBPos.Y < top)
-                                Configuration.config[Configuration.saVar.graphStartDB] =
+                                parent.Configuration.config[Configuration.saVar.graphStartDB] =
                                     (double)Math.Min(sampleA.Value, sampleB.Value);
                             else
-                                Configuration.config[Configuration.saVar.graphStopDB] =
+                                parent.Configuration.config[Configuration.saVar.graphStopDB] =
                                     (double)Math.Max(sampleA.Value, sampleB.Value);
                         }
 
@@ -185,13 +187,13 @@ namespace SoapySA.View.measurements
                                                Math.Abs(marker.position - sampleB.Key)
                                     ? sampleA.Value
                                     : sampleB.Value; //to which point is he closer
-                                tab_Marker.s_markers[marker.id].value = marker.value;
+                                parent.tab_Marker.s_markers[marker.id].value = marker.value;
                             }
 
                             //apply bandPower List
                             if (marker.bandPower)
                                 if (sampleA.Key >= (float)(marker.position - marker.bandPowerSpan / 2) && sampleA.Key <=
-                                    (float)(tab_Marker.s_markers[marker.id].position + marker.bandPowerSpan / 2))
+                                    (float)(parent.tab_Marker.s_markers[marker.id].position + marker.bandPowerSpan / 2))
                                 {
                                     draw.AddLine(sampleAPos, sampleBPos, Color.White.ToUint(), 1.0f);
                                     bandPowerDBList.Add(sampleA.Value);
@@ -201,18 +203,18 @@ namespace SoapySA.View.measurements
                         }).ToArray();
                     }
 
-                    if (tab_Marker.s_markers[tab_Marker.s_selectedMarker].isActive)
+                    if (parent.tab_Marker.s_markers[parent.tab_Marker.s_selectedMarker].isActive)
                     {
                         if (ImGui.IsMouseDown(ImGuiMouseButton.Left) && ImGui.IsMouseHoveringRect(new Vector2(left, top),
                                                                          new Vector2(right, bottom))
                                                                      && s_waitForMouseClick.ElapsedMilliseconds > 100)
-                            tab_Marker.s_markers[tab_Marker.s_selectedMarker].position = tab_Trace
-                                .getClosestSampeledFrequency(tab_Marker.s_markers[tab_Marker.s_selectedMarker].reference,
+                            parent.tab_Marker.s_markers[parent.tab_Marker.s_selectedMarker].position = parent.tab_Trace
+                                .getClosestSampeledFrequency(parent.tab_Marker.s_markers[parent.tab_Marker.s_selectedMarker].reference,
                                     mousePosFreq).Key;
                         if (mouseRange.X != 0 && ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left))
                         {
-                            tab_Marker.s_markers[tab_Marker.s_selectedMarker].position = tab_Trace
-                                .findMaxHoldRange(tab_Trace.s_traces[x].plot, mouseRange.X, mouseRange.Y).Key;
+                            parent.tab_Marker.s_markers[parent.tab_Marker.s_selectedMarker].position = parent.tab_Trace
+                                .findMaxHoldRange(parent.tab_Trace.s_traces[x].plot, mouseRange.X, mouseRange.Y).Key;
                             s_waitForMouseClick.Restart();
                         }
                     }
@@ -221,7 +223,7 @@ namespace SoapySA.View.measurements
                     {
                         if (currentActiveMarkers[c].bandPower) calculateBandPower(currentActiveMarkers[c], bandPowerDBList);
 
-                        var markerPosOnGraph = Graph.scaleToGraph(left, top, right, bottom,
+                        var markerPosOnGraph = parent.Graph.scaleToGraph(left, top, right, bottom,
                             (float)currentActiveMarkers[c].position, (float)currentActiveMarkers[c].value, freqStart,
                             freqStop, graph_startDB, graph_endDB);
                         draw.AddCircleFilled(markerPosOnGraph, 4f, traceColor_uint);
@@ -231,16 +233,16 @@ namespace SoapySA.View.measurements
                         if (currentActiveMarkers[c].deltaReference != 0)
                         {
                             markerValue = currentActiveMarkers[c].value -
-                                          tab_Marker.s_markers[currentActiveMarkers[c].deltaReference - 1].value;
+                                          parent.tab_Marker.s_markers[currentActiveMarkers[c].deltaReference - 1].value;
                             markerPosition = currentActiveMarkers[c].position -
-                                             tab_Marker.s_markers[currentActiveMarkers[c].deltaReference - 1].position;
+                                             parent.tab_Marker.s_markers[currentActiveMarkers[c].deltaReference - 1].position;
                         }
 
                         currentActiveMarkers[c].txtStatus +=
                             $"Marker {currentActiveMarkers[c].id + 1} \n Freq {(markerPosition / 1e6).ToString().TruncateLongString(5)}M \n {(markerValue + dbOffset).ToString().TruncateLongString(5)} dB\n";
                         if (currentActiveMarkers[c].delta)
                         {
-                            var deltaPosition = Graph.scaleToGraph(left, top, right, bottom,
+                            var deltaPosition = parent.Graph.scaleToGraph(left, top, right, bottom,
                                 (float)currentActiveMarkers[c].DeltaFreq, (float)currentActiveMarkers[c].DeltadB, freqStart,
                                 freqStop, graph_startDB, graph_endDB);
                             var textSize = ImGui.CalcTextSize($"Delta Marker {c + 1}");
@@ -260,13 +262,13 @@ namespace SoapySA.View.measurements
 
                         if (currentActiveMarkers[c].bandPower)
                         {
-                            var powerBandLeft = tab_Trace.getClosestSampeledFrequency(x,
+                            var powerBandLeft = parent.tab_Trace.getClosestSampeledFrequency(x,
                                 (float)(currentActiveMarkers[c].position - currentActiveMarkers[c].bandPowerSpan / 2));
-                            var powerBandRight = tab_Trace.getClosestSampeledFrequency(x,
+                            var powerBandRight = parent.tab_Trace.getClosestSampeledFrequency(x,
                                 (float)(currentActiveMarkers[c].position + currentActiveMarkers[c].bandPowerSpan / 2));
-                            var scaledPowerBandLeft = Graph.scaleToGraph(left, top, right, bottom, powerBandLeft.Key,
+                            var scaledPowerBandLeft = parent.Graph.scaleToGraph(left, top, right, bottom, powerBandLeft.Key,
                                 powerBandLeft.Value, freqStart, freqStop, graph_startDB, graph_endDB);
-                            var scaledPowerBandRight = Graph.scaleToGraph(left, top, right, bottom, powerBandRight.Key,
+                            var scaledPowerBandRight = parent.Graph.scaleToGraph(left, top, right, bottom, powerBandRight.Key,
                                 powerBandRight.Value, freqStart, freqStop, graph_startDB, graph_endDB);
                             draw.AddLine(new Vector2(scaledPowerBandLeft.X, top),
                                 new Vector2(scaledPowerBandLeft.X, bottom), traceColor_uint);

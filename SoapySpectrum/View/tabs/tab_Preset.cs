@@ -1,4 +1,4 @@
-﻿namespace SoapySA.View.tabs;
+﻿namespace SoapyVNACommon.View.tabs;
 
 internal class tab_Preset
 {

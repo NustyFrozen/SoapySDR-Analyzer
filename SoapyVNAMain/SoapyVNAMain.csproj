@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Library</OutputType>
+    <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
@@ -10,12 +10,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SoapySpectrum\SoapySA.csproj" />
     <ProjectReference Include="..\SoapyVNACommon\SoapyVNACommon.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Pothosware.SoapySDR">
-      <HintPath>..\SoapyVNACommon\SoapySDR\Libs\Pothosware.SoapySDR.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\SoapySDR\bin\Pothosware.SoapySDR.dll</HintPath>
     </Reference>
   </ItemGroup>
 

@@ -1,9 +1,8 @@
 ﻿using ImGuiNET;
+using System.Drawing;
 using System.Numerics;
 
-namespace SoapySA.Extentions;
-
-using Color = Color;
+namespace SoapyVNACommon.Extentions;
 
 public static class ColorExtention
 {

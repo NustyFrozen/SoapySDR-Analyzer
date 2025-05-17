@@ -1,11 +1,9 @@
-using SoapySA;
-using SoapySA.Extentions;
-using SoapySA.View;
-
-Imports.AllocConsole();
 // To customize application configuration such as set high DPI settings or default font,
 // see https://aka.ms/applicationconfiguration.
+using SoapyVNAMain;
+using SoapyVNAMain.View;
+
 ApplicationConfiguration.Initialize();
-Configuration.initDefaultConfig();
-using var overlay = new UI();
+DeviceHelper.setupSoapyEnvironment();
+using var overlay = new WidgetsWindow();
 await overlay.Run();

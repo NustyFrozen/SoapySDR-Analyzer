@@ -1,5 +1,7 @@
 ﻿namespace SoapySA.View.tabs;
 
+using SoapyVNACommon;
+
 internal class tab_Trigger
 {
     public static void renderTrigger()

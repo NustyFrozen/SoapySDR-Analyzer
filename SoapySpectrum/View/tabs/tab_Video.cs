@@ -1,19 +1,21 @@
 ﻿using NLog;
+using SoapyVNACommon;
 
 namespace SoapySA.View.tabs;
 
-public static class tab_Video
+public class tab_Video(MainWindow initiator)
 {
+    private MainWindow parent = initiator;
     private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
-    private static int _selectedFFTWindow;
-    private static double _additionalWindowArgument = 0.5;
-    private static string _additionalText, _displayRefreshRate = "1000", _fftRBW = "0.01M";
-    private static bool _hasWindowArgument;
+    private int _selectedFFTWindow;
+    private double _additionalWindowArgument = 0.5;
+    private string _additionalText, _displayRefreshRate = "1000", _fftRBW = "0.01M";
+    private bool _hasWindowArgument;
 
     public static string[] s_fftWindowCombo = new[] { "Gauss", "FlatTop", "None" };
 
-    public static string s_fftSegments = "1600", s_fftOverlap = "50%", s_fftWindowAdditionalArgument = "0.5";
+    public string s_fftSegments = "1600", s_fftOverlap = "50%", s_fftWindowAdditionalArgument = "0.5";
 
     public static double[] noWindowFunction(int length)
     {
@@ -23,13 +25,13 @@ public static class tab_Video
         return result;
     }
 
-    public static void selectWindow()
+    public void selectWindow()
     {
         if (_selectedFFTWindow is 2)
         {
             Func<int, double[]> noFunc = length => noWindowFunction(length);
-            Configuration.config[Configuration.saVar.fftWindow] = noFunc;
-            PerformFFT.resetIQFilter();
+            parent.Configuration.config[Configuration.saVar.fftWindow] = noFunc;
+            parent.fftManager.resetIQFilter();
             return;
         }
 
@@ -56,11 +58,11 @@ public static class tab_Video
             windowFunction = length => (double[])method.Invoke(null, new object[] { length });
         }
 
-        PerformFFT.resetIQFilter();
-        Configuration.config[Configuration.saVar.fftWindow] = windowFunction;
+        parent.fftManager.resetIQFilter();
+        parent.Configuration.config[Configuration.saVar.fftWindow] = windowFunction;
     }
 
-    public static void renderVideo()
+    public void renderVideo()
     {
         Theme.Text("\uf1fb RBW", Theme.inputTheme);
         Theme.inputTheme.prefix = "RBW";
@@ -70,8 +72,8 @@ public static class tab_Video
             if (tab_Frequency.TryFormatFreq(_fftRBW, out rbw))
             {
                 if (rbw == 0) return;
-                Configuration.config[Configuration.saVar.fftRBW] = rbw;
-                PerformFFT.resetIQFilter();
+                parent.Configuration.config[Configuration.saVar.fftRBW] = rbw;
+                parent.fftManager.resetIQFilter();
             }
         }
 
@@ -100,8 +102,8 @@ public static class tab_Video
             if (int.TryParse(s_fftSegments, out fft_segements))
                 if (fft_segements > 0)
                 {
-                    Configuration.config[Configuration.saVar.fftSegment] = fft_segements;
-                    PerformFFT.resetIQFilter();
+                    parent.Configuration.config[Configuration.saVar.fftSegment] = fft_segements;
+                    parent.fftManager.resetIQFilter();
                 }
                 else
                 {
@@ -122,8 +124,8 @@ public static class tab_Video
             if (double.TryParse(s_fftOverlap.Replace("%", ""), out fft_overlap))
                 if (fft_overlap <= 80 && fft_overlap >= 0)
                 {
-                    Configuration.config[Configuration.saVar.fftOverlap] = fft_overlap / 100.0;
-                    PerformFFT.resetIQFilter();
+                    parent.Configuration.config[Configuration.saVar.fftOverlap] = fft_overlap / 100.0;
+                    parent.fftManager.resetIQFilter();
                 }
                 else
                 {
@@ -142,7 +144,7 @@ public static class tab_Video
             long refresh_rate = 0;
             if (long.TryParse(_displayRefreshRate, out refresh_rate))
                 if (refresh_rate > 0)
-                    Configuration.config[Configuration.saVar.refreshRate] = 1000 / refresh_rate;
+                    parent.Configuration.config[Configuration.saVar.refreshRate] = 1000 / refresh_rate;
                 else
                     _logger.Debug("cannot devide by 0");
             else

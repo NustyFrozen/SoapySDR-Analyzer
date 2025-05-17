@@ -2,12 +2,15 @@
 using NLog;
 using SoapySA.Extentions;
 using SoapySA.View.tabs;
+using SoapyVNACommon;
+using SoapyVNACommon.Extentions;
 using System.Numerics;
 
 namespace SoapySA.View.measurements
 {
-    internal class ChannelPower
+    public class ChannelPower(MainWindow initiator)
     {
+        private MainWindow parent = initiator;
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
         private static string s_displayBW = "5M", s_displayOBW = "99%";
 
@@ -19,22 +22,22 @@ namespace SoapySA.View.measurements
         private static float graphLabelIdx, left, right, top, bottom;
         private static bool _calculatingBandPower;
 
-        public static void updateCanvasData(object? sender, keyOfChangedValueEventArgs e)
+        public void updateCanvasData(object? sender, keyOfChangedValueEventArgs e)
         {
             #region Canvas_Data
 
             try
             {
-                _span = (double)Configuration.config[Configuration.saVar.freqStop] - (double)Configuration.config[Configuration.saVar.freqStart];
-                _center = (double)Configuration.config[Configuration.saVar.freqStart] + _span / 2;
-                refLevel = (double)Configuration.config[Configuration.saVar.graphRefLevel];
-                graph_startDB = (double)Configuration.config[Configuration.saVar.graphStartDB] + refLevel;
-                graph_endDB = (double)Configuration.config[Configuration.saVar.graphStopDB] + refLevel;
-                dbOffset = (double)Configuration.config[Configuration.saVar.graphOffsetDB];
-                graphLabelIdx = (float)tab_Amplitude.s_scalePerDivision;
-                fftRBW = (double)Configuration.config[Configuration.saVar.fftRBW];
-                _occupiedBWPrecentile = (double)Configuration.config[Configuration.saVar.channelOCP];
-                _channelBandwith = (double)Configuration.config[Configuration.saVar.channelBW];
+                _span = (double)parent.Configuration.config[Configuration.saVar.freqStop] - (double)parent.Configuration.config[Configuration.saVar.freqStart];
+                _center = (double)parent.Configuration.config[Configuration.saVar.freqStart] + _span / 2;
+                refLevel = (double)parent.Configuration.config[Configuration.saVar.graphRefLevel];
+                graph_startDB = (double)parent.Configuration.config[Configuration.saVar.graphStartDB] + refLevel;
+                graph_endDB = (double)parent.Configuration.config[Configuration.saVar.graphStopDB] + refLevel;
+                dbOffset = (double)parent.Configuration.config[Configuration.saVar.graphOffsetDB];
+                graphLabelIdx = (float)parent.tab_Amplitude.s_scalePerDivision;
+                fftRBW = (double)parent.Configuration.config[Configuration.saVar.fftRBW];
+                _occupiedBWPrecentile = (double)parent.Configuration.config[Configuration.saVar.channelOCP];
+                _channelBandwith = (double)parent.Configuration.config[Configuration.saVar.channelBW];
             }
             catch (Exception ex)
             {
@@ -44,7 +47,7 @@ namespace SoapySA.View.measurements
             #endregion Canvas_Data
         }
 
-        public static void renderChannelPowerSettings()
+        public void renderChannelPowerSettings()
         {
             Theme.Text("Channel BW");
             if (Theme.glowingInput("channelPowerBandwith", ref s_displayBW, Theme.inputTheme)) //frequencyChangedByCenterSpan
@@ -52,7 +55,7 @@ namespace SoapySA.View.measurements
                 double bw = 0;
                 if (tab_Frequency.TryFormatFreq(s_displayBW, out bw))
                 {
-                    Configuration.config[Configuration.saVar.channelBW] = bw;
+                    parent.Configuration.config[Configuration.saVar.channelBW] = bw;
                 }
             }
             Theme.newLine();
@@ -63,7 +66,7 @@ namespace SoapySA.View.measurements
                 if (double.TryParse(s_displayOBW.Replace("%", ""), out ocp))
                 {
                     if (ocp < 100 && ocp > 0)
-                        Configuration.config[Configuration.saVar.channelOCP] = ocp / 100.0;
+                        parent.Configuration.config[Configuration.saVar.channelOCP] = ocp / 100.0;
                 }
             }
         }
@@ -115,7 +118,7 @@ namespace SoapySA.View.measurements
             return Task.CompletedTask;
         }
 
-        public static void renderChannelPower()
+        public void renderChannelPower()
         {
             #region Canvas_Data
 
@@ -153,7 +156,7 @@ namespace SoapySA.View.measurements
                     draw.AddLine(new Vector2(left, posY), new Vector2(right, posY), Color.FromArgb(100, Color.Gray).ToUint());
                 }
 
-                var plot = tab_Trace.s_traces[0].plot;
+                var plot = parent.tab_Trace.s_traces[0].plot;
 
                 plotData = plot.ToArray().AsSpan(); //asspan is fastest iteration
                                                     //x = left, y = right
@@ -164,9 +167,9 @@ namespace SoapySA.View.measurements
                     var sampleA = plotData[i - 1];
                     var sampleB = plotData[i];
 
-                    var sampleAPos = Graph.scaleToGraph(left, top, right, bottom, sampleA.Key, sampleA.Value, _center - _span / 2,
+                    var sampleAPos = parent.Graph.scaleToGraph(left, top, right, bottom, sampleA.Key, sampleA.Value, _center - _span / 2,
                         _center + _span / 2, graph_startDB, graph_endDB);
-                    var sampleBPos = Graph.scaleToGraph(left, top, right, bottom, sampleB.Key, sampleB.Value, _center - _span / 2,
+                    var sampleBPos = parent.Graph.scaleToGraph(left, top, right, bottom, sampleB.Key, sampleB.Value, _center - _span / 2,
                         _center + _span / 2, graph_startDB, graph_endDB);
                     //draw two lines of bandwith on the graph
                     if (sampleA.Key <= channelBandwithFreq.X && sampleB.Key >= channelBandwithFreq.X)
@@ -192,12 +195,12 @@ namespace SoapySA.View.measurements
                     if (sampleBPos.X > right || sampleAPos.X < left) continue;
                     if (sampleAPos.Y < top || sampleBPos.Y < top || sampleAPos.Y > bottom || sampleBPos.Y > bottom)
                     {
-                        if (!(bool)Configuration.config[Configuration.saVar.automaticLevel]) continue;
+                        if (!(bool)parent.Configuration.config[Configuration.saVar.automaticLevel]) continue;
                         if (sampleAPos.Y < top || sampleBPos.Y < top)
-                            Configuration.config[Configuration.saVar.graphStartDB] =
+                            parent.Configuration.config[Configuration.saVar.graphStartDB] =
                                 (double)Math.Min(sampleA.Value, sampleB.Value);
                         else
-                            Configuration.config[Configuration.saVar.graphStopDB] =
+                            parent.Configuration.config[Configuration.saVar.graphStopDB] =
                                 (double)Math.Max(sampleA.Value, sampleB.Value);
                     }
                     draw.AddLine(sampleAPos, sampleBPos, traceColor_uint, 1.0f);
@@ -211,9 +214,9 @@ namespace SoapySA.View.measurements
                 _logger.Error($"Channe Power trace Render error -> {ex.Message}");
             }
             //draw OccupiedBW
-            var occupiedStart = Graph.scaleToGraph(left, top, right, bottom, (float)(_center - (_calculatedoccupiedBW / 2.0f)), peakValue, _center - _span / 2,
+            var occupiedStart = parent.Graph.scaleToGraph(left, top, right, bottom, (float)(_center - (_calculatedoccupiedBW / 2.0f)), peakValue, _center - _span / 2,
                         _center + _span / 2, graph_startDB, graph_endDB);
-            var occupiedStop = Graph.scaleToGraph(left, top, right, bottom, (float)(_center + (_calculatedoccupiedBW / 2.0f)), peakValue, _center - _span / 2,
+            var occupiedStop = parent.Graph.scaleToGraph(left, top, right, bottom, (float)(_center + (_calculatedoccupiedBW / 2.0f)), peakValue, _center - _span / 2,
                     _center + _span / 2, graph_startDB, graph_endDB);
             draw.AddLine(occupiedStart, occupiedStop, 0XFF00FF00);
             draw.AddLine(new Vector2(occupiedStart.X, top), new Vector2(occupiedStart.X, bottom), 0XFF00FF00);

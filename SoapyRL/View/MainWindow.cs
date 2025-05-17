@@ -88,6 +88,7 @@ public class UI : Overlay
         if (!visble) return;
         if (!initializedResources)
         {
+            Configuration.initDefaultConfig();
             Theme.initDefaultTheme();
             tab_Device.setupSoapyEnvironment();
             tab_Device.refreshDevices();

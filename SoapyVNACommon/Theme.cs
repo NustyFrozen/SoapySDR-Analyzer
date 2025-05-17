@@ -1,10 +1,11 @@
 ﻿using ImGuiNET;
-using SoapySA.Extentions;
+using SoapyVNACommon.Extentions;
+using System.Drawing;
 using System.Numerics;
 
-namespace SoapySA.View;
+namespace SoapyVNACommon;
 
-internal class Theme
+public class Theme
 {
     public enum circleState
     {
@@ -24,9 +25,21 @@ internal class Theme
 
     public static glowingInputConfigurator inputTheme = getTextTheme();
     public static ButtonConfigurator buttonTheme = getbuttonTheme();
+    public static ButtonConfigurator textbuttonTheme = getTextButtonTheme();
+
     public static SliderInputConfigurator sliderTheme = getSliderTheme();
 
     private static readonly Dictionary<string, object> frameData = new();
+    private static Vector2 scaleSize = new Vector2(1.5f, 1.5f);
+
+    public static void setScaleSize(Vector2 size)
+    {
+        scaleSize = size;
+        inputTheme = getTextTheme();
+        buttonTheme = getbuttonTheme();
+        sliderTheme = getSliderTheme();
+        textbuttonTheme = getTextButtonTheme();
+    }
 
     public static void initDefaultTheme()
     {
@@ -45,8 +58,8 @@ internal class Theme
 
     public static bool button(string text)
     {
-        if (ImGui.Button(text)) return true;
-        return false;
+        Theme.buttonTheme.text = text;
+        return button($"label###ID", Theme.buttonTheme);
     }
 
     public static void AnimateProperties()
@@ -494,6 +507,39 @@ internal class Theme
         return results;
     }
 
+    public static bool drawTextButton(string text)
+    {
+        var clrDefault = textbuttonTheme.bgcolor.toColor();
+        object obj = clrDefault;
+        var clrHover = textbuttonTheme.ColorHover.toColor();
+        var ExitColorActive = clrHover;
+        var flag = frameData.TryGetValue($"DrawTextButtonLabel{text}", out obj);
+        if (flag)
+            ExitColorActive = (Color)obj;
+        else
+            frameData.Add($"DrawTextButtonLabel{text}", ExitColorActive);
+        var windowpos = ImGui.GetWindowPos();
+        var style = ImGui.GetStyle();
+        var draw = ImGui.GetWindowDrawList();
+        var cursorPos = ImGui.GetCursorPos();
+        var start = cursorPos;
+        ImGui.Text(text);
+        draw.AddText(cursorPos, ExitColorActive.ToUint(), text);
+        var end = start + ImGui.CalcTextSize(text);
+        if (ImGui.IsMouseHoveringRect(start, end))
+        {
+            ExitColorActive = ExitColorActive.lerp(clrHover, 0.1);
+            if (ImGui.IsMouseClicked(ImGuiMouseButton.Left)) return true;
+        }
+        else
+        {
+            ExitColorActive = ExitColorActive.lerp(clrDefault, 0.1);
+        }
+
+        frameData[$"DrawTextButtonLabel{text}"] = ExitColorActive;
+        return false;
+    }
+
     public static void drawExitButton(float size, Color clrDefault, Color clrHover)
     {
         object obj = clrDefault;
@@ -568,8 +614,7 @@ internal class Theme
         var style = ImGui.GetStyle();
         var draw = ImGui.GetWindowDrawList();
         var cursorPos = ImGui.GetCursorPos();
-        var mousePos = new Point(0, 0);
-        Imports.GetCursorPos(ref mousePos);
+        var mousePos = ImGui.GetCursorPos();
         var startDrawBg = new Vector2(windowpos.X + cursorPos.X, windowpos.Y + cursorPos.Y);
         var endDrawBg = new Vector2(windowpos.X + cursorPos.X + cfg.size.X, windowpos.Y + cursorPos.Y + cfg.size.Y);
         draw.AddRectFilled(startDrawBg, endDrawBg, cfg.bgcolor, cfg.roundCorners);
@@ -795,7 +840,7 @@ internal class Theme
         ImGui.SetCursorPos(new Vector2(ImGui.GetCursorPosX() + style.FramePadding.X,
             ImGui.GetCursorPosY() + cfg.size.Y / 2.0f - ImGui.CalcTextSize(cfg.prefix).Y / 2.0f
         ));
-        ImGui.SetNextItemWidth(cfg.size.X - 3 * Configuration.scaleSize.X);
+        ImGui.SetNextItemWidth(cfg.size.X - 3 * scaleSize.X);
         var results = ImGui.Combo(label, ref selectedIndx, items, items.Length);
         if (ImGui.IsItemActive())
         {
@@ -866,13 +911,19 @@ internal class Theme
 
     public static void newLine()
     {
-        ImGui.Dummy(new Vector2(0, 45.0f * Configuration.scaleSize.Y)); // Adds 20px vertical space
+        ImGui.Dummy(new Vector2(0, 45.0f * scaleSize.Y)); // Adds 20px vertical space
+    }
+
+    public static void sameLine()
+    {
+        ImGui.SameLine();
+        ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 320 * scaleSize.X);
     }
 
     public static glowingInputConfigurator getTextTheme()
     {
         var textboxTheme = new glowingInputConfigurator();
-        textboxTheme.size = new Vector2(320 * Configuration.scaleSize.X, 45f * Configuration.scaleSize.Y);
+        textboxTheme.size = new Vector2(320 * scaleSize.X, 45f * scaleSize.Y);
         textboxTheme.roundCorners = 5;
         textboxTheme.prefix = "Username";
         textboxTheme.borderThickness = 3f;
@@ -887,7 +938,7 @@ internal class Theme
     public static SliderInputConfigurator getSliderTheme()
     {
         var textboxTheme = new SliderInputConfigurator();
-        textboxTheme.size = new Vector2(320 * Configuration.scaleSize.X, 45f * Configuration.scaleSize.Y);
+        textboxTheme.size = new Vector2(320 * scaleSize.X, 45f * scaleSize.Y);
         textboxTheme.roundCorners = 2;
         textboxTheme.borderThickness = 3f;
         textboxTheme.bgcolor = Color.FromArgb(28, 28, 32).ToUint();
@@ -899,10 +950,29 @@ internal class Theme
         return textboxTheme;
     }
 
+    public static ButtonConfigurator getTextButtonTheme()
+    {
+        var textboxTheme = new ButtonConfigurator();
+        textboxTheme.size = new Vector2(320 * scaleSize.X, 45f * scaleSize.Y);
+        textboxTheme.roundCorners = 5;
+        textboxTheme.text = "NULL";
+        textboxTheme.bgcolor = Color.FromArgb(100, 100, 100).ToUint();
+        textboxTheme.ColorHover = Color.FromArgb(222, 222, 222).ToUint();
+        textboxTheme.textColor = Color.White.ToUint();
+        textboxTheme.waitSpeed = 0.00025f;
+        textboxTheme.SlideSpeed = 0.0025f;
+        textboxTheme.circleThickness = 4;
+        textboxTheme.circleRadius = 20;
+        textboxTheme.circleColor = Color.FromArgb(82, 34, 204).ToUint();
+        textboxTheme.circleSpeed = 0.005f;
+        textboxTheme.circlePositionY = -90;
+        return textboxTheme;
+    }
+
     public static ButtonConfigurator getbuttonTheme()
     {
         var textboxTheme = new ButtonConfigurator();
-        textboxTheme.size = new Vector2(320 * Configuration.scaleSize.X, 45f * Configuration.scaleSize.Y);
+        textboxTheme.size = new Vector2(320 * scaleSize.X, 45f * scaleSize.Y);
         textboxTheme.roundCorners = 5;
         textboxTheme.text = "NULL";
         textboxTheme.bgcolor = Color.FromArgb(91, 36, 221).ToUint();

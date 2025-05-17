@@ -1,18 +1,20 @@
 ﻿using NLog;
+using SoapyVNACommon;
 using SoapyVNACommon.Fonts;
 
 namespace SoapySA.View.tabs;
 
-public static class tab_Frequency
+public class tab_Frequency(MainWindow initiator)
 {
-    private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+    private MainWindow parent = initiator;
+    private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
     //input start and stop OR center and span
-    public static string s_displayFreqStart = "930M", s_displayFreqStop = "960M";
+    public string s_displayFreqStart = "930M", s_displayFreqStop = "960M";
 
-    private static string _displayFreqCenter = "945M", _displaySpan = "30M";
+    private string _displayFreqCenter = "945M", _displaySpan = "30M";
 
-    public static void renderFrequency()
+    public void renderFrequency()
     {
         var childSize = Configuration.optionSize;
 
@@ -54,11 +56,11 @@ public static class tab_Frequency
                 {
                     _displaySpan = (freqStop - freqStart).ToString();
                     _displayFreqCenter = ((freqStop - freqStart) / 2.0 + freqStart).ToString();
-                    Configuration.config[Configuration.saVar.freqStart] = freqStart;
-                    Configuration.config[Configuration.saVar.freqStop] = freqStop;
+                    parent.Configuration.config[Configuration.saVar.freqStart] = freqStart;
+                    parent.Configuration.config[Configuration.saVar.freqStop] = freqStop;
                 }
 
-                PerformFFT.resetIQFilter();
+                parent.fftManager.resetIQFilter();
             }
             else
             {

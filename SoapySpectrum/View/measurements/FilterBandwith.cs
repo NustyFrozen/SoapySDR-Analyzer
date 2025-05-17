@@ -1,38 +1,41 @@
 ﻿using ImGuiNET;
 using NLog;
 using SoapySA.Extentions;
-using SoapySA.View.tabs;
+using SoapyVNACommon.Extentions;
 using System.Numerics;
 using Logger = NLog.Logger;
 using Range = Pothosware.SoapySDR.Range;
 
 namespace SoapySA.View.measurements
 {
-    internal class FilterBandwith
+    public class FilterBandwith(MainWindow initiator)
     {
+        private MainWindow parent = initiator;
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
         public static double dbOffset, refLevel, freqStart, freqStop, graph_startDB, graph_endDB;
         public static float graphLabelIdx, left, right, top, bottom;
-        static float _leftTransitionWidth, _rightTransitionWidth, _leftBW, _rightBW, _filterCenterFreq;
+        private static float _leftTransitionWidth, _rightTransitionWidth, _leftBW, _rightBW, _filterCenterFreq;
         private static bool _calculatingFilterBW, _calculateSideLobes;
+
         private static readonly uint c_colorPass = Color.FromArgb(0, 255, 0).ToUint(),
                                      c_ColorDeny = Color.Red.ToUint(),
                                      c_colorTransition = Color.Yellow.ToUint();
-        public static void updateCanvasData(object? sender, keyOfChangedValueEventArgs e)
+
+        public void updateCanvasData(object? sender, keyOfChangedValueEventArgs e)
         {
             #region Canvas_Data
 
             try
             {
-                dbOffset = (double)Configuration.config[Configuration.saVar.graphOffsetDB];
-                refLevel = (double)Configuration.config[Configuration.saVar.graphRefLevel];
-                graphLabelIdx = (float)tab_Amplitude.s_scalePerDivision;
+                dbOffset = (double)parent.Configuration.config[Configuration.saVar.graphOffsetDB];
+                refLevel = (double)parent.Configuration.config[Configuration.saVar.graphRefLevel];
+                graphLabelIdx = (float)parent.tab_Amplitude.s_scalePerDivision;
 
-                freqStart = (double)Configuration.config[Configuration.saVar.freqStart];
-                freqStop = (double)Configuration.config[Configuration.saVar.freqStop];
+                freqStart = (double)parent.Configuration.config[Configuration.saVar.freqStart];
+                freqStop = (double)parent.Configuration.config[Configuration.saVar.freqStop];
 
-                graph_startDB = (double)Configuration.config[Configuration.saVar.graphStartDB] + refLevel;
-                graph_endDB = (double)Configuration.config[Configuration.saVar.graphStopDB] + refLevel;
+                graph_startDB = (double)parent.Configuration.config[Configuration.saVar.graphStartDB] + refLevel;
+                graph_endDB = (double)parent.Configuration.config[Configuration.saVar.graphStopDB] + refLevel;
             }
             catch (Exception ex)
             {
@@ -41,6 +44,7 @@ namespace SoapySA.View.measurements
 
             #endregion Canvas_Data
         }
+
         public static Task calculateMeasurements(SortedDictionary<float, float> span)
         {
             if (_calculatingFilterBW) //another task is doing it, i dont want to fill threadpool
@@ -106,7 +110,8 @@ namespace SoapySA.View.measurements
             _calculatingFilterBW = false;
             return Task.CompletedTask;
         }
-        public static void renderFilterBandwith()
+
+        public void renderFilterBandwith()
         {
             #region Canvas_Data
 
@@ -169,8 +174,7 @@ namespace SoapySA.View.measurements
 
             try
             {
-
-                var plot = tab_Trace.s_traces[0].plot;
+                var plot = parent.tab_Trace.s_traces[0].plot;
                 var plotData = plot.ToArray().AsSpan(); //asspan is fastest iteration
                 if (!_calculatingFilterBW)
                     calculateMeasurements(plot);
@@ -190,21 +194,20 @@ namespace SoapySA.View.measurements
                     if (passRange.Minimum <= sampleA.Key && passRange.Maximum >= sampleB.Key)
                         traceColor = c_colorPass;
 
-
-                    var sampleAPos = Graph.scaleToGraph(left, top, right, bottom, sampleA.Key, sampleA.Value, freqStart,
+                    var sampleAPos = parent.Graph.scaleToGraph(left, top, right, bottom, sampleA.Key, sampleA.Value, freqStart,
                         freqStop, graph_startDB, graph_endDB);
-                    var sampleBPos = Graph.scaleToGraph(left, top, right, bottom, sampleB.Key, sampleB.Value, freqStart,
+                    var sampleBPos = parent.Graph.scaleToGraph(left, top, right, bottom, sampleB.Key, sampleB.Value, freqStart,
                         freqStop, graph_startDB, graph_endDB);
                     //bounds check
                     if (sampleBPos.X > right || sampleAPos.X < left) continue;
                     if (sampleAPos.Y < top || sampleBPos.Y < top || sampleAPos.Y > bottom || sampleBPos.Y > bottom)
                     {
-                        if (!(bool)Configuration.config[Configuration.saVar.automaticLevel]) continue;
+                        if (!(bool)parent.Configuration.config[Configuration.saVar.automaticLevel]) continue;
                         if (sampleAPos.Y < top || sampleBPos.Y < top)
-                            Configuration.config[Configuration.saVar.graphStartDB] =
+                            parent.Configuration.config[Configuration.saVar.graphStartDB] =
                                 (double)Math.Min(sampleA.Value, sampleB.Value);
                         else
-                            Configuration.config[Configuration.saVar.graphStopDB] =
+                            parent.Configuration.config[Configuration.saVar.graphStopDB] =
                                 (double)Math.Max(sampleA.Value, sampleB.Value);
                     }
                     draw.AddLine(sampleAPos, sampleBPos, traceColor, 1.0f);
@@ -216,7 +219,6 @@ namespace SoapySA.View.measurements
                            $"Span: {passRange.Maximum - passRange.Minimum}Hz";
                 draw.AddText(new Vector2(left, top), 0XFFFFFFFF, text);
             }
-
             catch (Exception ex)
             {
                 _logger.Trace($"FilterBandwith Render Error -> {ex.Message}");

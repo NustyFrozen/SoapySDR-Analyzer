@@ -4,8 +4,12 @@ using SoapyVNACommon.Fonts;
 
 namespace SoapySA.View.tabs;
 
-public static class tab_Trace
+using SoapyVNACommon;
+
+public class tab_Trace(MainWindow initiator)
 {
+    private MainWindow parent = initiator;
+
     public enum traceDataStatus
     {
         normal,
@@ -21,13 +25,13 @@ public static class tab_Trace
         view
     }
 
-    private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+    private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
-    public static int s_selectedTrace;
+    public int s_selectedTrace;
     public static string[] s_comboTraces = new[] { "Trace 1", "Trace 2", "Trace 3", "Trace 4", "Trace 5", "Trace 6" };
-    public static Trace[] s_traces = new Trace[6];
+    public Trace[] s_traces = new Trace[6];
 
-    public static KeyValuePair<float, float> getClosestSampeledFrequency(int traceID, float Mhz)
+    public KeyValuePair<float, float> getClosestSampeledFrequency(int traceID, float Mhz)
     {
         lock (s_traces[traceID].plot)
         {
@@ -35,7 +39,7 @@ public static class tab_Trace
         }
     }
 
-    public static KeyValuePair<float, float> findMaxHoldRange(SortedDictionary<float, float> table, float start,
+    public KeyValuePair<float, float> findMaxHoldRange(SortedDictionary<float, float> table, float start,
         float stop)
     {
         var results = new KeyValuePair<float, float>(0, -1000);
@@ -47,7 +51,7 @@ public static class tab_Trace
         return results;
     }
 
-    public static void renderTrace()
+    public void renderTrace()
     {
         Theme.inputTheme.prefix = "RBW";
         Theme.glowingCombo("InputSelectortext3", ref s_selectedTrace, s_comboTraces, Theme.inputTheme);

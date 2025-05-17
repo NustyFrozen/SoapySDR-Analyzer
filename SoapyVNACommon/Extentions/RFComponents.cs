@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace SoapySA.Extentions
+namespace SoapyVNACommon.Extentions
 {
     public class IQDCBlocker
     {
@@ -31,5 +31,4 @@ namespace SoapySA.Extentions
             }
         }
     }
-
 }

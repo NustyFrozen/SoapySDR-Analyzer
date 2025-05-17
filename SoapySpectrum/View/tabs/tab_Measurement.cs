@@ -1,13 +1,14 @@
 ﻿using ImGuiNET;
-using SoapySA.View.measurements;
+using SoapyVNACommon;
 
 namespace SoapySA.View.tabs
 {
-    internal class tab_Measurement
+    public class tab_Measurement(MainWindow initiator)
     {
+        private MainWindow parent = initiator;
         private static string[] _availableMeasurements = { "None", "Channel Power", "Filter Bandwidth", "Adjacent Channel Power" };
-        public static measurementMode s_selectedMeasurementMode = measurementMode.none;
-        public static int s_selectedPage = 0;
+        public measurementMode s_selectedMeasurementMode = measurementMode.none;
+        public int s_selectedPage = 0;
 
         public enum measurementMode
         {
@@ -17,7 +18,7 @@ namespace SoapySA.View.tabs
             ACP,
         }
 
-        public static void renderMeasurements()
+        public void renderMeasurements()
         {
             if (s_selectedPage != 0)
             {
@@ -46,7 +47,7 @@ namespace SoapySA.View.tabs
             switch (s_selectedPage)
             {
                 case 1:
-                    ChannelPower.renderChannelPowerSettings();
+                    parent.channelPower.renderChannelPowerSettings();
                     break;
             }
         }

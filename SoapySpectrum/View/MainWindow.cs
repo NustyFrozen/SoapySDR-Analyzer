@@ -1,22 +1,47 @@
-﻿using ClickableTransparentOverlay;
-using ImGuiNET;
+﻿using ImGuiNET;
 using NLog;
-using SoapySA.Extentions;
 using SoapySA.View.measurements;
 using SoapySA.View.tabs;
+using SoapyVNACommon;
+using SoapyVNACommon.Extentions;
 using SoapyVNACommon.Fonts;
 using System.Numerics;
 
 namespace SoapySA.View;
 
-public class UI : Overlay
+public class MainWindow : SoapyVNACommon.Widget
 {
-    private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
-    private static int tabID;
+    private readonly Logger _logger = LogManager.GetCurrentClassLogger();
+    private int tabID;
+    public tab_Amplitude tab_Amplitude;
+    public tab_Frequency tab_Frequency;
+    public tab_Marker tab_Marker;
+    public tab_Measurement tab_Measurement;
+    public tab_Video tab_Video;
+    public tab_Trace tab_Trace;
+    public Graph Graph;
+    public Configuration Configuration;
+    public View.measurements.NormalMeasurement normalMeasurement;
+    public View.measurements.ChannelPower channelPower;
+    public View.measurements.FilterBandwith FilterBandwith;
+    public PerformFFT fftManager;
 
-    private static ushort[] iconRange = new ushort[] { 0xe005, 0xf8ff, 0 };
+    public MainWindow(Vector2 windowSize)
+    {
+        Configuration = new Configuration(this, windowSize);
+        Graph = new Graph(this);
+        fftManager = new PerformFFT(this);
 
-    private static ImFontPtr PoppinsFont, IconFont;
+        tab_Amplitude = new tab_Amplitude(this);
+        tab_Frequency = new tab_Frequency(this);
+        tab_Marker = new tab_Marker(this);
+        tab_Measurement = new tab_Measurement(this);
+        tab_Video = new tab_Video(this);
+        tab_Trace = new tab_Trace(this);
+        normalMeasurement = new NormalMeasurement(this);
+        channelPower = new ChannelPower(this);
+        FilterBandwith = new FilterBandwith(this);
+    }
 
     private readonly string[] availableTabs = new[]
     {
@@ -25,18 +50,6 @@ public class UI : Overlay
     };
 
     public bool initializedResources;
-    private bool visble = true;
-
-    public UI() : base(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height)
-    {
-        VSync = true;
-    }
-
-    protected override Task PostInitialized()
-    {
-        VSync = false;
-        return Task.CompletedTask;
-    }
 
     public static uint ToUint(Color c)
     {
@@ -45,34 +58,6 @@ public class UI : Overlay
         u += (uint)c.G << 8;
         u += c.R;
         return u;
-    }
-
-    public unsafe void loadResources()
-    {
-        _logger.Debug("Loading Application Resources");
-        var io = ImGui.GetIO();
-
-        ReplaceFont(config =>
-        {
-            var io = ImGui.GetIO();
-            io.Fonts.AddFontFromFileTTF(@"Fonts\Poppins-Light.ttf", 16, config,
-                io.Fonts.GetGlyphRangesChineseSimplifiedCommon());
-            config->MergeMode = 1;
-            config->OversampleH = 1;
-            config->OversampleV = 1;
-            config->PixelSnapH = 1;
-
-            var custom2 = new ushort[] { 0xe005, 0xf8ff, 0x00 };
-            fixed (ushort* p = &custom2[0])
-            {
-                io.Fonts.AddFontFromFileTTF("Fonts\\fa-solid-900.ttf", 16, config, new IntPtr(p));
-            }
-        });
-        _logger.Debug("Replaced font");
-
-        PoppinsFont = io.Fonts.AddFontFromFileTTF(@"Fonts\Poppins-Light.ttf", 16);
-        //IconFont = io.Fonts.AddFontFromFileTTF(@"Fonts\fa-solid-900.ttf", 16,, new ushort[] { 0xe005,
-        //0xf8ff,0});
     }
 
     public static void drawCursor()
@@ -85,7 +70,7 @@ public class UI : Overlay
             new Vector2(cursorpos.X, cursorpos.Y + 5), Color.White.ToUint());
     }
 
-    public static void drawToolTip()
+    public void drawToolTip()
     {
         var draw = ImGui.GetForegroundDrawList();
         var start = ImGui.GetWindowPos();
@@ -123,39 +108,32 @@ public class UI : Overlay
         }
     }
 
-    protected override void Render()
-    {
-        if (Imports.GetAsyncKeyState(Keys.Insert))
-        {
-            Thread.Sleep(200);
-            visble = !visble;
-        }
+    public void renderWidget() => Render();
 
-        if (!visble) return;
+    public void Render()
+    {
         if (!initializedResources)
         {
+            Configuration.initDefaultConfig();
             Theme.initDefaultTheme();
             tab_Device.setupSoapyEnvironment();
             tab_Device.refreshDevices();
             measurements.NormalMeasurement.s_waitForMouseClick.Start();
-
             tab_Marker.markerMoveKeys.Start();
             Graph.initializeGraphElements();
-            loadResources();
             ImGui.SetNextWindowPos(Configuration.mainWindowPos);
-            ImGui.SetNextWindowSize(Configuration.mainWindowSize);
-            Configuration.config.CollectionChanged += View.measurements.NormalMeasurement.updateCanvasData;
-            Configuration.config.CollectionChanged += View.measurements.ChannelPower.updateCanvasData;
+            ImGui.SetNextWindowSize(Configuration.s_widgetSize);
+            Configuration.config.CollectionChanged += normalMeasurement.updateCanvasData;
+            Configuration.config.CollectionChanged += channelPower.updateCanvasData;
             Configuration.config.CollectionChanged += FilterBandwith.updateCanvasData;
-            View.measurements.NormalMeasurement.updateCanvasData(null, null);
-            View.measurements.ChannelPower.updateCanvasData(null, null);
-            View.measurements.FilterBandwith.updateCanvasData(null, null);
+            normalMeasurement.updateCanvasData(null, null);
+            channelPower.updateCanvasData(null, null);
+            FilterBandwith.updateCanvasData(null, null);
             initializedResources = true;
             ImGui.GetIO().FontGlobalScale = 1.4f;
         }
 
         ImGui.Begin("Spectrum Analyzer", Configuration.mainWindowFlags);
-        Theme.drawExitButton(10, Color.Gray, Color.White);
         drawToolTip();
         ImGui.BeginChild("Spectrum Graph", Configuration.graphSize);
 
@@ -208,7 +186,7 @@ public class UI : Overlay
                 break;
 
             case 6:
-                tab_Cal.renderCalibration();
+                //tab_Cal.renderCalibration();
                 break;
 
             case 7:

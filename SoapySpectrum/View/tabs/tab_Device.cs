@@ -1,6 +1,7 @@
 ﻿using ImGuiNET;
 using NLog;
 using Pothosware.SoapySDR;
+using SoapyVNACommon;
 using Logger = NLog.Logger;
 using Range = Pothosware.SoapySDR.Range;
 
@@ -151,7 +152,7 @@ public static class tab_Device
         s_sdrDevice.SetAntenna(Direction.Rx, s_selectedChannel, s_selectedAntenna);
     }
 
-    public static void renderDeviceData()
+    public void renderDeviceData()
     {
         if (s_sdrDevice == null) return;
 
@@ -183,7 +184,7 @@ public static class tab_Device
         if (Theme.glowingCombo("sample_rate_Tab", ref _selectedSampleRate, sampleRateComboData.ToArray(),
                 Theme.inputTheme))
         {
-            Configuration.config[Configuration.saVar.sampleRate] =
+            parent.Configuration.config[Configuration.saVar.sampleRate] =
                 Convert.ToDouble(sampleRateComboData[_selectedSampleRate]);
             PerformFFT.resetIQFilter();
         }
@@ -205,7 +206,7 @@ public static class tab_Device
                         {
                             if (rateRange.Minimum <= customSampleRate && rateRange.Maximum >= customSampleRate)
                             {
-                                Configuration.config[Configuration.saVar.sampleRate] =
+                                parent.Configuration.config[Configuration.saVar.sampleRate] =
                                     Convert.ToDouble(customSampleRate);
                                 PerformFFT.resetIQFilter();
                             }
@@ -229,7 +230,7 @@ public static class tab_Device
                         customSampleRate = Math.Round(customSampleRate / rateRange.Step) * rateRange.Step;
                         if (rateRange.Minimum <= customSampleRate && rateRange.Maximum >= customSampleRate)
                         {
-                            Configuration.config[Configuration.saVar.sampleRate] = Convert.ToDouble(customSampleRate);
+                            parent.Configuration.config[Configuration.saVar.sampleRate] = Convert.ToDouble(customSampleRate);
                             PerformFFT.resetIQFilter();
                         }
                         else
@@ -292,15 +293,15 @@ public static class tab_Device
         Theme.Text("LO/PLL Leakage sleep", Theme.inputTheme);
         if (Theme.slider("Leakage", ref s_osciliatorLeakageSleep, Theme.sliderTheme))
         {
-            Configuration.config[Configuration.saVar.leakageSleep] = (int)(s_osciliatorLeakageSleep * 100);
-            _logger.Debug(Configuration.config[Configuration.saVar.leakageSleep]);
+            parent.Configuration.config[Configuration.saVar.leakageSleep] = (int)(s_osciliatorLeakageSleep * 100);
+            _logger.Debug(parent.Configuration.config[Configuration.saVar.leakageSleep]);
         }
 
         if (ImGui.Checkbox("IQ correction", ref s_isCorrectIQEnabled))
-            Configuration.config[Configuration.saVar.iqCorrection] = s_isCorrectIQEnabled;
+            parent.Configuration.config[Configuration.saVar.iqCorrection] = s_isCorrectIQEnabled;
         if (ImGui.Checkbox("sweep Interleaving", ref s_isinterleavingEnabled))
         {
-            Configuration.config[Configuration.saVar.freqInterleaving] = s_isinterleavingEnabled;
+            parent.Configuration.config[Configuration.saVar.freqInterleaving] = s_isinterleavingEnabled;
             PerformFFT.resetIQFilter();
         }
     }
