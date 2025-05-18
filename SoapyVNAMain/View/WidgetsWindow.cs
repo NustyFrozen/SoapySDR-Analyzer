@@ -1,6 +1,7 @@
 ﻿using ClickableTransparentOverlay;
 using ImGuiNET;
 using NLog;
+using SoapySA;
 using SoapyVNACommon;
 using SoapyVNACommon.Extentions;
 using SoapyVNACommon.Fonts;
@@ -62,8 +63,8 @@ namespace SoapyVNAMain.View
                 initializedResources = true;
                 loadResources();
                 ImGui.GetIO().FontGlobalScale = 1.4f;
-                Theme.setScaleSize(SoapySA.Configuration.scaleSize);
                 Theme.initDefaultTheme();
+                Theme.setScaleSize(Configuration.getDefaultScaleSize());
             }
             if (Imports.GetAsyncKeyState(Imports.Keys.Insert))
             {

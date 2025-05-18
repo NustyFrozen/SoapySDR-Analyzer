@@ -1,5 +1,8 @@
 ﻿using ImGuiNET;
+using NLog;
 using Pothosware.SoapySDR;
+using SoapySA;
+using SoapySA.View;
 using SoapyVNACommon;
 using SoapyVNACommon.Extentions;
 using SoapyVNACommon.Fonts;
@@ -15,17 +18,18 @@ namespace SoapyVNAMain.View
 
     public class ConfiguratorWindow
     {
+        private readonly static NLog.Logger _logger = LogManager.GetCurrentClassLogger();
         private static string widgetName = "Widget1";
         private static int selectedWidgetType = 0, selectedSDR = -1;
         private static string[] widgetType = new string[] { "Spectrum Analyzer", "Return Loss" };
-        public static string s_customSampleRate = "0";
-        private static int _selectedSampleRate;
 
         private static Dictionary<uint, StringList> availableRxAnntenna = new Dictionary<uint, StringList>();
         private static Dictionary<uint, StringList> availableTxAnntenna = new Dictionary<uint, StringList>();
         private static int _selectedRxChannel = 0, _selectedRxAnntenna = -1;
         private static int _selectedTxChannel = 0, _selectedTxAnntenna = -1;
-
+        public static string s_customRxSampleRate = "0", s_customTxSampleRate = "0";
+        public static int _selectedRxSampleRate, _selectedTxSampleRate;
+        public static double RxSampleRate, TxSampleRate;
         private static void createWidget()
         {
         }
@@ -69,15 +73,15 @@ namespace SoapyVNAMain.View
                     else
                         availableTxAnntenna[(uint)i].Add(selectedDevice.availableTxAntennas[(uint)i][j]);
             }
+
+            RxSampleRate = selectedDevice.deviceRxSampleRates[0].First().Maximum;
+            TxSampleRate = selectedDevice.deviceTxSampleRates[0].First().Maximum;
         }
 
         public static void renderAddWidget()
         {
-            if (selectedSDR > DeviceHelper.AvailableDevices.Length || DeviceHelper.availableDevicesCOM == null)
-            {
-                Theme.Text($"No SDR found, Cannot Create a widget");
-                return;
-            }
+            bool noSDRExists = selectedSDR > DeviceHelper.AvailableDevices.Length ||
+                               DeviceHelper.availableDevicesCOM == null;
             Theme.Text($"Create A widget");
             Theme.newLine();
             Theme.Text($"Select An SDR:");
@@ -88,12 +92,22 @@ namespace SoapyVNAMain.View
                     Theme.textbuttonTheme.bgcolor = Color.Green.ToUint();
                 if (Theme.drawTextButton($"{FontAwesome5.Microchip} {devKwargs}"))
                 {
-                    selectedSDR = i;
-                    fetchAvailableAnntennas();
+                    if (!noSDRExists)
+                    {
+                        selectedSDR = i;
+                        fetchAvailableAnntennas();
+                    }
                 }
                 Theme.textbuttonTheme = Theme.getTextButtonTheme();
                 Theme.newLine();
             }
+
+            if (noSDRExists)
+                Theme.Text($"No SDR found, Cannot Create a widget");
+
+            if (selectedSDR == -1)
+                return;
+
             Theme.Text("Widget Type");
             Theme.glowingCombo("chooseWidgetType", ref selectedWidgetType, widgetType, Theme.inputTheme);
             Theme.newLine();
@@ -115,6 +129,13 @@ namespace SoapyVNAMain.View
                         Theme.glowingCombo("select Rx Anntenna", ref _selectedRxAnntenna,
                                                 availableRxAnntenna[(uint)_selectedRxChannel].ToArray()
                                                 , Theme.inputTheme);
+                        Theme.newLine();
+                        Theme.Text("Rx Sample Rate:");
+                        //not optimal to do in a loop, but its only on widget creation so performance doesn't matter
+                        var combos = Array.ConvertAll(DeviceHelper.availableDevicesCOM[selectedSDR].deviceRxSampleRates[_selectedRxChannel]
+                            .ToList().FindAll(x => x.Maximum == x.Minimum && x.Step == 0).Select(x => x.Minimum).ToArray(), Convert.ToString);
+                        if (Theme.glowingCombo("selectRXWidget", ref _selectedRxSampleRate, combos, Theme.inputTheme))
+                            RxSampleRate = Convert.ToDouble(combos[_selectedRxSampleRate]);
                         isvalid = _selectedRxAnntenna != -1;
                         break;
 
@@ -139,6 +160,21 @@ namespace SoapyVNAMain.View
                         Theme.glowingCombo("select Reflection Anntenna", ref _selectedTxAnntenna,
                                                 availableTxAnntenna[(uint)_selectedTxChannel].ToArray()
                                                 , Theme.inputTheme);
+                        Theme.newLine();
+                        Theme.Text("transmission Sample Rate:");
+                        Theme.newLine();
+                        //not optimal to do in a loop, but its only on widget creation so performance doesn't matter
+                        combos = Array.ConvertAll(DeviceHelper.availableDevicesCOM[selectedSDR].deviceRxSampleRates[_selectedRxChannel]
+                            .ToList().FindAll(x => x.Maximum == x.Minimum && x.Step == 0).Select(x => x.Minimum).ToArray(), Convert.ToString);
+                        if (Theme.glowingCombo("selectRXWidget", ref _selectedRxSampleRate, combos, Theme.inputTheme))
+                            RxSampleRate = Convert.ToDouble(combos[_selectedRxSampleRate]);
+                        Theme.newLine();
+                        Theme.Text("Reflection Sample Rate:");
+                        Theme.newLine();
+                        combos = Array.ConvertAll(DeviceHelper.availableDevicesCOM[selectedSDR].deviceTxSampleRates[_selectedTxChannel]
+                            .ToList().FindAll(x => x.Maximum == x.Minimum && x.Step == 0).Select(x => x.Minimum).ToArray(), Convert.ToString);
+                        if (Theme.glowingCombo("selectTXWidget", ref _selectedTxSampleRate, combos, Theme.inputTheme))
+                            TxSampleRate = Convert.ToDouble(combos[_selectedTxSampleRate]);
                         isvalid = _selectedTxAnntenna != -1 && _selectedRxAnntenna != -1;
                         break;
                 }
@@ -149,9 +185,23 @@ namespace SoapyVNAMain.View
             Theme.newLine();
             var text = isvalid ? $"{FontAwesome5.Check} Add Widget" : $"{FontAwesome5.Cross} Please Select Antenna, Sample Rate and Channel";
             Theme.textbuttonTheme.bgcolor = isvalid ? Color.Green.ToUint() : Color.Red.ToUint();
-            if (Theme.drawTextButton($"{text}"))
+            if (Theme.drawTextButton($"{text}") && isvalid)
             {
-                if (isvalid) return;
+
+                var definedSdrCom = new sdrDeviceCOM(DeviceHelper.availableDevicesCOM[selectedSDR])
+                {
+
+                    rxSampleRate = RxSampleRate,
+                    txSampleRate = TxSampleRate,
+                    rxAntenna = (_selectedRxAnntenna == -1) ? null :
+                        new Tuple<uint, string>((uint)_selectedRxChannel,
+                        availableRxAnntenna[(uint)_selectedRxChannel][_selectedRxAnntenna]),
+                    txAntenna = (_selectedTxAnntenna == -1) ? null :
+                        new Tuple<uint, string>((uint)_selectedTxChannel,
+                        availableTxAnntenna[(uint)_selectedTxChannel][_selectedTxAnntenna])
+                };
+                Widget widget = new MainWindow(Configuration.getScreenSize(), definedSdrCom);
+                WidgetsWindow.Widgets.Add(widgetName, new definedWidget() { isComplete = false, device = definedSdrCom, window = widget });
             }
             Theme.textbuttonTheme = Theme.getTextButtonTheme();
         }

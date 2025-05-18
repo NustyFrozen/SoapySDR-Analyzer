@@ -67,7 +67,7 @@ namespace SoapySA.View.tabs
             Theme.newLine();
             if (Theme.button("Auto Tune"))
             {
-                var temp = Configuration.config;
+                var temp = parent.Configuration.config;
             }
 
             Theme.newLine();

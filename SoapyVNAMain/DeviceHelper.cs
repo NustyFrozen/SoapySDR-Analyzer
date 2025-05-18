@@ -50,25 +50,10 @@ public class DeviceHelper
         var deviceLabels = new List<string>();
         foreach (var device in devices)
         {
-            var idenefiers = string.Empty;
-            if (device.ContainsKey("label"))
-                idenefiers += $"label={device["label"]},";
-
-            if (device.ContainsKey("driver"))
-                idenefiers += $"driver={device["driver"]},";
-
-            if (device.ContainsKey("serial"))
-                idenefiers += $"serial={device["serial"]},";
-
-            if (device.ContainsKey("hardware"))
-                idenefiers += $"hardware={device["hardware"]}";
-            if (idenefiers.EndsWith(","))
-                idenefiers = idenefiers.Substring(0, idenefiers.Length - 1);
             var deviceCOM = new sdrDeviceCOM(new Device(device));
             deviceCOM.fetchSDRData();
-
             availableDevicesCOM.Add(deviceCOM);
-            deviceLabels.Add(insertNewLines(idenefiers, 60));
+            deviceLabels.Add(insertNewLines(deviceCOM.Descriptor, 60));
         }
 
         if (deviceLabels.Count > 0)

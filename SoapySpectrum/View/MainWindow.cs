@@ -13,6 +13,7 @@ public class MainWindow : SoapyVNACommon.Widget
 {
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
     private int tabID;
+    public tab_Device tab_Device;
     public tab_Amplitude tab_Amplitude;
     public tab_Frequency tab_Frequency;
     public tab_Marker tab_Marker;
@@ -26,12 +27,13 @@ public class MainWindow : SoapyVNACommon.Widget
     public View.measurements.FilterBandwith FilterBandwith;
     public PerformFFT fftManager;
 
-    public MainWindow(Vector2 windowSize)
+    public MainWindow(Vector2 windowSize, sdrDeviceCOM deviceCom)
     {
         Configuration = new Configuration(this, windowSize);
         Graph = new Graph(this);
         fftManager = new PerformFFT(this);
 
+        tab_Device = new tab_Device(this, deviceCom);
         tab_Amplitude = new tab_Amplitude(this);
         tab_Frequency = new tab_Frequency(this);
         tab_Marker = new tab_Marker(this);
@@ -116,8 +118,7 @@ public class MainWindow : SoapyVNACommon.Widget
         {
             Configuration.initDefaultConfig();
             Theme.initDefaultTheme();
-            tab_Device.setupSoapyEnvironment();
-            tab_Device.refreshDevices();
+
             measurements.NormalMeasurement.s_waitForMouseClick.Start();
             tab_Marker.markerMoveKeys.Start();
             Graph.initializeGraphElements();
@@ -126,11 +127,13 @@ public class MainWindow : SoapyVNACommon.Widget
             Configuration.config.CollectionChanged += normalMeasurement.updateCanvasData;
             Configuration.config.CollectionChanged += channelPower.updateCanvasData;
             Configuration.config.CollectionChanged += FilterBandwith.updateCanvasData;
+            Theme.setScaleSize(Configuration.scaleSize);
             normalMeasurement.updateCanvasData(null, null);
             channelPower.updateCanvasData(null, null);
             FilterBandwith.updateCanvasData(null, null);
             initializedResources = true;
             ImGui.GetIO().FontGlobalScale = 1.4f;
+            fftManager.beginFFT();
         }
 
         ImGui.Begin("Spectrum Analyzer", Configuration.mainWindowFlags);

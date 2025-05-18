@@ -297,7 +297,7 @@ public static class Graph
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Render Error -> {ex.Message} {ex.StackTrace}");
+            _logger.Error($"Render Error -> {ex.Message} {ex.StackTrace}");
         }
     }
 }

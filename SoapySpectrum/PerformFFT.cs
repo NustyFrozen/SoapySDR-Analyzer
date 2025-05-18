@@ -3,7 +3,6 @@ using MathNet.Numerics;
 using NLog;
 using Pothosware.SoapySDR;
 using SoapySA.View;
-using SoapySA.View.tabs;
 using SoapyVNACommon.Extentions;
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -32,7 +31,7 @@ public class PerformFFT(MainWindow initiator)
 
     public void beginFFT()
     {
-        device = tab_Device.s_sdrDevice;
+        device = parent.tab_Device.deviceCOM.sdrDevice;
         isRunning = true;
         new Thread(() => { FFT_POOL(); })
         { Priority = ThreadPriority.Highest }.Start();

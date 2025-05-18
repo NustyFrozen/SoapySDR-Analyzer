@@ -2,7 +2,6 @@
 using MathNet.Numerics;
 using SoapySA.Extentions;
 using SoapySA.View;
-using SoapySA.View.tabs;
 using System.Numerics;
 
 namespace SoapySA
@@ -19,12 +18,12 @@ new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.To
     public Vector2 mainWindowPos = new Vector2(600, 0);
 #else
 
-        public ImGuiWindowFlags mainWindowFlags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoTitleBar |
+        public static ImGuiWindowFlags mainWindowFlags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoTitleBar |
                                                          ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoMove;
 
-        public Vector2 getScreenSize() => new(Screen.PrimaryScreen.Bounds.Width,
+        public static Vector2 getScreenSize() => new(Screen.PrimaryScreen.Bounds.Width,
             Screen.PrimaryScreen.Bounds.Height);
-
+        public static Vector2 getDefaultScaleSize() => getScreenSize() / new Vector2(1920.0f, 1080.0f);
         public readonly Vector2 s_widgetSize = windowSize;
 
         public Vector2 mainWindowPos = new(0, 0);
@@ -133,16 +132,14 @@ new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.To
                     parent.tab_Frequency.s_displayFreqStop = config[saVar.freqStop].ToString();
                     break;
 
-                case saVar.sampleRate:
-                    tab_Device.s_customSampleRate = config[saVar.sampleRate].ToString();
-                    break;
+
 
                 case saVar.leakageSleep:
-                    tab_Device.s_osciliatorLeakageSleep = (int)config[saVar.leakageSleep] / 100.0f;
+                    parent.tab_Device.s_osciliatorLeakageSleep = (int)config[saVar.leakageSleep] / 100.0f;
                     break;
 
                 case saVar.iqCorrection:
-                    tab_Device.s_isCorrectIQEnabled = (bool)config[saVar.iqCorrection];
+                    parent.tab_Device.s_isCorrectIQEnabled = (bool)config[saVar.iqCorrection];
                     break;
 
                 case saVar.graphStartDB:

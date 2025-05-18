@@ -125,10 +125,10 @@ namespace SoapySA.View.measurements
             var windowPos = ImGui.GetWindowPos();
             var draw = ImGui.GetForegroundDrawList();
             var graphStatus = new Vector2();
-            left = windowPos.X + Configuration.positionOffset.X;
-            right = left + Configuration.graphSize.X;
-            top = windowPos.Y + Configuration.positionOffset.Y;
-            bottom = top + Configuration.graphSize.Y * .75f - Configuration.positionOffset.Y;
+            left = windowPos.X + parent.Configuration.positionOffset.X;
+            right = left + parent.Configuration.graphSize.X;
+            top = windowPos.Y + parent.Configuration.positionOffset.Y;
+            bottom = top + parent.Configuration.graphSize.Y * .75f - parent.Configuration.positionOffset.Y;
             var text = string.Empty;
             var textSize = new Vector2();
             var textPos = new Vector2();
@@ -150,7 +150,7 @@ namespace SoapySA.View.measurements
                     text = Imports.Scale(i, 0, graphLabelIdx, graph_endDB + dbOffset, graph_startDB + dbOffset).ToString()
                         .TruncateLongString(5);
                     textSize = ImGui.CalcTextSize(text);
-                    var posY = top + i / graphLabelIdx * Configuration.graphSize.Y * .75f;
+                    var posY = top + i / graphLabelIdx * parent.Configuration.graphSize.Y * .75f;
                     draw.AddText(new Vector2(left - textSize.X, posY - textSize.Y / 2),
                         Color.LightGray.ToUint(), text);
                     draw.AddLine(new Vector2(left, posY), new Vector2(right, posY), Color.FromArgb(100, Color.Gray).ToUint());
@@ -233,7 +233,7 @@ namespace SoapySA.View.measurements
             textSize = ImGui.CalcTextSize(text);
             draw.AddText(new Vector2(left, bottom - textSize.Y), 0xFFFFFFFF, text);
             top = bottom;
-            bottom += Configuration.graphSize.Y * .25f;
+            bottom += parent.Configuration.graphSize.Y * .25f;
             draw.AddRectFilled(new Vector2(left, top), new Vector2(right, bottom), Color.FromArgb(16, 16, 16).ToUint());
             draw.AddRect(new Vector2(left, top), new Vector2(right, bottom), Color.FromArgb(91, 36, 221).ToUint());
             var shrink = (right - left) * .25f;
@@ -251,7 +251,7 @@ namespace SoapySA.View.measurements
             {
                 textSize = ImGui.CalcTextSize(measurement);
                 draw.AddText(textPos, 0xFFFFFFFF, measurement);
-                textPos.Y += textSize.Y + 5 * Configuration.scaleSize.Y;
+                textPos.Y += textSize.Y + 5 * parent.Configuration.scaleSize.Y;
             }
         }
     }

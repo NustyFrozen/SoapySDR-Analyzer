@@ -119,10 +119,10 @@ namespace SoapySA.View.measurements
             var draw = ImGui.GetForegroundDrawList();
             var mousePos = ImGui.GetMousePos();
             var graphStatus = new Vector2();
-            left = windowPos.X + Configuration.positionOffset.X;
-            right = left + Configuration.graphSize.X;
-            top = windowPos.Y + Configuration.positionOffset.Y;
-            bottom = top + Configuration.graphSize.Y;
+            left = windowPos.X + parent.Configuration.positionOffset.X;
+            right = left + parent.Configuration.graphSize.X;
+            top = windowPos.Y + parent.Configuration.positionOffset.Y;
+            bottom = top + parent.Configuration.graphSize.Y;
             var mouseRange = new Vector2();
             float mousePosFreq = 0, mousePosdB;
 
@@ -131,7 +131,7 @@ namespace SoapySA.View.measurements
             #region backgroundDraw
 
             draw.AddRectFilled(new Vector2(left, top), new Vector2(right, bottom), Color.FromArgb(16, 16, 16).ToUint());
-            if (new RectangleF(left, top, Configuration.graphSize.X, Configuration.graphSize.Y).Contains(mousePos.X,
+            if (new RectangleF(left, top, parent.Configuration.graphSize.X, parent.Configuration.graphSize.Y).Contains(mousePos.X,
                     mousePos.Y))
             {
                 draw.AddLine(new Vector2(left, mousePos.Y), new Vector2(right, mousePos.Y),
@@ -140,7 +140,7 @@ namespace SoapySA.View.measurements
                     Color.FromArgb(100, 100, 100).ToUint());
 
                 mousePosFreq =
-                    (float)(freqStart + (mousePos.X - left) / Configuration.graphSize.X * (freqStop - freqStart));
+                    (float)(freqStart + (mousePos.X - left) / parent.Configuration.graphSize.X * (freqStop - freqStart));
                 mousePosdB = (float)(graph_startDB -
                     (bottom - mousePos.Y + top) / bottom * (Math.Abs(graph_endDB) - Math.Abs(graph_startDB)) + dbOffset);
                 mouseRange.X = (float)(mousePosFreq - (freqStop - freqStart) / graphLabelIdx);
@@ -154,7 +154,7 @@ namespace SoapySA.View.measurements
                 //draw X axis
                 var text = $"{(freqStart + i / graphLabelIdx * (freqStop - freqStart)) / 1e6}".TruncateLongString(5);
                 text += "M";
-                var posX = left + i / graphLabelIdx * Configuration.graphSize.X - ImGui.CalcTextSize(text).X / 2;
+                var posX = left + i / graphLabelIdx * parent.Configuration.graphSize.X - ImGui.CalcTextSize(text).X / 2;
                 draw.AddText(new Vector2(posX, bottom), Color.LightGray.ToUint(), text);
 
                 draw.AddLine(new Vector2(posX + ImGui.CalcTextSize(text).X / 2, bottom),
@@ -164,7 +164,7 @@ namespace SoapySA.View.measurements
                 text = Imports.Scale(i, 0, graphLabelIdx, graph_endDB + dbOffset, graph_startDB + dbOffset).ToString()
                     .TruncateLongString(5);
                 //((graph_startDB - (graphLabelIdx - i) / graphLabelIdx * (Math.Abs(graph_endDB) - Math.Abs(graph_startDB))) + dbOffset).ToString().TruncateLongString(5);
-                var posY = top + i / graphLabelIdx * Configuration.graphSize.Y;
+                var posY = top + i / graphLabelIdx * parent.Configuration.graphSize.Y;
                 draw.AddText(new Vector2(left - ImGui.CalcTextSize(text).X, posY - ImGui.CalcTextSize(text).Y / 2),
                     Color.LightGray.ToUint(), text);
                 draw.AddLine(new Vector2(left, posY), new Vector2(right, posY), Color.FromArgb(100, Color.Gray).ToUint());

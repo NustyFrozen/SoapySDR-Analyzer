@@ -749,6 +749,7 @@ public class Theme
         ImGui.SetCursorPos(new Vector2(ImGui.GetCursorPosX() + style.FramePadding.X,
             ImGui.GetCursorPosY() + cfg.size.Y / 2.0f - ImGui.CalcTextSize(cfg.prefix).Y / 2.0f
         ));
+        ImGui.SetNextItemWidth(cfg.size.X);
         var valuechanged = ImGui.InputText(label, ref text, maxlength);
         if (cfg.passwordChar != '\0')
         {

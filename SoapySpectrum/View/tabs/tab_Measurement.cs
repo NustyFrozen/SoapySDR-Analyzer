@@ -30,7 +30,7 @@ namespace SoapySA.View.tabs
             }
             else
             {
-                ImGui.SetCursorPosY(Configuration.optionSize.Y / 2.0f -
+                ImGui.SetCursorPosY(parent.Configuration.optionSize.Y / 2.0f -
                            (_availableMeasurements.Length - 1) * Theme.buttonTheme.size.Y / 2.0f);
                 for (var i = 0; i < _availableMeasurements.Length; i++)
                 {

@@ -16,7 +16,7 @@ public class tab_Frequency(MainWindow initiator)
 
     public void renderFrequency()
     {
-        var childSize = Configuration.optionSize;
+        var childSize = parent.Configuration.optionSize;
 
         Theme.Text("Center Frequency", Theme.inputTheme);
         Theme.inputTheme.prefix = "Center Frequency";
@@ -47,7 +47,7 @@ public class tab_Frequency(MainWindow initiator)
             double freqStart, freqStop;
             if (TryFormatFreq(s_displayFreqStart, out freqStart) && TryFormatFreq(s_displayFreqStop, out freqStop))
             {
-                if (freqStart >= freqStop || !tab_Device.s_deviceFrequencyRange[(int)tab_Device.s_selectedChannel]
+                if (freqStart >= freqStop || !parent.tab_Device.deviceCOM.deviceRxFrequencyRange[(int)parent.tab_Device.deviceCOM.rxAntenna.Item1]
                         .ToList().Exists(x => x.Minimum <= freqStart && x.Maximum >= freqStop))
                 {
                     _logger.Error("$ Start or End Frequency is not valid");
