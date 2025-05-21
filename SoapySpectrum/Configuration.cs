@@ -6,7 +6,7 @@ using System.Numerics;
 
 namespace SoapySA
 {
-    public class Configuration(MainWindow initiator, Vector2 windowSize)
+    public class Configuration(MainWindow initiator, Vector2 windowSize, Vector2 Pos)
     {
         private MainWindow parent = initiator;
 #if DEBUG
@@ -26,7 +26,7 @@ new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.To
         public static Vector2 getDefaultScaleSize() => getScreenSize() / new Vector2(1920.0f, 1080.0f);
         public readonly Vector2 s_widgetSize = windowSize;
 
-        public Vector2 mainWindowPos = new(0, 0);
+        public Vector2 mainWindowPos = Pos;
 #endif
 
         public Vector2
@@ -46,8 +46,6 @@ new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.To
             freqStop,
 
             //device
-            sampleRate,
-
             leakageSleep,
             deviecOptions,
             iqCorrection,
@@ -97,8 +95,6 @@ new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.To
             config.CollectionChanged += updateUIElementsOnConfigChanged;
             config.Add(saVar.freqStart, 933.4e6);
             config.Add(saVar.freqStop, 943.4e6);
-
-            config.Add(saVar.sampleRate, 20e6);
             config[saVar.leakageSleep] = 5;
             config.Add(saVar.deviecOptions, new string[] { });
             config[saVar.iqCorrection] = true;

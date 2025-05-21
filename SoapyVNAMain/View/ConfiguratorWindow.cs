@@ -6,6 +6,7 @@ using SoapySA.View;
 using SoapyVNACommon;
 using SoapyVNACommon.Extentions;
 using SoapyVNACommon.Fonts;
+using System.Numerics;
 
 namespace SoapyVNAMain.View
 {
@@ -46,16 +47,7 @@ namespace SoapyVNAMain.View
             {
                 if (!availableRxAnntenna.ContainsKey((uint)i))
                     availableRxAnntenna.Add((uint)i, new StringList());
-                //i is the channel, j is the anntenna
-                for (int j = 0; j < selectedDevice.availableRxAntennas[(uint)i].Count; j++)
-                    //is there a widget that is using channel i and anntenna j?
-                    if (WidgetsWindow.Widgets.Any(x =>
-                    x.Value.device.rxAntenna.Item1 == i
-                    &&
-                    x.Value.device.rxAntenna.Item2 == selectedDevice.availableRxAntennas[(uint)i][j]))
-                        continue;
-                    else
-                        availableRxAnntenna[(uint)i].Add(selectedDevice.availableRxAntennas[(uint)i][j]);
+                availableRxAnntenna[(uint)i].AddRange(selectedDevice.availableRxAntennas[(uint)i]);
             }
 
             for (int i = 0; i < selectedDevice.availableTxChannels; i++)
@@ -63,19 +55,21 @@ namespace SoapyVNAMain.View
                 if (!availableTxAnntenna.ContainsKey((uint)i))
                     availableTxAnntenna.Add((uint)i, new StringList());
                 //i is the channel, j is the anntenna
-                for (int j = 0; j < selectedDevice.availableTxAntennas[(uint)i].Count; j++)
-                    //is there a widget that is using channel i and anntenna j?
-                    if (WidgetsWindow.Widgets.Any(x =>
-                    x.Value.device.txAntenna.Item1 == i
-                    &&
-                    x.Value.device.txAntenna.Item2 == selectedDevice.availableTxAntennas[(uint)i][j]))
-                        continue;
-                    else
-                        availableTxAnntenna[(uint)i].Add(selectedDevice.availableTxAntennas[(uint)i][j]);
+                if (WidgetsWindow.Widgets.Any(x =>
+                    {
+                        if (x.Value.device.txAntenna is null)
+                            return false;
+                        else
+                            return x.Value.device.txAntenna.Item1 == i;
+
+
+                    }))
+                    continue;
+                else
+                    availableTxAnntenna[(uint)i].AddRange(selectedDevice.availableTxAntennas[(uint)i])
+                        ;
             }
 
-            RxSampleRate = selectedDevice.deviceRxSampleRates[0].First().Maximum;
-            TxSampleRate = selectedDevice.deviceTxSampleRates[0].First().Maximum;
         }
 
         public static void renderAddWidget()
@@ -200,8 +194,9 @@ namespace SoapyVNAMain.View
                         new Tuple<uint, string>((uint)_selectedTxChannel,
                         availableTxAnntenna[(uint)_selectedTxChannel][_selectedTxAnntenna])
                 };
-                Widget widget = new MainWindow(Configuration.getScreenSize(), definedSdrCom);
+                Widget widget = new MainWindow(new Vector2(), Configuration.getScreenSize(), definedSdrCom);
                 WidgetsWindow.Widgets.Add(widgetName, new definedWidget() { isComplete = false, device = definedSdrCom, window = widget });
+                fetchAvailableAnntennas();
             }
             Theme.textbuttonTheme = Theme.getTextButtonTheme();
         }

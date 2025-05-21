@@ -38,7 +38,7 @@ public struct sdrDeviceCOM
     public Dictionary<int, RangeList> deviceRxFrequencyRange = new(), deviceTxFrequencyRange = new();
     public Dictionary<int, RangeList> deviceRxSampleRates = new(), deviceTxSampleRates = new();
     public Dictionary<Tuple<uint, string>, Tuple<Range, int>> rxGains = new Dictionary<Tuple<uint, string>, Tuple<Range, int>>(), txGains = new Dictionary<Tuple<uint, string>, Tuple<Range, int>>();
-    public float[] rxGainValues, txGainValues;
+    public List<double> rxGainValues = new List<double>(), txGainValues = new List<double>();
     public string Descriptor;
     public string sensorData;
 
@@ -51,27 +51,6 @@ public struct sdrDeviceCOM
     public sdrDeviceCOM(sdrDeviceCOM cpy)
     {
         this = cpy;
-    }
-
-    public sdrDeviceCOM(Device sdr)
-    {
-        var kwargs = sdr.HardwareInfo;
-        var idenefiers = string.Empty;
-        if (kwargs.ContainsKey("label"))
-            idenefiers += $"label={kwargs["label"]},";
-
-        if (kwargs.ContainsKey("driver"))
-            idenefiers += $"driver={kwargs["driver"]},";
-
-        if (kwargs.ContainsKey("serial"))
-            idenefiers += $"serial={kwargs["serial"]},";
-
-        if (kwargs.ContainsKey("hardware"))
-            idenefiers += $"hardware={kwargs["hardware"]}";
-        if (idenefiers.EndsWith(","))
-            idenefiers = idenefiers.Substring(0, idenefiers.Length - 1);
-        Descriptor = idenefiers;
-        sdrDevice = sdr;
     }
 
     public void fetchSDRData()
@@ -92,8 +71,12 @@ public struct sdrDeviceCOM
         {
             var gains = sdrDevice.ListGains(Direction.Rx, i).ToArray();
             foreach (var gain in gains)
+            {
+                rxGainValues.Add(sdrDevice.GetGain(Direction.Rx, i, gain));
                 rxGains.Add(new Tuple<uint, string>(i, gain),
                     new Tuple<Range, int>(sdrDevice.GetGainRange(Direction.Rx, i, gain), GainCounter++));
+
+            }
 
             availableRxAntennas.Add(i, sdrDevice.ListAntennas(Direction.Rx, i));
             deviceRxSampleRates[(int)i] = sdrDevice.GetSampleRateRange(Direction.Rx, i);
@@ -101,14 +84,17 @@ public struct sdrDeviceCOM
             deviceRxFrequencyRange.Add((int)i, sdrDevice.GetFrequencyRange(Direction.Rx, i));
         }
         rxSampleRate = deviceRxSampleRates[0].OrderByDescending(x => x.Maximum).First().Maximum;
-        rxGainValues = new float[GainCounter];
         i = 0;
         GainCounter = 0;
         for (; i < availableTxChannels; i++)
         {
             var gains = sdrDevice.ListGains(Direction.Tx, i).ToArray();
             foreach (var gain in gains)
-                txGains.Add(new Tuple<uint, string>(i, gain), new Tuple<Range, int>(sdrDevice.GetGainRange(Direction.Tx, i, gain), GainCounter++));
+            {
+                txGainValues.Add(sdrDevice.GetGain(Direction.Tx, i, gain));
+                txGains.Add(new Tuple<uint, string>(i, gain),
+                    new Tuple<Range, int>(sdrDevice.GetGainRange(Direction.Tx, i, gain), GainCounter++));
+            }
 
             availableTxAntennas.Add(i, sdrDevice.ListAntennas(Direction.Tx, i));
             deviceTxSampleRates[(int)i] = sdrDevice.GetSampleRateRange(Direction.Tx, i);
@@ -116,7 +102,6 @@ public struct sdrDeviceCOM
             deviceTxFrequencyRange.Add((int)i, sdrDevice.GetFrequencyRange(Direction.Tx, i));
         }
         txSampleRate = deviceTxSampleRates[0].OrderByDescending(x => x.Maximum).First().Maximum;
-        txGainValues = new float[GainCounter];
         var sensors = sdrDevice.ListSensors();
 
         i = 0;

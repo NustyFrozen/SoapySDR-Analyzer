@@ -38,6 +38,17 @@ namespace SoapySA.View.tabs
                     if (Theme.button(_availableMeasurements[i], Theme.buttonTheme))
                     {
                         s_selectedMeasurementMode = (measurementMode)i;
+                        if (s_selectedMeasurementMode == measurementMode.channelPower)
+                        {
+                            var start = (double)parent.Configuration.config[Configuration.saVar.freqStart];
+                            var stop = (double)parent.Configuration.config[Configuration.saVar.freqStop];
+                            var center = (stop - start) / 2.0 + start;
+                            start = center - parent.tab_Device.deviceCOM.rxSampleRate / 2.0;
+                            stop = center + parent.tab_Device.deviceCOM.rxSampleRate / 2.0;
+                            parent.Configuration.config[Configuration.saVar.freqStart] = start;
+                            parent.Configuration.config[Configuration.saVar.freqStop] = stop;
+                            parent.fftManager.resetIQFilter();
+                        }
                         s_selectedPage = i;
                     }
                     Theme.newLine();

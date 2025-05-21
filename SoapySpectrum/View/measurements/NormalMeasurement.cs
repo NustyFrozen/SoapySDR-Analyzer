@@ -12,9 +12,9 @@ namespace SoapySA.View.measurements
     {
         private MainWindow parent = initiator;
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
-        public static double dbOffset, refLevel, freqStart, freqStop, graph_startDB, graph_endDB;
-        public static float graphLabelIdx, left, right, top, bottom;
-        private static Thread? _calculateBandPowerThread;
+        public double dbOffset, refLevel, freqStart, freqStop, graph_startDB, graph_endDB;
+        public float graphLabelIdx, left, right, top, bottom;
+        private Thread? _calculateBandPowerThread;
         public static Stopwatch s_waitForMouseClick = new();
 
         public void updateCanvasData(object? sender, keyOfChangedValueEventArgs e)

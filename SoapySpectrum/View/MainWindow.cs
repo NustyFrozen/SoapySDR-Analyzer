@@ -27,9 +27,9 @@ public class MainWindow : SoapyVNACommon.Widget
     public View.measurements.FilterBandwith FilterBandwith;
     public PerformFFT fftManager;
 
-    public MainWindow(Vector2 windowSize, sdrDeviceCOM deviceCom)
+    public MainWindow(Vector2 position, Vector2 windowSize, sdrDeviceCOM deviceCom)
     {
-        Configuration = new Configuration(this, windowSize);
+        Configuration = new Configuration(this, windowSize, position);
         Graph = new Graph(this);
         fftManager = new PerformFFT(this);
 
@@ -50,17 +50,6 @@ public class MainWindow : SoapyVNACommon.Widget
         "\uf2db Device", "\ue473 Amplitude", "\uf1fe BW", $"{FontAwesome5.WaveSquare} Frequency",
         $"{FontAwesome5.Marker} Markers", "\uf3c5 Trace", "\uf085 Calibration", $"{ FontAwesome5.Calculator} Measurement"
     };
-
-    public bool initializedResources;
-
-    public static uint ToUint(Color c)
-    {
-        var u = (uint)c.A << 24;
-        u += (uint)c.B << 16;
-        u += (uint)c.G << 8;
-        u += c.R;
-        return u;
-    }
 
     public static void drawCursor()
     {
@@ -112,31 +101,31 @@ public class MainWindow : SoapyVNACommon.Widget
 
     public void renderWidget() => Render();
 
+    public void releaseSDR() => fftManager.stopFFT();
+    public void handleSDR() => fftManager.beginFFT();
+
+    public void initWidget()
+    {
+        Configuration.initDefaultConfig();
+        Theme.initDefaultTheme();
+
+        measurements.NormalMeasurement.s_waitForMouseClick.Start();
+        tab_Marker.markerMoveKeys.Start();
+        Graph.initializeGraphElements();
+        ImGui.SetNextWindowPos(Configuration.mainWindowPos);
+        ImGui.SetNextWindowSize(Configuration.s_widgetSize);
+        Configuration.config.CollectionChanged += normalMeasurement.updateCanvasData;
+        Configuration.config.CollectionChanged += channelPower.updateCanvasData;
+        Configuration.config.CollectionChanged += FilterBandwith.updateCanvasData;
+        Theme.setScaleSize(Configuration.scaleSize);
+        normalMeasurement.updateCanvasData(null, null);
+        channelPower.updateCanvasData(null, null);
+        FilterBandwith.updateCanvasData(null, null);
+        ImGui.GetIO().FontGlobalScale = 1.4f;
+    }
     public void Render()
     {
-        if (!initializedResources)
-        {
-            Configuration.initDefaultConfig();
-            Theme.initDefaultTheme();
 
-            measurements.NormalMeasurement.s_waitForMouseClick.Start();
-            tab_Marker.markerMoveKeys.Start();
-            Graph.initializeGraphElements();
-            ImGui.SetNextWindowPos(Configuration.mainWindowPos);
-            ImGui.SetNextWindowSize(Configuration.s_widgetSize);
-            Configuration.config.CollectionChanged += normalMeasurement.updateCanvasData;
-            Configuration.config.CollectionChanged += channelPower.updateCanvasData;
-            Configuration.config.CollectionChanged += FilterBandwith.updateCanvasData;
-            Theme.setScaleSize(Configuration.scaleSize);
-            normalMeasurement.updateCanvasData(null, null);
-            channelPower.updateCanvasData(null, null);
-            FilterBandwith.updateCanvasData(null, null);
-            initializedResources = true;
-            ImGui.GetIO().FontGlobalScale = 1.4f;
-            fftManager.beginFFT();
-        }
-
-        ImGui.Begin("Spectrum Analyzer", Configuration.mainWindowFlags);
         drawToolTip();
         ImGui.BeginChild("Spectrum Graph", Configuration.graphSize);
 
@@ -199,6 +188,5 @@ public class MainWindow : SoapyVNACommon.Widget
 
         ImGui.EndChild();
         drawCursor();
-        ImGui.End();
     }
 }

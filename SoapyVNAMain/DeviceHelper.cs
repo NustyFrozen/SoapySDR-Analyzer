@@ -25,19 +25,6 @@ public class DeviceHelper
             $"{Environment.GetEnvironmentVariable("PATH")};{soapyPath};{libsPath}");
     }
 
-    private static string insertNewLines(string text, int X)
-    {
-        if (text.Length <= X) return text; // No need to wrap short items
-
-        var formattedText = new List<char>();
-        for (var i = 0; i < text.Length; i++)
-        {
-            formattedText.Add(text[i]);
-            if ((i + 1) % X == 0) formattedText.Add('\n');
-        }
-
-        return new string(formattedText.ToArray());
-    }
 
     /// <summary>
     ///     enumrates over the available devices and updates the UI accordingly
@@ -50,10 +37,24 @@ public class DeviceHelper
         var deviceLabels = new List<string>();
         foreach (var device in devices)
         {
-            var deviceCOM = new sdrDeviceCOM(new Device(device));
+            var idenefiers = string.Empty;
+            if (device.ContainsKey("label"))
+                idenefiers += $"label={device["label"]},";
+
+            if (device.ContainsKey("driver"))
+                idenefiers += $"driver={device["driver"]},";
+
+            if (device.ContainsKey("serial"))
+                idenefiers += $"serial={device["serial"]},";
+
+            if (device.ContainsKey("hardware"))
+                idenefiers += $"hardware={device["hardware"]}";
+            if (idenefiers.EndsWith(","))
+                idenefiers = idenefiers.Substring(0, idenefiers.Length - 1);
+            var deviceCOM = new sdrDeviceCOM(idenefiers);
             deviceCOM.fetchSDRData();
             availableDevicesCOM.Add(deviceCOM);
-            deviceLabels.Add(insertNewLines(deviceCOM.Descriptor, 60));
+            deviceLabels.Add(deviceCOM.Descriptor);
         }
 
         if (deviceLabels.Count > 0)

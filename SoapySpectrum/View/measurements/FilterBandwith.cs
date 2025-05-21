@@ -11,11 +11,11 @@ namespace SoapySA.View.measurements
     public class FilterBandwith(MainWindow initiator)
     {
         private MainWindow parent = initiator;
-        private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
-        public static double dbOffset, refLevel, freqStart, freqStop, graph_startDB, graph_endDB;
-        public static float graphLabelIdx, left, right, top, bottom;
-        private static float _leftTransitionWidth, _rightTransitionWidth, _leftBW, _rightBW, _filterCenterFreq;
-        private static bool _calculatingFilterBW, _calculateSideLobes;
+        private readonly Logger _logger = LogManager.GetCurrentClassLogger();
+        public double dbOffset, refLevel, freqStart, freqStop, graph_startDB, graph_endDB;
+        public float graphLabelIdx, left, right, top, bottom;
+        private float _leftTransitionWidth, _rightTransitionWidth, _leftBW, _rightBW, _filterCenterFreq;
+        private bool _calculatingFilterBW, _calculateSideLobes;
 
         private static readonly uint c_colorPass = Color.FromArgb(0, 255, 0).ToUint(),
                                      c_ColorDeny = Color.Red.ToUint(),
@@ -45,7 +45,7 @@ namespace SoapySA.View.measurements
             #endregion Canvas_Data
         }
 
-        public static Task calculateMeasurements(SortedDictionary<float, float> span)
+        public Task calculateMeasurements(SortedDictionary<float, float> span)
         {
             if (_calculatingFilterBW) //another task is doing it, i dont want to fill threadpool
                 return Task.CompletedTask;

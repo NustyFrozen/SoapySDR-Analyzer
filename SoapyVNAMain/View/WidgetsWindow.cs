@@ -2,6 +2,7 @@
 using ImGuiNET;
 using NLog;
 using SoapySA;
+using SoapySA.View;
 using SoapyVNACommon;
 using SoapyVNACommon.Extentions;
 using SoapyVNACommon.Fonts;
@@ -12,6 +13,7 @@ namespace SoapyVNAMain.View
     {
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
         public static Dictionary<string, definedWidget> Widgets = new Dictionary<string, definedWidget>();
+        private definedWidget selectedWidget = new definedWidget() { isComplete = false };
 
         private static bool editMode = false, initializedResources = false;
 
@@ -52,7 +54,6 @@ namespace SoapyVNAMain.View
             //IconFont = io.Fonts.AddFontFromFileTTF(@"Fonts\fa-solid-900.ttf", 16,, new ushort[] { 0xe005,
             //0xf8ff,0});
         }
-
         protected override void Render()
         {
             if (!initializedResources)
@@ -74,24 +75,42 @@ namespace SoapyVNAMain.View
             if (!visble) return;
             ImGui.Begin("Widget Manager", SoapySA.Configuration.mainWindowFlags);
 
-            if (Theme.drawTextButton($"{FontAwesome5.Gear} Widget Editor"))
-                editMode = !editMode;
+            if (!editMode)
+                foreach (var widget in Widgets)
+                {
+                    ImGui.SameLine();
+                    if (Theme.drawTextButton($"{FontAwesome5.MobileScreen} {widget.Key}"))
+                    {
+                        //can be default null which doesn't have a window handle
+                        if (selectedWidget.isComplete)
+                            selectedWidget.window.releaseSDR();
 
+                        selectedWidget = widget.Value;
+                        selectedWidget.window.handleSDR();
+                    }
+                }
+            ImGui.SameLine();
+            if (Theme.drawTextButton($"{FontAwesome5.Gear}"))
+                editMode = !editMode;
             if (editMode)
             {
                 ConfiguratorWindow.Render();
                 return;
             }
-            ImGui.BeginTabBar("widgets");
-            foreach (var widget in Widgets)
+            foreach (var key in Widgets.Keys)
             {
-                if (ImGui.BeginTabItem(widget.Key))
+                if (!Widgets[key].isComplete)
                 {
-                    widget.Value.window.renderWidget();
-                    ImGui.EndTabItem();
+                    var value = Widgets[key];
+                    value.window = new MainWindow(ImGui.GetCursorPos(), Configuration.getScreenSize() - ImGui.GetCursorPos(), value.device);
+                    value.isComplete = true;
+                    value.window.initWidget();
+                    Widgets[key] = value;
                 }
             }
-            ImGui.EndTabBar();
+            if (selectedWidget.isComplete)
+                selectedWidget.window.renderWidget();
+
             ImGui.End();
         }
     }

@@ -21,24 +21,28 @@ public class PerformFFT(MainWindow initiator)
     //FFT Queue
     private readonly ConcurrentQueue<Tuple<double, Complex[], double>> FFTQueue = new();
 
-    private Device device;
+
     private int FFT_size = 4096;
 
     //https://github.com/ghostop14/gr-correctiq
     private readonly double ratio = 1e-05f;
 
     private double avg_real, avg_img, hopSize;
-
+    private List<Task> fftTasks = new List<Task>();
     public void beginFFT()
     {
-        device = parent.tab_Device.deviceCOM.sdrDevice;
         isRunning = true;
-        new Thread(() => { FFT_POOL(); })
-        { Priority = ThreadPriority.Highest }.Start();
-
-        new Thread(() => { IQSampler(device); }).Start();
+        fftTasks.Clear();
+        fftTasks.Add(Task.Run(() => { FFT_POOL(); }));
+        fftTasks.Add(Task.Run(() => { IQSampler(); }));
     }
-
+    public void stopFFT()
+    {
+        isRunning = false;
+        foreach (var task in fftTasks)
+            if (!task.IsCompleted)
+                task.Wait();
+    }
     private double[] getWindowFunction(int size)
     {
         return ((Func<int, double[]>)
@@ -137,7 +141,7 @@ public class PerformFFT(MainWindow initiator)
     {
         var rbw = (double)parent.Configuration.config[Configuration.saVar.fftRBW];
         var numberOfSegments = (int)parent.Configuration.config[Configuration.saVar.fftSegment];
-        var desiredSegmentLength = (double)parent.Configuration.config[Configuration.saVar.sampleRate] / rbw;
+        var desiredSegmentLength = parent.tab_Device.deviceCOM.rxSampleRate / rbw;
         var desiredfftLength = desiredSegmentLength * numberOfSegments;
         FFT_size = (int)Math.Pow(2, (int)Math.Ceiling(Math.Log(desiredfftLength, 2)));
 
@@ -148,10 +152,10 @@ public class PerformFFT(MainWindow initiator)
     {
         avg_real = 0;
         avg_img = 0;
-        if (device == null) return;
+        if (parent.tab_Device.deviceCOM.sdrDevice == null) return;
 
         calculateRBWVBW();
-        var sampleRate = (double)parent.Configuration.config[Configuration.saVar.sampleRate];
+        var sampleRate = (double)parent.tab_Device.deviceCOM.rxSampleRate;
         hopSize = ((bool)parent.Configuration.config[Configuration.saVar.freqInterleaving]) ? sampleRate / 4.0 : sampleRate;
         resetData = true;
     }
@@ -206,12 +210,13 @@ public class PerformFFT(MainWindow initiator)
         }
     }
 
-    private unsafe void IQSampler(Device sdr)
+    private unsafe void IQSampler()
     {
         IQDCBlocker dcBlock = new IQDCBlocker();
         double sample_rate = 0.0, frequency = 0.0;
-        sdr.SetGain(Direction.Rx, 0, 0);
-        var stream = sdr.SetupRxStream(StreamFormat.ComplexFloat32, new uint[] { 0 }, "");
+        parent.tab_Device.deviceCOM.sdrDevice.SetAntenna(Direction.Rx, parent.tab_Device.deviceCOM.rxAntenna.Item1, parent.tab_Device.deviceCOM.rxAntenna.Item2);
+
+        var stream = parent.tab_Device.deviceCOM.sdrDevice.SetupRxStream(StreamFormat.ComplexFloat32, new uint[] { parent.tab_Device.deviceCOM.rxAntenna.Item1 }, "");
         stream.Activate();
         var MTU = stream.MTU;
         var results = new StreamResult();
@@ -222,10 +227,10 @@ public class PerformFFT(MainWindow initiator)
 
         while (isRunning)
         {
-            if (sample_rate != (double)parent.Configuration.config[Configuration.saVar.sampleRate])
+            if (sample_rate != (double)parent.tab_Device.deviceCOM.rxSampleRate)
             {
-                sample_rate = (double)parent.Configuration.config[Configuration.saVar.sampleRate];
-                sdr.SetSampleRate(Direction.Rx, 0, sample_rate);
+                sample_rate = (double)parent.tab_Device.deviceCOM.rxSampleRate;
+                parent.tab_Device.deviceCOM.sdrDevice.SetSampleRate(Direction.Rx, parent.tab_Device.deviceCOM.rxAntenna.Item1, sample_rate);
                 resetIQFilter();
             }
 
@@ -236,8 +241,10 @@ public class PerformFFT(MainWindow initiator)
                 (double)parent.Configuration.config[Configuration.saVar.freqStart] + sample_rate / 2 - sample_rate
                 :
                 (double)parent.Configuration.config[Configuration.saVar.freqStart] + sample_rate / 2;
-            Func<bool> stopHopping = new Func<bool>(() =>
+            Func<bool> stillHopping = new Func<bool>(() =>
             {
+                if (!isRunning)
+                    return false;
                 if ((bool)parent.Configuration.config[Configuration.saVar.freqInterleaving])
                 {
                     return f_center - sample_rate / 2 < (double)parent.Configuration.config[Configuration.saVar.freqStop] + sample_rate;
@@ -246,14 +253,14 @@ public class PerformFFT(MainWindow initiator)
                     return f_center - sample_rate / 2 < (double)parent.Configuration.config[Configuration.saVar.freqStop];
             });
             for (;
-                 stopHopping();
+                 stillHopping();
                  f_center += hopSize)
             {
-                //some sdrs are slow with hopping so it is preferable if we sample without hopping (just the span of the sample rate) we wont call setFrequency as it will slow the algorithm
+                //some devices are slow with hopping so it is preferable if we sample without hopping (just the span of the sample rate) we wont call setFrequency as it will slow the algorithm
                 if (frequency != f_center)
                 {
                     frequency = f_center;
-                    sdr.SetFrequency(Direction.Rx, 0, frequency);
+                    parent.tab_Device.deviceCOM.sdrDevice.SetFrequency(Direction.Rx, parent.tab_Device.deviceCOM.rxAntenna.Item1, frequency);
                     sw.Restart();
                     while (sw.ElapsedMilliseconds < (int)parent.Configuration.config[Configuration.saVar.leakageSleep] &&
                            isRunning)
