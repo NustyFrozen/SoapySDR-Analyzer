@@ -1,7 +1,6 @@
 ﻿using ImGuiNET;
 using NLog;
 using SoapySA.Extentions;
-using SoapySA.View.tabs;
 using SoapyVNACommon;
 using SoapyVNACommon.Extentions;
 using System.Numerics;
@@ -53,7 +52,7 @@ namespace SoapySA.View.measurements
             if (Theme.glowingInput("channelPowerBandwith", ref s_displayBW, Theme.inputTheme)) //frequencyChangedByCenterSpan
             {
                 double bw = 0;
-                if (tab_Frequency.TryFormatFreq(s_displayBW, out bw))
+                if (Global.TryFormatFreq(s_displayBW, out bw))
                 {
                     parent.Configuration.config[Configuration.saVar.channelBW] = bw;
                 }

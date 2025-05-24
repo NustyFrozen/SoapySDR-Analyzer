@@ -1,5 +1,6 @@
 ﻿using NLog;
 using SoapyVNACommon;
+using SoapyVNACommon.Extentions;
 
 namespace SoapySA.View.tabs;
 
@@ -8,13 +9,7 @@ public class tab_Video(MainWindow initiator)
     private MainWindow parent = initiator;
     private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
-    private int _selectedFFTWindow;
-    private double _additionalWindowArgument = 0.5;
-    private string _additionalText, _displayRefreshRate = "1000", _fftRBW = "0.01M";
-    private bool _hasWindowArgument;
-
-    public static string[] s_fftWindowCombo = new[] { "Gauss", "FlatTop", "None" };
-
+    public string _displayRefreshRate = "1000", _fftRBW = "0.01M";
     public string s_fftSegments = "1600", s_fftOverlap = "50%", s_fftWindowAdditionalArgument = "0.5";
 
     public static double[] noWindowFunction(int length)
@@ -25,43 +20,6 @@ public class tab_Video(MainWindow initiator)
         return result;
     }
 
-    public void selectWindow()
-    {
-        if (_selectedFFTWindow is 2)
-        {
-            Func<int, double[]> noFunc = length => noWindowFunction(length);
-            parent.Configuration.config[Configuration.saVar.fftWindow] = noFunc;
-            parent.fftManager.resetIQFilter();
-            return;
-        }
-
-        var windowClass = Type.GetType("MathNet.Numerics.Window,MathNet.Numerics");
-        var method = windowClass.GetMethod(s_fftWindowCombo[_selectedFFTWindow]);
-        var methodPeriodic = method;
-        Func<int, double[]> windowFunction;
-
-        //check if has a periodic function for non bounded segment
-        if (windowClass.GetMethod($"{s_fftWindowCombo[_selectedFFTWindow]}Periodic") is not null)
-            methodPeriodic = windowClass.GetMethod($"{s_fftWindowCombo[_selectedFFTWindow]}Periodic");
-
-        //check if required additional argument
-        if (_selectedFFTWindow == 0)
-        {
-            _additionalText = "Sigma:";
-            _hasWindowArgument = true;
-            windowFunction = length =>
-                (double[])method.Invoke(null, new object[] { length, _additionalWindowArgument });
-        }
-        else
-        {
-            _hasWindowArgument = false;
-            windowFunction = length => (double[])method.Invoke(null, new object[] { length });
-        }
-
-        parent.fftManager.resetIQFilter();
-        parent.Configuration.config[Configuration.saVar.fftWindow] = windowFunction;
-    }
-
     public void renderVideo()
     {
         Theme.Text("\uf1fb RBW", Theme.inputTheme);
@@ -69,28 +27,12 @@ public class tab_Video(MainWindow initiator)
         if (Theme.glowingInput("RBW", ref _fftRBW, Theme.inputTheme))
         {
             double rbw = 0;
-            if (tab_Frequency.TryFormatFreq(_fftRBW, out rbw))
+            if (Global.TryFormatFreq(_fftRBW, out rbw))
             {
                 if (rbw == 0) return;
                 parent.Configuration.config[Configuration.saVar.fftRBW] = rbw;
                 parent.fftManager.resetIQFilter();
             }
-        }
-
-        Theme.newLine();
-        Theme.Text("\uf1fb FFT WINDOW Size", Theme.inputTheme);
-        Theme.inputTheme.prefix = "Window Function";
-        if (Theme.glowingCombo("fft Window Function", ref _selectedFFTWindow, s_fftWindowCombo, Theme.inputTheme))
-            selectWindow();
-
-        if (_hasWindowArgument)
-        {
-            Theme.newLine();
-            Theme.Text($"\uf1fb {_additionalText}", Theme.inputTheme);
-            Theme.inputTheme.prefix = "0.5";
-            if (Theme.glowingInput("FFT_WINDOW_additional_text", ref s_fftWindowAdditionalArgument, Theme.inputTheme))
-                if (double.TryParse(s_fftWindowAdditionalArgument, out _additionalWindowArgument))
-                    selectWindow();
         }
 
         Theme.newLine();
@@ -141,8 +83,8 @@ public class tab_Video(MainWindow initiator)
         Theme.inputTheme.prefix = "Overlap Between Segments";
         if (Theme.glowingInput("FFT_refresh_rate", ref _displayRefreshRate, Theme.inputTheme))
         {
-            long refresh_rate = 0;
-            if (long.TryParse(_displayRefreshRate, out refresh_rate))
+            Int32 refresh_rate = 0;
+            if (Int32.TryParse(_displayRefreshRate, out refresh_rate))
                 if (refresh_rate > 0)
                     parent.Configuration.config[Configuration.saVar.refreshRate] = 1000 / refresh_rate;
                 else

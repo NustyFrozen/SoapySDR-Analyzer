@@ -1,5 +1,6 @@
 ﻿using NLog;
 using SoapyVNACommon;
+using SoapyVNACommon.Extentions;
 using SoapyVNACommon.Fonts;
 
 namespace SoapySA.View.tabs;
@@ -12,7 +13,7 @@ public class tab_Frequency(MainWindow initiator)
     //input start and stop OR center and span
     public string s_displayFreqStart = "930M", s_displayFreqStop = "960M";
 
-    private string _displayFreqCenter = "945M", _displaySpan = "30M";
+    public string s_displayFreqCenter = "945M", s_displaySpan = "30M";
 
     public void renderFrequency()
     {
@@ -20,15 +21,15 @@ public class tab_Frequency(MainWindow initiator)
 
         Theme.Text("Center Frequency", Theme.inputTheme);
         Theme.inputTheme.prefix = "Center Frequency";
-        var hasFrequencyChanged = Theme.glowingInput("frequency_center", ref _displayFreqCenter, Theme.inputTheme);
+        var hasFrequencyChanged = Theme.glowingInput("frequency_center", ref s_displayFreqCenter, Theme.inputTheme);
 
         Theme.Text("Span", Theme.inputTheme);
         Theme.inputTheme.prefix = "span";
-        hasFrequencyChanged |= Theme.glowingInput("frequency_span", ref _displaySpan, Theme.inputTheme);
+        hasFrequencyChanged |= Theme.glowingInput("frequency_span", ref s_displaySpan, Theme.inputTheme);
         if (hasFrequencyChanged) //frequencyChangedByCenterSpan
         {
             double center_frequency = 0, span = 0;
-            if (TryFormatFreq(_displayFreqCenter, out center_frequency) && TryFormatFreq(_displaySpan, out span))
+            if (Global.TryFormatFreq(s_displayFreqCenter, out center_frequency) && Global.TryFormatFreq(s_displaySpan, out span))
             {
                 s_displayFreqStart = (center_frequency - span / 2.0).ToString();
                 s_displayFreqStop = (center_frequency + span / 2.0).ToString();
@@ -45,7 +46,7 @@ public class tab_Frequency(MainWindow initiator)
         if (hasFrequencyChanged) //apply frequency change in settings
         {
             double freqStart, freqStop;
-            if (TryFormatFreq(s_displayFreqStart, out freqStart) && TryFormatFreq(s_displayFreqStop, out freqStop))
+            if (Global.TryFormatFreq(s_displayFreqStart, out freqStart) && Global.TryFormatFreq(s_displayFreqStop, out freqStop))
             {
                 if (freqStart >= freqStop || !parent.tab_Device.deviceCOM.deviceRxFrequencyRange[(int)parent.tab_Device.deviceCOM.rxAntenna.Item1]
                         .ToList().Exists(x => x.Minimum <= freqStart && x.Maximum >= freqStop))
@@ -54,8 +55,8 @@ public class tab_Frequency(MainWindow initiator)
                 }
                 else
                 {
-                    _displaySpan = (freqStop - freqStart).ToString();
-                    _displayFreqCenter = ((freqStop - freqStart) / 2.0 + freqStart).ToString();
+                    s_displaySpan = (freqStop - freqStart).ToString();
+                    s_displayFreqCenter = ((freqStop - freqStart) / 2.0 + freqStart).ToString();
                     parent.Configuration.config[Configuration.saVar.freqStart] = freqStart;
                     parent.Configuration.config[Configuration.saVar.freqStop] = freqStop;
                 }
@@ -67,26 +68,5 @@ public class tab_Frequency(MainWindow initiator)
                 _logger.Error("$ Start or End Frequency span is not a valid double");
             }
         }
-    }
-
-    public static bool TryFormatFreq(string input, out double value)
-    {
-        input = input.ToUpper();
-        double exponent = 1;
-        if (input.Contains("K"))
-            exponent = 1e3;
-        if (input.Contains("M"))
-            exponent = 1e6;
-        if (input.Contains("G"))
-            exponent = 1e9;
-        double results = 80000000;
-        if (!double.TryParse(input.Replace("K", "").Replace("M", "").Replace("G", ""), out results))
-        {
-            value = 0;
-            return false;
-        }
-
-        value = results * exponent;
-        return true;
     }
 }

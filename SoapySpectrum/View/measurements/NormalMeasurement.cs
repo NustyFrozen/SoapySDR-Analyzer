@@ -226,8 +226,8 @@ namespace SoapySA.View.measurements
                         var markerPosOnGraph = parent.Graph.scaleToGraph(left, top, right, bottom,
                             (float)currentActiveMarkers[c].position, (float)currentActiveMarkers[c].value, freqStart,
                             freqStop, graph_startDB, graph_endDB);
-                        draw.AddCircleFilled(markerPosOnGraph, 4f, traceColor_uint);
-                        draw.AddCircle(markerPosOnGraph, 4.1f, Color.Black.ToUint()); //outline
+                        draw.AddCircleFilled(markerPosOnGraph, 6f, traceColor_uint);
+                        draw.AddCircle(markerPosOnGraph, 6.1f, Color.White.ToUint()); //outline
                         var markerValue = currentActiveMarkers[c].value;
                         var markerPosition = currentActiveMarkers[c].position;
                         if (currentActiveMarkers[c].deltaReference != 0)

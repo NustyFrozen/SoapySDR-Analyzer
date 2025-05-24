@@ -8,11 +8,13 @@
 	 <ItemGroup>
     <PackageReference Include="ClickableTransparentOverlay" Version="10.2.0" />
     <PackageReference Include="FFTW.NET" Version="1.0.1" />
+    <PackageReference Include="Google.Protobuf" Version="3.31.0" />
     <PackageReference Include="ManagedCuda-CUFFT" Version="12.8.60" />
     <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
     <PackageReference Include="MathNet.Numerics.MKL.Win-x64" Version="3.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="NLog.Extensions.Logging" Version="5.3.12" />
+    <PackageReference Include="protobuf-net" Version="3.2.52" />
     <PackageReference Include="System.Management" Version="8.0.0" />
   </ItemGroup>
 	 <ItemGroup>

@@ -1,283 +1,147 @@
 ﻿using ImGuiNET;
 using NLog;
 using Pothosware.SoapySDR;
+using SoapyVNACommon;
+using SoapyVNACommon.Extentions;
 using SoapyVNACommon.Fonts;
 using Logger = NLog.Logger;
-using Range = Pothosware.SoapySDR.Range;
 
 namespace SoapyRL.View.tabs;
 
-public static class tab_Device
+public class tab_Device(MainWindow initiator, sdrDeviceCOM com)
 {
-    private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+    private MainWindow parent = initiator;
+    private readonly Logger _logger = LogManager.GetCurrentClassLogger();
+    public bool isCorrectIQEnabled = true, isShowValidRangeEnabled;
+    public sdrDeviceCOM deviceCOM = com;
+    public string[] gainRxValues = new string[com.rxGainValues.Count], gainTxValues = new string[com.txGainValues.Count];
+    private bool initialized = false;
+    public string s_osciliatorLeakageSleep = "0";
+    public float s_validRangeTolerance = 90.0f;
+    public bool s_isCorrectIQEnabled = true;
+    public bool s_showValidRange;
 
-    //UI input pereference
-    private static int _comboSelectedDevice = -1;
-
-    private static string[] _comboAvailableDevices = new[] { "No Devices Found" };
-    public static string s_selectedReflectAntenna = "TX/RX", s_selectedForwardAntenna = "TX/RX";
-    public static float s_osciliatorLeakageSleep, s_validRangeTolerance = 90.0f;
-    public static bool s_isCorrectIQEnabled = true;
-    public static bool s_showValidRange;
-
-    //SDR device Data
-    private static StringList _availableReflectAntennas, _availableForwardAntennas;
-
-    public static Device s_sdrDevice;
-    public static Tuple<string, Range>[] s_deviceTxGains, s_deviceRxGains;
-    private static float[] _deviceTxGainValues, _deviceRxGainValues;
-    private static RangeList s_transmitRange, s_receiveRange;
-
-    public static string s_displayFreqStart = "800M", s_displayFreqStop = "1000M";
-
-    private static Theme.glowingInputConfigurator inputTheme = Theme.getTextTheme();
-    private static Theme.ButtonConfigurator buttonTheme = Theme.getButtonTheme();
-    private static readonly Theme.SliderInputConfigurator sliderTheme = Theme.getSliderTheme();
-
-    public static void setupSoapyEnvironment()
-    {
-        var currentPath = Path.GetDirectoryName(Application.ExecutablePath);
-        var soapyPath = Path.Combine(currentPath, @"SoapySDR");
-        var libsPath = Path.Combine(soapyPath, @"Libs");
-        Environment.SetEnvironmentVariable("SOAPY_SDR_PLUGIN_PATH",
-            Path.Combine(currentPath, @"SoapySDR\root\SoapySDR\lib\SoapySDR\modules0.8-3\"));
-        Environment.SetEnvironmentVariable("SOAPY_SDR_ROOT", Path.Combine(currentPath, @"SoapySDR\root\SoapySDR"));
-        Environment.SetEnvironmentVariable("PATH",
-            $"{Environment.GetEnvironmentVariable("PATH")};{soapyPath};{libsPath}");
-    }
-
-    private static string InsertNewlines(string text, int X)
-    {
-        if (text.Length <= X) return text; // No need to wrap short items
-
-        var formattedText = new List<char>();
-        for (var i = 0; i < text.Length; i++)
-        {
-            formattedText.Add(text[i]);
-            if ((i + 1) % X == 0) formattedText.Add('\n');
-        }
-
-        return new string(formattedText.ToArray());
-    }
+    public string s_displayFreqStart = "800M", s_displayFreqStop = "1000M";
 
     /// <summary>
     ///     enumrates over the available devices and updates the UI accordingly
     /// </summary>
-    public static void refreshDevices()
+    public void renderDeviceData()
     {
-        var devices = Device.Enumerate().ToList();
-        var deviceLabels = new List<string>();
-        foreach (var device in devices)
+        if (!initialized)
         {
-            var idenefiers = string.Empty;
-            if (device.ContainsKey("label"))
-                idenefiers += $"label={device["label"]},";
-
-            if (device.ContainsKey("driver"))
-                idenefiers += $"driver={device["driver"]},";
-
-            if (device.ContainsKey("serial"))
-                idenefiers += $"serial={device["serial"]},";
-
-            if (device.ContainsKey("hardware"))
-                idenefiers += $"hardware={device["hardware"]}";
-            if (idenefiers.EndsWith(","))
-                idenefiers = idenefiers.Substring(0, idenefiers.Length - 1);
-            deviceLabels.Add(InsertNewlines(idenefiers, 60));
-        }
-
-        if (deviceLabels.Count > 0)
-        {
-            _comboAvailableDevices = deviceLabels.ToArray();
-            _comboSelectedDevice = 0;
-            updateDevice();
-        }
-        else
-        {
-            _comboAvailableDevices = new[] { "No Devices Found" };
-        }
-    }
-
-    public static void updateDevice()
-    {
-        PerformRL.isRunning = false;
-        try
-        {
-            s_sdrDevice = new Device(_comboAvailableDevices[_comboSelectedDevice]);
-            fetchSDR_Data();
-        }
-        catch (Exception ex)
-        {
-            _logger.Error($"Failed to open Device -> {ex.Message}");
-        }
-    }
-
-    /// <summary>
-    ///     gets all of the sdr data to the ui elements
-    /// </summary>
-    private static void fetchSDR_Data()
-    {
-        var receive = s_sdrDevice.GetNumChannels(Direction.Rx);
-        var transmit = s_sdrDevice.GetNumChannels(Direction.Tx);
-        if (receive == 0 || transmit == 0 || !s_sdrDevice.GetFullDuplex(Direction.Rx, 0))
-            MessageBox.Show("This SDR doesn't support Return Loss\n" +
-                            "a receive and transmit channel is required\n" +
-                            "and full duplex capabilities");
-        _availableReflectAntennas = s_sdrDevice.ListAntennas(Direction.Rx, 0);
-        _availableForwardAntennas = s_sdrDevice.ListAntennas(Direction.Tx, 0);
-        var gains = s_sdrDevice.ListGains(Direction.Tx, 0);
-        var tempList = new List<Tuple<string, Range>>();
-        foreach (var ga in gains)
-            tempList.Add(new Tuple<string, Range>(ga, s_sdrDevice.GetGainRange(Direction.Tx, 0, ga)));
-        s_deviceTxGains = tempList.ToArray();
-        gains = s_sdrDevice.ListGains(Direction.Rx, 0);
-        _deviceTxGainValues = new float[tempList.Count];
-        tempList.Clear();
-        foreach (var ga in gains)
-            tempList.Add(new Tuple<string, Range>(ga, s_sdrDevice.GetGainRange(Direction.Rx, 0, ga)));
-        s_deviceRxGains = tempList.ToArray();
-        _deviceRxGainValues = new float[tempList.Count];
-
-        s_transmitRange = s_sdrDevice.GetFrequencyRange(Direction.Tx, 0);
-        s_receiveRange = s_sdrDevice.GetFrequencyRange(Direction.Rx, 0);
-
-        //clipping frequency ranges
-
-
-        Configuration.config[Configuration.saVar.txSampleRate] = s_sdrDevice.GetSampleRateRange(Direction.Tx, 0)
-            .OrderBy(x => x.Maximum).Last().Maximum;
-        Configuration.config[Configuration.saVar.rxSampleRate] = s_sdrDevice.GetSampleRateRange(Direction.Rx, 0)
-            .OrderBy(x => x.Maximum).Last().Maximum;
-
-#if DEBUG
-            Configuration.config[Configuration.saVar.freqStart] = 100e6;
-            Configuration.config[Configuration.saVar.freqStop] = 100e7;
-
-#endif
-    }
-
-    public static void renderDeviceData()
-    {
-        var inputTheme = Theme.getTextTheme();
-
-        if (s_sdrDevice == null) return;
-
-        Theme.Text("Forward Anntena", inputTheme);
-        foreach (var antenna in _availableForwardAntennas)
-            if (ImGui.RadioButton($"{antenna}", antenna == s_selectedForwardAntenna))
+            for (int i = 0; i < gainRxValues.Length; i++)
             {
-                s_selectedForwardAntenna = antenna;
-                s_sdrDevice.SetAntenna(Direction.Tx, 0, antenna);
+                gainRxValues[i] = com.rxGainValues[i].ToString();
+            }
+            for (int i = 0; i < gainTxValues.Length; i++)
+            {
+                gainTxValues[i] = com.txGainValues[i].ToString();
+            }
+            initialized = true;
+        }
+        ImGui.Text($"{FontAwesome5.Microchip} {deviceCOM.Descriptor}\n" +
+                   $"Reflection:\nCH {deviceCOM.rxAntenna.Item1}\n" +
+                   $"ANT {deviceCOM.rxAntenna.Item2}\n" +
+                   $"Foward:\nCH {deviceCOM.txAntenna.Item1}\n" +
+                   $"ANT {deviceCOM.txAntenna.Item2}");
+        Theme.Text("TX Amplifiers", Theme.inputTheme);
+        foreach (var gainElm in deviceCOM.txGains)
+            if (gainElm.Key.Item1 == deviceCOM.txAntenna.Item1)
+            {
+                var gain = gainTxValues[gainElm.Value.Item2];
+                var range = gainElm.Value.Item1;
+                ImGui.Text($"{gainElm.Key.Item2} {range.Minimum} - {range.Maximum}");
+                if (Theme.glowingInput($"{gainElm.Key.Item2}_tx", ref gainTxValues[gainElm.Value.Item2],
+                        Theme.inputTheme))
+                {
+                    double results = 0;
+                    bool valid = double.TryParse(gainTxValues[gainElm.Value.Item2], out results);
+                    valid |= results >= range.Minimum && results <= range.Maximum;
+                    if (!valid)
+                    {
+                        _logger.Error("invalid Double Value or value out ouf range");
+                    }
+                    else
+                    {
+                        if (range.Step != 0)
+                            deviceCOM.sdrDevice.SetGain(Direction.Tx, deviceCOM.txAntenna.Item1, gainElm.Key.Item2,
+                                Math.Round(results / range.Step) * range.Step);
+                        else
+                            //free value
+                            deviceCOM.sdrDevice.SetGain(Direction.Tx, deviceCOM.txAntenna.Item1, gainElm.Key.Item2, results);
+                    }
+                }
             }
 
-        Theme.Text("Reflect Anntena", inputTheme);
-        foreach (var antenna in _availableReflectAntennas)
-            if (ImGui.RadioButton($"{antenna}", antenna == s_selectedReflectAntenna))
+        Theme.Text("RX Amplifiers", Theme.inputTheme);
+        foreach (var gainElm in deviceCOM.rxGains)
+            if (gainElm.Key.Item1 == deviceCOM.rxAntenna.Item1)
             {
-                s_selectedReflectAntenna = antenna;
-                s_sdrDevice.SetAntenna(Direction.Rx, 0, antenna);
+                var gain = gainRxValues[gainElm.Value.Item2];
+                var range = gainElm.Value.Item1;
+                ImGui.Text($"{gainElm.Key.Item2} {range.Minimum} - {range.Maximum}");
+                if (Theme.glowingInput($"{gainElm.Key.Item2}_rx", ref gainRxValues[gainElm.Value.Item2],
+                        Theme.inputTheme))
+                {
+                    double results = 0;
+                    bool valid = double.TryParse(gainRxValues[gainElm.Value.Item2], out results);
+                    valid |= results >= range.Minimum && results <= range.Maximum;
+                    if (!valid)
+                    {
+                        _logger.Error("invalid Double Value or value ot ouf range");
+                    }
+                    else
+                    {
+                        if (range.Step != 0)
+                            deviceCOM.sdrDevice.SetGain(Direction.Rx, deviceCOM.rxAntenna.Item1, gainElm.Key.Item2,
+                                Math.Round(results / range.Step) * range.Step);
+                        else
+                            //free value
+                            deviceCOM.sdrDevice.SetGain(Direction.Rx, deviceCOM.rxAntenna.Item1, gainElm.Key.Item2, results);
+                    }
+                }
             }
+        Theme.Text($"Sensors Data\n{deviceCOM.sensorData}", Theme.inputTheme);
 
-        ImGui.Text($"Forward Amplifiers\n" +
-                   $"WARNING you are reflecting power into your sdr\n" +
-                   $"please check your sdr's transmit and receive power capabilities\n" +
-                   $"before applying gains");
-        for (var i = 0; i < s_deviceTxGains.Count(); i++)
+        Theme.buttonTheme.text = "Refresh Sensors Data";
+        if (Theme.button("Refresh_Sensors", Theme.buttonTheme))
         {
-            var gain = s_deviceTxGains[i];
-            var range = gain.Item2;
-            ImGui.Text($"{gain.Item1}");
-            if (Theme.slider($"{gain.Item1}_tx", (float)range.Minimum, (float)range.Maximum, ref _deviceTxGainValues[i],
-                    sliderTheme))
-            {
-                if (range.Step != 0)
-                    s_sdrDevice.SetGain(Direction.Tx, 0, gain.Item1,
-                        Math.Round(_deviceTxGainValues[i] / range.Step) * range.Step);
-                else
-                    //free value
-                    s_sdrDevice.SetGain(Direction.Tx, 0, gain.Item1, _deviceTxGainValues[i]);
-            }
+            // var i = 0;
+            // foreach (var sensor in s_sdrDevice.ListSensors())
+            //     _deviceSensorData[i++] = $"{sensor}: {s_sdrDevice.ReadSensor(sensor)}";
         }
-        ImGui.Text($"Reflection Amplifiers\n");
-        for (var i = 0; i < s_deviceRxGains.Count(); i++)
-        {
-            var gain = s_deviceRxGains[i];
-            var range = gain.Item2;
-            ImGui.Text($"{gain.Item1}");
-            if (Theme.slider($"{gain.Item1}_rx", (float)range.Minimum, (float)range.Maximum, ref _deviceRxGainValues[i],
-                    sliderTheme))
-            {
-                if (range.Step != 0)
-                    s_sdrDevice.SetGain(Direction.Rx, 0, gain.Item1,
-                        Math.Round(_deviceRxGainValues[i] / range.Step) * range.Step);
-                else
-                    //free value
-                    s_sdrDevice.SetGain(Direction.Rx, 0, gain.Item1, _deviceRxGainValues[i]);
-            }
-        }
-
-        Theme.newLine();
     }
 
-    private static bool tryFormatFreq(string input, out double value)
-    {
-        input = input.ToUpper();
-        double exponent = 1;
-        if (input.Contains("K"))
-            exponent = 1e3;
-        if (input.Contains("M"))
-            exponent = 1e6;
-        if (input.Contains("G"))
-            exponent = 1e9;
-        double results = 80000000;
-        if (!double.TryParse(input.Replace("K", "").Replace("M", "").Replace("G", ""), out results))
-        {
-            value = 0;
-            return false;
-        }
-
-        value = results * exponent;
-        return true;
-    }
-
-    public static void renderDevice()
+    public void renderDevice()
     {
         Theme.newLine();
+        renderDeviceData();
         Theme.newLine();
-        Theme.newLine();
-        Theme.newLine();
-        buttonTheme.text = "Refresh";
-        if (Theme.button("Refresh_Devices", buttonTheme))
-            refreshDevices();
-        Theme.newLine();
-        Theme.Text("SDR", inputTheme);
-        if (Theme.glowingCombo("devicetabs", ref _comboSelectedDevice, _comboAvailableDevices, inputTheme))
-            updateDevice();
-        Theme.newLine();
-        Theme.Text($"{FontAwesome5.ArrowLeft} Left Band", inputTheme);
-        inputTheme.prefix = " start Frequency";
-        var hasFrequencyChanged = Theme.glowingInput("InputSelectortext", ref s_displayFreqStart, inputTheme);
-        Theme.Text($"{FontAwesome5.ArrowRight} Right Band", inputTheme);
-        inputTheme.prefix = "End Frequency";
-        hasFrequencyChanged |= Theme.glowingInput("InputSelectortext2", ref s_displayFreqStop, inputTheme);
+        Theme.Text($"{FontAwesome5.ArrowLeft} Left Band", Theme.inputTheme);
+        Theme.inputTheme.prefix = " start Frequency";
+        var hasFrequencyChanged = Theme.glowingInput("InputSelectortext", ref s_displayFreqStart, Theme.inputTheme);
+        Theme.Text($"{FontAwesome5.ArrowRight} Right Band", Theme.inputTheme);
+        Theme.inputTheme.prefix = "End Frequency";
+        hasFrequencyChanged |= Theme.glowingInput("InputSelectortext2", ref s_displayFreqStop, Theme.inputTheme);
 
         if (hasFrequencyChanged) //apply frequency change in settings
         {
             double freqStart, freqStop;
-            if (tryFormatFreq(s_displayFreqStart, out freqStart) && tryFormatFreq(s_displayFreqStop, out freqStop))
+            if (Global.TryFormatFreq(s_displayFreqStart, out freqStart) && Global.TryFormatFreq(s_displayFreqStop, out freqStop))
             {
                 if (freqStart >= freqStop ||
-                    !(Math.Max(s_transmitRange.OrderBy(x => x.Minimum).First().Minimum,
-                          s_receiveRange.OrderBy(x => x.Minimum).First().Minimum) <= freqStart
-                      && Math.Min(s_transmitRange.OrderByDescending(x => x.Maximum).First().Maximum,
-                          s_receiveRange.OrderByDescending(x => x.Maximum).First().Maximum) >= freqStop))
+                    !(Math.Max(deviceCOM.deviceTxFrequencyRange[(int)deviceCOM.txAntenna.Item1].OrderBy(x => x.Minimum).First().Minimum,
+                          deviceCOM.deviceRxFrequencyRange[(int)deviceCOM.rxAntenna.Item1].OrderBy(x => x.Minimum).First().Minimum) <= freqStart
+                      && Math.Min(deviceCOM.deviceTxFrequencyRange[(int)deviceCOM.txAntenna.Item1].OrderByDescending(x => x.Maximum).First().Maximum,
+                          deviceCOM.deviceRxFrequencyRange[(int)deviceCOM.rxAntenna.Item1].OrderByDescending(x => x.Maximum).First().Maximum) >= freqStop))
                 {
                     _logger.Error("$ Start or End Frequency is not valid");
                 }
                 else
                 {
-                    Configuration.config[Configuration.saVar.freqStart] = freqStart;
-                    Configuration.config[Configuration.saVar.freqStop] = freqStop;
+                    parent.Configuration.config[Configuration.saVar.freqStart] = freqStart;
+                    parent.Configuration.config[Configuration.saVar.freqStop] = freqStop;
                 }
             }
             else
@@ -288,60 +152,60 @@ public static class tab_Device
         ImGui.Checkbox("Show Valid Impedance Range", ref s_showValidRange);
         if (s_showValidRange)
         {
-            Theme.Text("Valid Impedance min forward", inputTheme);
-            if (Theme.slider("valid Impadance Range", ref s_validRangeTolerance, sliderTheme))
+            Theme.Text("Valid Impedance min forward", Theme.inputTheme);
+            if (Theme.slider("valid Impadance Range", ref s_validRangeTolerance, Theme.sliderTheme))
             {
-                Configuration.config[Configuration.saVar.validImpedanceTol] = s_validRangeTolerance;
+                parent.Configuration.config[Configuration.saVar.validImpedanceTol] = s_validRangeTolerance;
             }
         }
-        Theme.newLine();
-        renderDeviceData();
-        Theme.newLine();
-        Theme.Text("LO/PLL Leakage sleep", inputTheme);
-        if (Theme.slider("Leakage", ref s_osciliatorLeakageSleep, sliderTheme))
+        Theme.Text("LO/PLL Leakage sleep (0-1000ms)", Theme.inputTheme);
+        if (Theme.glowingInput("Leakage", ref s_osciliatorLeakageSleep, Theme.inputTheme))
         {
-            Configuration.config[Configuration.saVar.leakageSleep] = (int)(s_osciliatorLeakageSleep * 100);
-            _logger.Debug(Configuration.config[Configuration.saVar.leakageSleep]);
+            int LO;
+            if (int.TryParse(s_osciliatorLeakageSleep, out LO))
+                if (LO >= 0 && LO <= 1000)
+                    parent.Configuration.config[Configuration.saVar.leakageSleep] = LO;
+            _logger.Debug(parent.Configuration.config[Configuration.saVar.leakageSleep]);
         }
 
         if (ImGui.Checkbox("IQ correction", ref s_isCorrectIQEnabled))
-            Configuration.config[Configuration.saVar.iqCorrection] = s_isCorrectIQEnabled;
-        if (PerformRL.isFFTQueueEmpty() && !PerformRL.isRunning)
+            parent.Configuration.config[Configuration.saVar.iqCorrection] = s_isCorrectIQEnabled;
+        if (parent.rlManager.isFFTQueueEmpty() && !parent.rlManager.isRunning)
         {
-            buttonTheme.text = "Sweep Reference (open port)";
-            if (Theme.button("Sweep", buttonTheme))
+            Theme.buttonTheme.text = "Sweep Reference (open port)";
+            if (Theme.button("Sweep", Theme.buttonTheme))
             {
-                for (var i = 0; i < tab_Trace.s_traces.Length; i++)
+                for (var i = 0; i < parent.tab_Trace.s_traces.Length; i++)
                 {
-                    tab_Trace.s_traces[i].viewStatus = tab_Trace.traceViewStatus.clear;
-                    tab_Trace.s_traces[i].plot.Clear();
+                    parent.tab_Trace.s_traces[i].viewStatus = tab_Trace.traceViewStatus.clear;
+                    parent.tab_Trace.s_traces[i].plot.Clear();
                 }
 
-                tab_Trace.s_traces[0].viewStatus = tab_Trace.traceViewStatus.active;
-                PerformRL.beginRL();
+                parent.tab_Trace.s_traces[0].viewStatus = tab_Trace.traceViewStatus.active;
+                parent.rlManager.beginRL();
             }
             Theme.newLine();
-            buttonTheme.text = "Sweep range (closed port, optional)";
-            if (Theme.button("Sweep", buttonTheme))
+            Theme.buttonTheme.text = "Sweep range (closed port, optional)";
+            if (Theme.button("Sweep", Theme.buttonTheme))
             {
-                for (var i = 0; i < tab_Trace.s_traces.Length; i++)
+                for (var i = 0; i < parent.tab_Trace.s_traces.Length; i++)
                 {
-                    tab_Trace.s_traces[i].viewStatus = tab_Trace.traceViewStatus.clear;
-                    tab_Trace.s_traces[i].plot.Clear();
+                    parent.tab_Trace.s_traces[i].viewStatus = tab_Trace.traceViewStatus.clear;
+                    parent.tab_Trace.s_traces[i].plot.Clear();
                 }
 
-                tab_Trace.s_traces[2].viewStatus = tab_Trace.traceViewStatus.active;
-                PerformRL.beginRL();
+                parent.tab_Trace.s_traces[2].viewStatus = tab_Trace.traceViewStatus.active;
+                parent.rlManager.beginRL();
             }
             Theme.newLine();
-            buttonTheme.text = "Sweep Results";
-            if (Theme.button("Sweep", buttonTheme))
+            Theme.buttonTheme.text = "Sweep Results";
+            if (Theme.button("Sweep", Theme.buttonTheme))
             {
-                for (var i = 0; i < tab_Trace.s_traces.Length; i++)
-                    tab_Trace.s_traces[i].viewStatus = tab_Trace.traceViewStatus.clear;
-                tab_Trace.s_traces[1].plot.Clear();
-                tab_Trace.s_traces[1].viewStatus = tab_Trace.traceViewStatus.active;
-                PerformRL.beginRL();
+                for (var i = 0; i < parent.tab_Trace.s_traces.Length; i++)
+                    parent.tab_Trace.s_traces[i].viewStatus = tab_Trace.traceViewStatus.clear;
+                parent.tab_Trace.s_traces[1].plot.Clear();
+                parent.tab_Trace.s_traces[1].viewStatus = tab_Trace.traceViewStatus.active;
+                parent.rlManager.beginRL();
             }
         }
         else
@@ -350,6 +214,6 @@ public static class tab_Device
             Theme.Text("(to abort click End)");
         }
         Theme.newLine();
-        ImGui.Checkbox("Enable continuous sweep", ref PerformRL.continous);
+        ImGui.Checkbox("Enable continuous sweep", ref parent.rlManager.continous);
     }
 }

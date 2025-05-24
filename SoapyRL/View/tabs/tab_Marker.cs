@@ -2,10 +2,11 @@
 
 namespace SoapyRL.View.tabs;
 
-public static class tab_Marker
+public class tab_Marker(MainWindow initiator)
 {
-    private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
-    public static marker s_Marker;
+    public MainWindow parent = initiator;
+    private readonly Logger _logger = LogManager.GetCurrentClassLogger();
+    public marker s_Marker;
 
     public struct marker
     {

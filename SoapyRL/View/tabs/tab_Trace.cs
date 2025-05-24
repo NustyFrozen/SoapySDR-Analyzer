@@ -3,8 +3,10 @@ using SoapyRL.Extentions;
 
 namespace SoapyRL.View.tabs;
 
-public static class tab_Trace
+public class tab_Trace(MainWindow initiator)
 {
+    public MainWindow parent = initiator;
+
     public enum traceViewStatus
     {
         active,
@@ -12,10 +14,10 @@ public static class tab_Trace
         view
     }
 
-    private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
-    public static Trace[] s_traces = new Trace[3];
+    private readonly Logger _logger = LogManager.GetCurrentClassLogger();
+    public Trace[] s_traces = new Trace[3];
 
-    public static KeyValuePair<float, float> getClosestSampeledFrequency(int traceID, float Mhz)
+    public KeyValuePair<float, float> getClosestSampeledFrequency(int traceID, float Mhz)
     {
         lock (s_traces[traceID].plot)
         {
@@ -24,7 +26,7 @@ public static class tab_Trace
         }
     }
 
-    public static KeyValuePair<float, float> findMaxHoldRange(SortedDictionary<float, float> table, float start,
+    public KeyValuePair<float, float> findMaxHoldRange(SortedDictionary<float, float> table, float start,
         float stop)
     {
         var results = new KeyValuePair<float, float>(0, -1000);

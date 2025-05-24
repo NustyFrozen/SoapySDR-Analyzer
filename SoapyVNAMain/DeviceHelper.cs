@@ -25,13 +25,13 @@ public class DeviceHelper
             $"{Environment.GetEnvironmentVariable("PATH")};{soapyPath};{libsPath}");
     }
 
-
     /// <summary>
     ///     enumrates over the available devices and updates the UI accordingly
     /// </summary>
     public static Task refreshDevices()
     {
         AvailableDevices = new[] { "Refreshing Devices..." };
+        _logger.Info("Iterating Devices...");
         var devices = Device.Enumerate().ToList();
         var availableDevicesCOM = new List<sdrDeviceCOM>();
         var deviceLabels = new List<string>();
@@ -51,12 +51,15 @@ public class DeviceHelper
                 idenefiers += $"hardware={device["hardware"]}";
             if (idenefiers.EndsWith(","))
                 idenefiers = idenefiers.Substring(0, idenefiers.Length - 1);
+            _logger.Info($"Opening {idenefiers}");
             var deviceCOM = new sdrDeviceCOM(idenefiers);
+            _logger.Info($"Fetching {idenefiers}");
             deviceCOM.fetchSDRData();
+            _logger.Info($"added {idenefiers}");
             availableDevicesCOM.Add(deviceCOM);
             deviceLabels.Add(deviceCOM.Descriptor);
         }
-
+        _logger.Info($"Done iterating Devices");
         if (deviceLabels.Count > 0)
         {
             AvailableDevices = deviceLabels.ToArray();

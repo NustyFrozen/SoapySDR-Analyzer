@@ -21,7 +21,6 @@ public class PerformFFT(MainWindow initiator)
     //FFT Queue
     private readonly ConcurrentQueue<Tuple<double, Complex[], double>> FFTQueue = new();
 
-
     private int FFT_size = 4096;
 
     //https://github.com/ghostop14/gr-correctiq
@@ -29,24 +28,22 @@ public class PerformFFT(MainWindow initiator)
 
     private double avg_real, avg_img, hopSize;
     private List<Task> fftTasks = new List<Task>();
+
     public void beginFFT()
     {
+        if (isRunning) return;
         isRunning = true;
         fftTasks.Clear();
         fftTasks.Add(Task.Run(() => { FFT_POOL(); }));
         fftTasks.Add(Task.Run(() => { IQSampler(); }));
     }
+
     public void stopFFT()
     {
         isRunning = false;
         foreach (var task in fftTasks)
             if (!task.IsCompleted)
                 task.Wait();
-    }
-    private double[] getWindowFunction(int size)
-    {
-        return ((Func<int, double[]>)
-            parent.Configuration.config[Configuration.saVar.fftWindow])(size);
     }
 
     //CalculateFrequency(i, next.Item3, fft_size, next.Item1);
@@ -63,7 +60,7 @@ public class PerformFFT(MainWindow initiator)
             psd[1] = new float[segmentLength];
 
             // Calculate normalization factor for window (Hanning, Hamming, etc.)
-            var window = getWindowFunction(segmentLength);
+            var window = Window.FlatTop(segmentLength);
 
             double sum_w2 = 0;
             for (int i = 0; i < segmentLength; i++)
@@ -222,7 +219,7 @@ public class PerformFFT(MainWindow initiator)
         var results = new StreamResult();
         var floatBuffer = new float[MTU * 2];
         var bufferHandle = GCHandle.Alloc(floatBuffer, GCHandleType.Pinned);
-        Logger.Info($"Begining Stream MTU: {stream.MTU}");
+        Logger.Info($"Begining Sampling {{MTU: {stream.MTU}, FFT length: {FFT_size}, SPS: {parent.tab_Device.deviceCOM.rxSampleRate}}}");
         var sw = new Stopwatch();
 
         while (isRunning)
@@ -245,6 +242,15 @@ public class PerformFFT(MainWindow initiator)
             {
                 if (!isRunning)
                     return false;
+                if (resetData)
+                {
+                    if (FFTQueue.Count == 0)
+                    {
+                        resetData = false;
+                        parent.Graph.clearPlotData();
+                    }
+                    return false;
+                }
                 if ((bool)parent.Configuration.config[Configuration.saVar.freqInterleaving])
                 {
                     return f_center - sample_rate / 2 < (double)parent.Configuration.config[Configuration.saVar.freqStop] + sample_rate;
@@ -329,7 +335,7 @@ public class PerformFFT(MainWindow initiator)
             }
 
             sw.Restart();
-            while ((sw.ElapsedMilliseconds < (long)parent.Configuration.config[Configuration.saVar.refreshRate]) | resetData &&
+            while ((sw.ElapsedMilliseconds < (Int32)parent.Configuration.config[Configuration.saVar.refreshRate]) | resetData &&
                    isRunning)
             {
                 //reading while sleeping so no buffer overflow will happen

@@ -133,7 +133,7 @@ public class tab_Marker(MainWindow initiator)
                         Theme.inputTheme))
                 {
                     double results = 0;
-                    if (tab_Frequency.TryFormatFreq(s_markers[s_selectedMarker].bandPowerSpan_str, out results))
+                    if (Global.TryFormatFreq(s_markers[s_selectedMarker].bandPowerSpan_str, out results))
                         s_markers[s_selectedMarker].bandPowerSpan = results;
                     else
                         _logger.Error("couldn't change bandPowerSpan Invalid Double exponent Value");

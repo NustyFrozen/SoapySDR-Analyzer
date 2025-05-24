@@ -12,11 +12,12 @@ public class tab_Device(MainWindow initiator, sdrDeviceCOM com)
 {
     private MainWindow parent = initiator;
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
-    public float s_osciliatorLeakageSleep;
+    public string s_osciliatorLeakageSleep;
     public bool s_isCorrectIQEnabled = true, s_isinterleavingEnabled;
     public sdrDeviceCOM deviceCOM = com;
     public string[] gainValues = new string[com.rxGainValues.Count];
     private bool initialized = false;
+
     /// <summary>
     ///     enumrates over the available devices and updates the UI accordingly
     /// </summary>
@@ -52,7 +53,6 @@ public class tab_Device(MainWindow initiator, sdrDeviceCOM com)
                     }
                     else
                     {
-
                         if (range.Step != 0)
                             deviceCOM.sdrDevice.SetGain(Direction.Rx, deviceCOM.rxAntenna.Item1, gainElm.Key.Item2,
                                 Math.Round(results / range.Step) * range.Step);
@@ -79,10 +79,13 @@ public class tab_Device(MainWindow initiator, sdrDeviceCOM com)
         Theme.newLine();
         renderDeviceData();
         Theme.newLine();
-        Theme.Text("LO/PLL Leakage sleep", Theme.inputTheme);
-        if (Theme.slider("Leakage", ref s_osciliatorLeakageSleep, Theme.sliderTheme))
+        Theme.Text("LO/PLL Leakage sleep (0-1000ms)", Theme.inputTheme);
+        if (Theme.glowingInput("Leakage", ref s_osciliatorLeakageSleep, Theme.inputTheme))
         {
-            parent.Configuration.config[Configuration.saVar.leakageSleep] = (int)(s_osciliatorLeakageSleep * 100);
+            int LO;
+            if (int.TryParse(s_osciliatorLeakageSleep, out LO))
+                if (LO >= 0 && LO <= 1000)
+                    parent.Configuration.config[Configuration.saVar.leakageSleep] = LO;
             _logger.Debug(parent.Configuration.config[Configuration.saVar.leakageSleep]);
         }
 

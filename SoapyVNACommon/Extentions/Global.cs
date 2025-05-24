@@ -21,6 +21,33 @@ public enum saVar
     scalePerDivision
 }
 
+public static class Global
+{
+    public static readonly string configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config");
+    public static readonly string calibrationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "calibration");
+
+    public static bool TryFormatFreq(string input, out double value)
+    {
+        input = input.ToUpper();
+        double exponent = 1;
+        if (input.Contains("K"))
+            exponent = 1e3;
+        if (input.Contains("M"))
+            exponent = 1e6;
+        if (input.Contains("G"))
+            exponent = 1e9;
+        double results = 80000000;
+        if (!double.TryParse(input.Replace("K", "").Replace("M", "").Replace("G", ""), out results))
+        {
+            value = 0;
+            return false;
+        }
+
+        value = results * exponent;
+        return true;
+    }
+}
+
 public struct sdrDeviceCOM
 {
     public Device sdrDevice;
@@ -75,7 +102,6 @@ public struct sdrDeviceCOM
                 rxGainValues.Add(sdrDevice.GetGain(Direction.Rx, i, gain));
                 rxGains.Add(new Tuple<uint, string>(i, gain),
                     new Tuple<Range, int>(sdrDevice.GetGainRange(Direction.Rx, i, gain), GainCounter++));
-
             }
 
             availableRxAntennas.Add(i, sdrDevice.ListAntennas(Direction.Rx, i));
@@ -83,7 +109,6 @@ public struct sdrDeviceCOM
             deviceRxSampleRates[(int)i].Add(new Range(0, double.MaxValue, 0));
             deviceRxFrequencyRange.Add((int)i, sdrDevice.GetFrequencyRange(Direction.Rx, i));
         }
-        rxSampleRate = deviceRxSampleRates[0].OrderByDescending(x => x.Maximum).First().Maximum;
         i = 0;
         GainCounter = 0;
         for (; i < availableTxChannels; i++)
@@ -101,10 +126,7 @@ public struct sdrDeviceCOM
             deviceTxSampleRates[(int)i].Add(new Range(0, double.MaxValue, 0));
             deviceTxFrequencyRange.Add((int)i, sdrDevice.GetFrequencyRange(Direction.Tx, i));
         }
-        txSampleRate = deviceTxSampleRates[0].OrderByDescending(x => x.Maximum).First().Maximum;
         var sensors = sdrDevice.ListSensors();
-
-        i = 0;
         foreach (var sensor in sensors) this.sensorData += $"{sensor}: {sdrDevice.ReadSensor(sensor)}\n";
     }
 }
@@ -154,11 +176,4 @@ public struct trace
 
     public traceViewStatus viewStatus;
     public SortedDictionary<float, float> plot;
-}
-
-public class Global
-{
-    public static int selectedMarker = 0;
-    public static int selectedTrace = 0;
-    public static uint selectedChannel = 0;
 }

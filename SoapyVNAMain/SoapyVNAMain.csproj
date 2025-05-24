@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
+    <OutputType>Exe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
@@ -10,6 +10,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.31.0" />
+    <PackageReference Include="protobuf-net" Version="3.2.52" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SoapyRL\SoapyRL.csproj" />
     <ProjectReference Include="..\SoapySpectrum\SoapySA.csproj" />
     <ProjectReference Include="..\SoapyVNACommon\SoapyVNACommon.csproj" />
   </ItemGroup>

@@ -2,7 +2,6 @@
 using ImGuiNET;
 using NLog;
 using SoapySA;
-using SoapySA.View;
 using SoapyVNACommon;
 using SoapyVNACommon.Extentions;
 using SoapyVNACommon.Fonts;
@@ -15,12 +14,12 @@ namespace SoapyVNAMain.View
         public static Dictionary<string, definedWidget> Widgets = new Dictionary<string, definedWidget>();
         private definedWidget selectedWidget = new definedWidget() { isComplete = false };
 
-        private static bool editMode = false, initializedResources = false;
+        private static bool visble = true, initializedResources = false;
 
         private static ushort[] iconRange = new ushort[] { 0xe005, 0xf8ff, 0 };
 
         private static ImFontPtr PoppinsFont, IconFont;
-        private bool visble = true;
+        public static bool editMode = false;
 
         public WidgetsWindow() : base(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height)
         {
@@ -54,6 +53,35 @@ namespace SoapyVNAMain.View
             //IconFont = io.Fonts.AddFontFromFileTTF(@"Fonts\fa-solid-900.ttf", 16,, new ushort[] { 0xe005,
             //0xf8ff,0});
         }
+
+        private void loadExistingWidgets()
+        {
+            if (!Directory.Exists(Global.configPath))
+                Directory.CreateDirectory(Global.configPath);
+            foreach (var widgetFullName in Directory.GetDirectories(Global.configPath))
+                try
+                {
+                    var name = widgetFullName.Replace($"{Global.configPath}\\", "");
+                    var widget = definedWidget.loadWidget(widgetFullName);
+                    //making sure device is connected and re-intializing the device in the
+                    widget.isComplete = false;
+                    try
+                    {
+                        widget.device.sdrDevice = new Pothosware.SoapySDR.Device(widget.device.Descriptor);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error($"Error Loading Widget Device Initialization {widgetFullName} --> {ex.Message}");
+                        widget.attempted = true;
+                    }
+                    Widgets.Add(name, widget);
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error($"Error Loading Widget {widgetFullName} --> {ex.Message}");
+                }
+        }
+
         protected override void Render()
         {
             if (!initializedResources)
@@ -66,6 +94,7 @@ namespace SoapyVNAMain.View
                 ImGui.GetIO().FontGlobalScale = 1.4f;
                 Theme.initDefaultTheme();
                 Theme.setScaleSize(Configuration.getDefaultScaleSize());
+                loadExistingWidgets();
             }
             if (Imports.GetAsyncKeyState(Imports.Keys.Insert))
             {
@@ -90,7 +119,7 @@ namespace SoapyVNAMain.View
                     }
                 }
             ImGui.SameLine();
-            if (Theme.drawTextButton($"{FontAwesome5.Gear}"))
+            if (Theme.drawTextButton((editMode) ? $"{FontAwesome5.ArrowLeft}" : $"{FontAwesome5.Plus}"))
                 editMode = !editMode;
             if (editMode)
             {
@@ -101,8 +130,37 @@ namespace SoapyVNAMain.View
             {
                 if (!Widgets[key].isComplete)
                 {
+                    if (Widgets[key].attempted)
+                    {
+                        ImGui.Text($"{key} UnInitiated Device {Widgets[key].device.Descriptor} not found");
+                        Theme.newLine();
+                        if (Theme.drawTextButton("Retry Initializing"))
+                        {
+                            try
+                            {
+                                Widgets[key].device.sdrDevice = new Pothosware.SoapySDR.Device(Widgets[key].device.Descriptor);
+                                Widgets[key].attempted = false;
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.Error($"Error Loading Widget Device Initialization {key} --> {ex.Message}");
+                                Widgets[key].attempted = true;
+                                continue;//still can't find device
+                            }
+                        }
+                    }
                     var value = Widgets[key];
-                    value.window = new MainWindow(ImGui.GetCursorPos(), Configuration.getScreenSize() - ImGui.GetCursorPos(), value.device);
+                    switch (value.widgetType)
+                    {
+                        case 0:
+                            value.window = new SoapySA.View.MainWindow(key, ImGui.GetCursorPos(), Configuration.getScreenSize() - ImGui.GetCursorPos(), value.device);
+                            break;
+
+                        case 1:
+                            value.window = new SoapyRL.View.MainWindow(key, ImGui.GetCursorPos(), Configuration.getScreenSize() - ImGui.GetCursorPos(), value.device);
+                            break;
+                    }
+
                     value.isComplete = true;
                     value.window.initWidget();
                     Widgets[key] = value;

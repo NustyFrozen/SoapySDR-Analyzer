@@ -14,42 +14,50 @@ using Logger = NLog.Logger;
 
 namespace SoapyRL;
 
-public static class PerformRL
+public class PerformRL(MainWindow initiator)
 {
-    public static bool isRunning, resetData, continous = false;
-    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+    public MainWindow parent = initiator;
+    public bool isRunning, resetData, continous = false;
+    private readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
     //FFT Queue
-    private static readonly ConcurrentQueue<Tuple<double, Complex[], double>> FFTQueue = new();
+    private readonly ConcurrentQueue<Tuple<double, Complex[], double>> FFTQueue = new();
 
-    private static Device device;
-    private static int FFT_size = 4096;
+    private int FFT_size = 4096;
 
     //https://github.com/ghostop14/gr-correctiq
-    private static readonly double ratio = 1e-05f;
+    private readonly double ratio = 1e-05f;
 
-    private static double avg_real, avg_img;
+    private double avg_real, avg_img;
 
-    //the noise is static so it will be used the same for every sweep both reference and actual RL measure
-    private static float[]? _whiteNoise;
+    //the noise is  so it will be used the same for every sweep both reference and actual RL measure
+    private float[]? _whiteNoise;
 
-    public static void beginRL()
+    private List<Task> fftTasks = new List<Task>();
+
+    public void beginRL()
     {
-        device = tab_Device.s_sdrDevice;
+        if (isRunning) return;
         isRunning = true;
-        calculateAutoFFTSize();
-        new Thread(FFT_POOL)
-        { Priority = ThreadPriority.Highest }.Start();
-
-        new Thread(() => { IQSampler(device); }).Start();
+        fftTasks.Clear();
+        fftTasks.Add(Task.Run(() => { FFT_POOL(); }));
+        fftTasks.Add(Task.Run(() => { RLSampler(); }));
     }
 
-    public static bool isFFTQueueEmpty()
+    public void stopRL()
+    {
+        isRunning = false;
+        foreach (var task in fftTasks)
+            if (!task.IsCompleted)
+                task.Wait();
+    }
+
+    public bool isFFTQueueEmpty()
     {
         return FFTQueue.IsEmpty;
     }
 
-    private static float[] generateWhiteNoise(int count)
+    private float[] generateWhiteNoise(int count)
     {
         var rng = new MersenneTwister(); // Fast, high-quality PRNG
         var buffer = new Complex[count];
@@ -72,7 +80,7 @@ public static class PerformRL
         return results;
     }
 
-    private static double CalculateFrequency(double index, double Fs, double N, double f_center)
+    private double CalculateFrequency(double index, double Fs, double N, double f_center)
     {
         if (index < N / 2)
             // Positive frequencies with center frequency offset
@@ -82,7 +90,7 @@ public static class PerformRL
         return (index - N) * Fs / N + f_center;
     }
 
-    private static float[][] WelchPSD(Complex[] inputSignal, FftwArrayComplex bufferInput,
+    private float[][] WelchPSD(Complex[] inputSignal, FftwArrayComplex bufferInput,
         FftwArrayComplex bufferOutput, FftwPlanC2C plan, int segmentLength, int overlap, float sampleRate,
         float center)
     {
@@ -138,21 +146,21 @@ public static class PerformRL
         return psd;
     }
 
-    private static void calculateRBWVBW()
+    private void calculateRBWVBW()
     {
-        var sample_rate = (double)Configuration.config[Configuration.saVar.rxSampleRate];
-        var overlap = (double)Configuration.config[Configuration.saVar.fftOverlap];
+        var sample_rate = parent.tab_Device.deviceCOM.rxSampleRate;
+        var overlap = (double)parent.Configuration.config[Configuration.saVar.fftOverlap];
         var neff = FFT_size / (1 - overlap);
-        var segmentLength = Math.Max(1, FFT_size / (int)Configuration.config[Configuration.saVar.fftSegment]);
+        var segmentLength = Math.Max(1, FFT_size / (int)parent.Configuration.config[Configuration.saVar.fftSegment]);
         var stepSize = segmentLength - overlap;
         var numSegments = (FFT_size - overlap) / stepSize;
     }
 
-    public static void resetIQFilter()
+    public void resetIQFilter()
     {
         avg_real = 0;
         avg_img = 0;
-        if (device == null) return;
+        if (parent.tab_Device.deviceCOM.sdrDevice == null) return;
         calculateRBWVBW();
         //anything that affects the bin width,frequencies,welching method,etc... can and will affect the dc bias position on the IQ chart therfore we need to reset it
         //in addition we might aswell reset the plot since the functions that calls it will also change the bin spacing and frequency positioning which might not be in our span
@@ -160,7 +168,7 @@ public static class PerformRL
         resetData = true;
     }
 
-    private static void correctIQ(Complex[] samples)
+    private void correctIQ(Complex[] samples)
     {
         // return;
         for (var i = 0; i < samples.Length; i++)
@@ -171,17 +179,17 @@ public static class PerformRL
         }
     }
 
-    private static void calculateAutoFFTSize()
+    private void calculateAutoFFTSize()
     {
         FFT_size = Enumerable.Range(1, 15).Select(x => (int)Math.Pow(2, x)).OrderBy(i => i).First(x =>
-            x - (int)((double)Configuration.config[Configuration.saVar.rxSampleRate] *
-                (int)Configuration.config[Configuration.saVar.fftSegment] / 1e6) >= 0);
+            x - (int)((double)parent.tab_Device.deviceCOM.rxSampleRate *
+                (int)parent.Configuration.config[Configuration.saVar.fftSegment] / 1e6) >= 0);
     }
 
-    private static void FFT_POOL()
+    private void FFT_POOL()
     {
-        var segmentLength = Math.Max(1, FFT_size / (int)Configuration.config[Configuration.saVar.fftSegment]);
-        var overlap = (int)(segmentLength * (double)Configuration.config[Configuration.saVar.fftOverlap]);
+        var segmentLength = Math.Max(1, FFT_size / (int)parent.Configuration.config[Configuration.saVar.fftSegment]);
+        var overlap = (int)(segmentLength * (double)parent.Configuration.config[Configuration.saVar.fftOverlap]);
         var stepSize = segmentLength - overlap; // Step size
         var numSegments = (FFT_size - overlap) / stepSize; // Number of segments
         var fftwArrayInput = new FftwArrayComplex(segmentLength);
@@ -203,7 +211,7 @@ public static class PerformRL
 
             if (resetData) continue;
 
-            Graph.updateData(psd);
+            parent.Graph.updateData(psd);
         }
 
         _fftwPlanContext.Dispose();
@@ -211,19 +219,22 @@ public static class PerformRL
         fftwArrayOuput.Dispose();
     }
 
-    private static unsafe void IQSampler(Device sdr)
+    //i used to know what is going on in here, now i dont, but it works so dont touch or try to optimize
+    //(a joke)
+    private unsafe void RLSampler()
     {
-        var sample_rate = (double)Configuration.config[Configuration.saVar.rxSampleRate];
-        sdr.SetSampleRate(Direction.Rx, 0, sample_rate);
-        sdr.SetSampleRate(Direction.Tx, 0, sample_rate);
-        sdr.SetGain(Direction.Rx, 0, 0);
-        var frequency = (double)Configuration.config[Configuration.saVar.freqStart] + sample_rate / 2;
-        sdr.SetFrequency(Direction.Rx, 0, frequency);
-        var rxStream = sdr.SetupRxStream(StreamFormat.ComplexFloat32, new uint[] { 0 }, "");
-        var txStream = sdr.SetupTxStream(StreamFormat.ComplexFloat32, new uint[] { 0 }, "");
+        var sample_rate = parent.tab_Device.deviceCOM.rxSampleRate;
+        parent.tab_Device.deviceCOM.sdrDevice.SetSampleRate(Direction.Rx, parent.tab_Device.deviceCOM.rxAntenna.Item1, sample_rate);
+        parent.tab_Device.deviceCOM.sdrDevice.SetSampleRate(Direction.Tx, parent.tab_Device.deviceCOM.txAntenna.Item1, sample_rate);
+        var frequency = (double)parent.Configuration.config[Configuration.saVar.freqStart] + sample_rate / 2;
+        parent.tab_Device.deviceCOM.sdrDevice.SetFrequency(Direction.Rx, parent.tab_Device.deviceCOM.rxAntenna.Item1, frequency);
+        parent.tab_Device.deviceCOM.sdrDevice.SetFrequency(Direction.Tx, parent.tab_Device.deviceCOM.txAntenna.Item1, frequency);
+
+        var rxStream = parent.tab_Device.deviceCOM.sdrDevice.SetupRxStream(StreamFormat.ComplexFloat32, new uint[] { parent.tab_Device.deviceCOM.rxAntenna.Item1 }, "");
+        var txStream = parent.tab_Device.deviceCOM.sdrDevice.SetupTxStream(StreamFormat.ComplexFloat32, new uint[] { parent.tab_Device.deviceCOM.txAntenna.Item1 }, "");
         rxStream.Activate();
         txStream.Activate();
-        var rxMTU = rxStream.MTU / 6;
+        var rxMTU = rxStream.MTU;
         var txMTU = 4096;
         var results = new StreamResult();
         var rxFloatBuffer = new float[rxMTU * 2];
@@ -298,21 +309,21 @@ public static class PerformRL
         readingThread.Start();
         do
         {
-            for (var f_center = (double)Configuration.config[Configuration.saVar.freqStart] + sample_rate / 2;
-                 f_center - sample_rate / 2 < (double)Configuration.config[Configuration.saVar.freqStop]
-                 && !Imports.GetAsyncKeyState(Keys.End);
+            for (var f_center = (double)parent.Configuration.config[Configuration.saVar.freqStart] + sample_rate / 2;
+                 f_center - sample_rate / 2 < (double)parent.Configuration.config[Configuration.saVar.freqStop]
+                 && !Imports.GetAsyncKeyState(Keys.End) && isRunning;
                  f_center += sample_rate)
             {
-                //some sdrs are slow with hopping so it is preferable if we sample without hopping (just the span of the sample rate) we wont call setFrequency as it will slow the algorithm
+                //some parent.tab_Device.deviceCOM.sdrDevices are slow with hopping so it is preferable if we sample without hopping (just the span of the sample rate) we wont call setFrequency as it will slow the algorithm
                 if (frequency != f_center)
                 {
                     frequency = f_center;
-                    sdr.SetFrequency(Direction.Rx, 0, frequency);
-                    sdr.SetFrequency(Direction.Tx, 0, frequency);
+                    parent.tab_Device.deviceCOM.sdrDevice.SetFrequency(Direction.Rx, parent.tab_Device.deviceCOM.rxAntenna.Item1, frequency);
+                    parent.tab_Device.deviceCOM.sdrDevice.SetFrequency(Direction.Tx, parent.tab_Device.deviceCOM.txAntenna.Item1, frequency);
                     sw.Restart();
                     skipBufferAck = false;
                     skipBuffer = true;
-                    while ((sw.ElapsedMilliseconds < (int)Configuration.config[Configuration.saVar.leakageSleep] ||
+                    while ((sw.ElapsedMilliseconds < (int)parent.Configuration.config[Configuration.saVar.leakageSleep] ||
                             !skipBufferAck) && isRunning)
                         Thread.Sleep(1);
 
@@ -323,14 +334,14 @@ public static class PerformRL
                 }
                 //fill up the iqbuffer to have enough samples for FFT
 
-                while (totalSamples < FFT_size) Thread.Sleep(10); //waiting for samples to fill up;
+                while (totalSamples < FFT_size && isRunning) Thread.Sleep(10); //waiting for samples to fill up;
 
                 var currentTotalSamples = 0;
                 currentTotalSamples += totalSamples; // like this so its not a ref and actual copy
-                while (currentTotalSamples > FFT_size)
+                while (currentTotalSamples > FFT_size && isRunning)
                 {
                     var IQCorrectionSamples = samples.Slice(currentTotalSamples - FFT_size, FFT_size).ToArray();
-                    if ((bool)Configuration.config[Configuration.saVar.iqCorrection])
+                    if ((bool)parent.Configuration.config[Configuration.saVar.iqCorrection])
                         correctIQ(IQCorrectionSamples);
                     var mean = IQCorrectionSamples.Aggregate((a, b) => a + b) / IQCorrectionSamples.Length;
                     for (var i = 0; i < IQCorrectionSamples.Length; i++)
@@ -339,7 +350,7 @@ public static class PerformRL
                     currentTotalSamples -= FFT_size;
                 }
             }
-        } while (continous && tab_Trace.s_traces[1].viewStatus == tab_Trace.traceViewStatus.active);
+        } while (continous && parent.tab_Trace.s_traces[1].viewStatus == tab_Trace.traceViewStatus.active && isRunning);
         Logger.Info("Sweep Finished stopping transmission...");
         keepTransmission = false;
         transmitThread.Join();
