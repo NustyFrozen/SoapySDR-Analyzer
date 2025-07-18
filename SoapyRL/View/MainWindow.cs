@@ -1,58 +1,67 @@
-﻿using ImGuiNET;
+﻿using System.Numerics;
+using ImGuiNET;
 using NLog;
 using SoapyRL.View.tabs;
 using SoapyVNACommon;
 using SoapyVNACommon.Extentions;
-using System.Numerics;
 
 namespace SoapyRL.View;
 
-public class MainWindow : Widget
+public class MainWindow : IWidget
 {
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
-    public tab_Device tab_Device;
-    public tab_Marker tab_Marker;
-    public tab_Trace tab_Trace;
-    public Graph Graph;
     public Configuration Configuration;
-    public PerformRL rlManager;
+    public Graph Graph;
+    public PerformRl RlManager;
+    public TabDevice TabDevice;
+    public TabMarker TabMarker;
+    public TabTrace TabTrace;
 
-    public MainWindow(string widgetName, Vector2 position, Vector2 windowSize, sdrDeviceCOM deviceCom)
+    public MainWindow(string widgetName, Vector2 position, Vector2 windowSize, SdrDeviceCom deviceCom)
     {
         Configuration = new Configuration(widgetName, this, windowSize, position);
         Graph = new Graph(this);
-        tab_Device = new tab_Device(this, deviceCom);
-        rlManager = new PerformRL(this);
-        tab_Marker = new tab_Marker(this);
-        tab_Trace = new tab_Trace(this);
+        TabDevice = new TabDevice(this, deviceCom);
+        RlManager = new PerformRl(this);
+        TabMarker = new TabMarker(this);
+        TabTrace = new TabTrace(this);
     }
 
-    public void renderWidget() => Render();
-
-    public void releaseSDR() => rlManager.stopRL();
-
-    public void handleSDR()
-    {/* user will enable RL on his own */ }
-
-    public void initWidget()
+    public void RenderWidget()
     {
-        Configuration.initDefaultConfig();
-        Theme.initDefaultTheme();
-        Graph.s_waitForMouseClick.Start();
-        Graph.initializeGraphElements();
+        Render();
+    }
+
+    public void ReleaseSdr()
+    {
+        RlManager.StopRl();
+    }
+
+    public void HandleSdr()
+    {
+        /* user will enable RL on his own */
+    }
+
+    public void InitWidget()
+    {
+        Configuration.InitDefaultConfig();
+        Theme.InitDefaultTheme();
+        Graph.SWaitForMouseClick.Start();
+        Graph.InitializeGraphElements();
     }
 
     protected void Render()
     {
-        ImGui.BeginChild("RL Graph", Configuration.graphSize);
-        Graph.drawGraph();
+        ImGui.BeginChild("RL Graph", Configuration.GraphSize);
+        Graph.DrawGraph();
         ImGui.EndChild();
 
-        ImGui.SetCursorPos(new Vector2(Configuration.graphSize.X + 60 * Configuration.scaleSize.X, 10));
-        ImGui.BeginChild("Options", Configuration.optionSize);
-        Theme.newLine();
-        tab_Device.renderDevice();
+        ImGui.SetCursorPos(new Vector2(Configuration.GraphSize.X + 60 * Configuration.ScaleSize.X, 10));
+        ImGui.BeginChild("Options", Configuration.OptionSize);
+        Theme.NewLine();
+        TabDevice.RenderDevice();
 
-        ImGui.EndChild(); ;
+        ImGui.EndChild();
+        ;
     }
 }

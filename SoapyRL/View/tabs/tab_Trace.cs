@@ -3,30 +3,29 @@ using SoapyRL.Extentions;
 
 namespace SoapyRL.View.tabs;
 
-public class tab_Trace(MainWindow initiator)
+public class TabTrace(MainWindow initiator)
 {
-    public MainWindow parent = initiator;
-
-    public enum traceViewStatus
+    public enum TraceViewStatus
     {
-        active,
-        clear,
-        view
+        Active,
+        Clear,
+        View
     }
 
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
-    public Trace[] s_traces = new Trace[3];
+    public MainWindow Parent = initiator;
+    public Trace[] STraces = new Trace[3];
 
-    public KeyValuePair<float, float> getClosestSampeledFrequency(int traceID, float Mhz)
+    public KeyValuePair<float, float> GetClosestSampeledFrequency(int traceId, float mhz)
     {
-        lock (s_traces[traceID].plot)
+        lock (STraces[traceId].Plot)
         {
-            if (s_traces[traceID].plot.Count == 0) return new KeyValuePair<float, float>(0, 0);
-            return s_traces[traceID].plot.MinBy(x => Math.Abs((long)x.Key - Mhz));
+            if (STraces[traceId].Plot.Count == 0) return new KeyValuePair<float, float>(0, 0);
+            return STraces[traceId].Plot.MinBy(x => Math.Abs((long)x.Key - mhz));
         }
     }
 
-    public KeyValuePair<float, float> findMaxHoldRange(SortedDictionary<float, float> table, float start,
+    public KeyValuePair<float, float> FindMaxHoldRange(SortedDictionary<float, float> table, float start,
         float stop)
     {
         var results = new KeyValuePair<float, float>(0, -1000);
@@ -42,34 +41,25 @@ public class tab_Trace(MainWindow initiator)
     {
         public Trace()
         {
-            plot = new SortedDictionary<float, float>();
-            viewStatus = traceViewStatus.clear;
+            Plot = new SortedDictionary<float, float>();
+            ViewStatus = TraceViewStatus.Clear;
         }
 
-        private uint m_color, m_liteColor;
+        private uint _mColor;
 
-        public uint color
+        public uint Color
         {
-            get
-            {
-                return m_color;
-            }
+            get => _mColor;
             set
             {
-                m_color = value;
-                m_liteColor = Color.FromArgb(100, m_color.toColor()).ToUint();
+                _mColor = value;
+                LiteColor = System.Drawing.Color.FromArgb(100, _mColor.ToColor()).ToUint();
             }
         }
 
-        public readonly uint liteColor
-        {
-            get
-            {
-                return m_liteColor;
-            }
-        }
+        public uint LiteColor { get; private set; }
 
-        public traceViewStatus viewStatus;
-        public SortedDictionary<float, float> plot;
+        public TraceViewStatus ViewStatus;
+        public SortedDictionary<float, float> Plot;
     }
 }

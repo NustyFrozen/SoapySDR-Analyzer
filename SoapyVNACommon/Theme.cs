@@ -1,140 +1,140 @@
-﻿using ImGuiNET;
-using SoapyVNACommon.Extentions;
-using System.Drawing;
+﻿using System.Drawing;
 using System.Numerics;
+using ImGuiNET;
+using SoapyVNACommon.Extentions;
 
 namespace SoapyVNACommon;
 
 public class Theme
 {
-    public enum circleState
+    public enum CircleState
     {
-        fadeIn,
-        fadeOut,
+        FadeIn,
+        FadeOut,
         Spin,
         WaitEnd,
-        idle
+        Idle
     }
 
     public enum Sliderstatus
     {
-        idle,
-        start,
-        end
+        Idle,
+        Start,
+        End
     }
 
-    public static glowingInputConfigurator inputTheme = getTextTheme();
-    public static ButtonConfigurator buttonTheme = getbuttonTheme();
-    public static ButtonConfigurator textbuttonTheme = getTextButtonTheme();
+    public static GlowingInputConfigurator InputTheme = GetTextTheme();
+    public static ButtonConfigurator ButtonTheme = GetbuttonTheme();
+    public static ButtonConfigurator TextbuttonTheme = GetTextButtonTheme();
 
-    public static SliderInputConfigurator sliderTheme = getSliderTheme();
+    public static SliderInputConfigurator SliderTheme = GetSliderTheme();
 
-    private static readonly Dictionary<string, object> frameData = new();
-    private static Vector2 scaleSize = new Vector2(1.5f, 1.5f);
+    private static readonly Dictionary<string, object> FrameData = new();
+    private static Vector2 _scaleSize = new(1.5f, 1.5f);
 
-    public static void setScaleSize(Vector2 size)
+    public static void SetScaleSize(Vector2 size)
     {
-        scaleSize = size;
-        inputTheme = getTextTheme();
-        buttonTheme = getbuttonTheme();
-        sliderTheme = getSliderTheme();
-        textbuttonTheme = getTextButtonTheme();
+        _scaleSize = size;
+        InputTheme = GetTextTheme();
+        ButtonTheme = GetbuttonTheme();
+        SliderTheme = GetSliderTheme();
+        TextbuttonTheme = GetTextButtonTheme();
     }
 
-    public static void initDefaultTheme()
+    public static void InitDefaultTheme()
     {
         var io = ImGui.GetIO();
         var style = ImGui.GetStyle();
-        style.Colors[ImGuiCol.WindowBg.toInt()] = Color.FromArgb(255, 19, 20, 25).toVec4();
-        style.Colors[ImGuiCol.Border.toInt()] = Color.FromArgb(255, 88, 37, 227).toVec4();
-        style.Colors[ImGuiCol.FrameBg.toInt()] = Color.FromArgb(255, 21, 21, 21).toVec4();
-        style.Colors[ImGuiCol.FrameBgHovered.toInt()] = Color.FromArgb(255, 203, 203, 203).toVec4();
-        style.Colors[ImGuiCol.FrameBgActive.toInt()] = Color.FromArgb(255, 203, 203, 203).toVec4();
-        style.Colors[ImGuiCol.CheckMark.toInt()] = Color.FromArgb(255, 91, 36, 221).toVec4();
+        style.Colors[ImGuiCol.WindowBg.ToInt()] = Color.FromArgb(255, 19, 20, 25).ToVec4();
+        style.Colors[ImGuiCol.Border.ToInt()] = Color.FromArgb(255, 88, 37, 227).ToVec4();
+        style.Colors[ImGuiCol.FrameBg.ToInt()] = Color.FromArgb(255, 21, 21, 21).ToVec4();
+        style.Colors[ImGuiCol.FrameBgHovered.ToInt()] = Color.FromArgb(255, 203, 203, 203).ToVec4();
+        style.Colors[ImGuiCol.FrameBgActive.ToInt()] = Color.FromArgb(255, 203, 203, 203).ToVec4();
+        style.Colors[ImGuiCol.CheckMark.ToInt()] = Color.FromArgb(255, 91, 36, 221).ToVec4();
         //style.Colors[ImGuiCol.FrameBg] =
         style.WindowBorderSize = 1;
         style.WindowRounding = 5;
     }
 
-    public static bool button(string text)
+    public static bool Button(string text)
     {
-        Theme.buttonTheme.text = text;
-        return button($"label###ID", Theme.buttonTheme);
+        ButtonTheme.Text = text;
+        return Button("label###ID", ButtonTheme);
     }
 
     public static void AnimateProperties()
     {
         var style = ImGui.GetStyle();
-        foreach (var pair in frameData)
-            if (pair.Value is colFrame)
+        foreach (var pair in FrameData)
+            if (pair.Value is ColFrame)
             {
-                var data = (colFrame)pair.Value;
-                data.progress += data.speed;
-                if (data.progress >= 1)
+                var data = (ColFrame)pair.Value;
+                data.Progress += data.Speed;
+                if (data.Progress >= 1)
                 {
-                    frameData.Remove(pair.Key);
+                    FrameData.Remove(pair.Key);
                     break;
                 }
 
-                style.Colors[data.type.toInt()] = data.start.lerp(data.end, data.progress).toVec4();
-                frameData[pair.Key] = data;
+                style.Colors[data.Type.ToInt()] = data.Start.Lerp(data.End, data.Progress).ToVec4();
+                FrameData[pair.Key] = data;
             }
     }
 
-    public static void lerpColorElement(ImGuiCol colID, Vector4 color, float speed)
+    public static void LerpColorElement(ImGuiCol colId, Vector4 color, float speed)
     {
-        frameData.Add(colID.ToString(), new colFrame
+        FrameData.Add(colId.ToString(), new ColFrame
         {
-            start = ImGui.GetStyle().Colors[colID.toInt()].toColor(),
-            end = color.toColor(),
-            speed = speed,
-            type = colID
+            Start = ImGui.GetStyle().Colors[colId.ToInt()].ToColor(),
+            End = color.ToColor(),
+            Speed = speed,
+            Type = colId
         });
     }
 
     public static void Text(string text)
     {
-        var cfg = getTextTheme();
+        var cfg = GetTextTheme();
         //a better text method that centers
-        var size = cfg.size.X / 2 - ImGui.CalcTextSize(text).X / 2;
+        var size = cfg.Size.X / 2 - ImGui.CalcTextSize(text).X / 2;
         ImGui.SetCursorPosX(size);
         ImGui.Text(text);
     }
 
-    public static void Text(string text, glowingInputConfigurator cfg)
+    public static void Text(string text, GlowingInputConfigurator cfg)
     {
         //a better text method that centers
-        var size = cfg.size.X / 2 - ImGui.CalcTextSize(text).X / 2;
+        var size = cfg.Size.X / 2 - ImGui.CalcTextSize(text).X / 2;
         ImGui.SetCursorPosX(size);
         ImGui.Text(text);
     }
 
-    public static bool button(string label, ButtonConfigurator cfg)
+    public static bool Button(string label, ButtonConfigurator cfg)
     {
         label = "##" + label;
         var results = false;
-        object obj = cfg.bgcolor;
+        object obj = cfg.Bgcolor;
         var borderColorActive = cfg.ColorHover;
-        var Fadestep = 0.0f;
-        var status = circleState.idle;
+        var fadestep = 0.0f;
+        var status = CircleState.Idle;
         var hoverStep = 0.0f;
         var currentSpinValue = 0f;
-        circleButtonFrame frameTickData;
-        var flag = frameData.TryGetValue(label, out obj);
+        CircleButtonFrame frameTickData;
+        var flag = FrameData.TryGetValue(label, out obj);
         if (flag)
         {
-            frameTickData = (circleButtonFrame)obj;
-            borderColorActive = frameTickData.color;
-            Fadestep = frameTickData.waitFade;
-            status = frameTickData.status;
-            currentSpinValue = frameTickData.current;
-            hoverStep = frameTickData.hoverFade;
+            frameTickData = (CircleButtonFrame)obj;
+            borderColorActive = frameTickData.Color;
+            fadestep = frameTickData.WaitFade;
+            status = frameTickData.Status;
+            currentSpinValue = frameTickData.Current;
+            hoverStep = frameTickData.HoverFade;
         }
         else
         {
-            frameData.Add(label, new circleButtonFrame
+            FrameData.Add(label, new CircleButtonFrame
             {
-                color = borderColorActive
+                Color = borderColorActive
             });
         }
 
@@ -142,65 +142,65 @@ public class Theme
         var style = ImGui.GetStyle();
         var draw = ImGui.GetWindowDrawList();
         var cursorPos = ImGui.GetCursorPos();
-        if (status != circleState.idle)
+        if (status != CircleState.Idle)
         {
             var yOffset = 0.0f;
             switch (status)
             {
-                case circleState.fadeIn:
-                    Fadestep += cfg.SlideSpeed;
-                    yOffset = Fadestep;
+                case CircleState.FadeIn:
+                    fadestep += cfg.SlideSpeed;
+                    yOffset = fadestep;
                     break;
 
-                case circleState.fadeOut:
-                    Fadestep -= cfg.SlideSpeed;
-                    yOffset = Fadestep;
+                case CircleState.FadeOut:
+                    fadestep -= cfg.SlideSpeed;
+                    yOffset = fadestep;
                     break;
 
-                case circleState.Spin:
-                    Fadestep += cfg.waitSpeed;
+                case CircleState.Spin:
+                    fadestep += cfg.WaitSpeed;
                     yOffset = 1;
                     break;
             }
 
-            circleProgressBarAnimated(label + "_CIRCLESPIN", new Vector2(cursorPos.X + cfg.size.X / 2.0f
-                    , cursorPos.Y + cfg.size.Y + yOffset * cfg.circlePositionY)
-                , cfg.circleRadius, cfg.circleColor, cfg.circleThickness, cfg.circleSpeed, 0.9f);
-            if (Fadestep >= 1 && status == circleState.fadeIn)
+            CircleProgressBarAnimated(label + "_CIRCLESPIN", new Vector2(cursorPos.X + cfg.Size.X / 2.0f
+                    , cursorPos.Y + cfg.Size.Y + yOffset * cfg.CirclePositionY)
+                , cfg.CircleRadius, cfg.CircleColor, cfg.CircleThickness, cfg.CircleSpeed, 0.9f);
+            if (fadestep >= 1 && status == CircleState.FadeIn)
             {
-                Fadestep = 0;
-                status = circleState.Spin;
+                fadestep = 0;
+                status = CircleState.Spin;
             }
 
-            if (Fadestep <= 0 && status == circleState.fadeOut)
+            if (fadestep <= 0 && status == CircleState.FadeOut)
             {
-                status = circleState.idle;
+                status = CircleState.Idle;
                 results = true;
             }
 
-            if (Fadestep >= 1 && status == circleState.Spin) status = circleState.fadeOut;
+            if (fadestep >= 1 && status == CircleState.Spin) status = CircleState.FadeOut;
         }
 
         var startDrawBg = new Vector2(windowpos.X + cursorPos.X, windowpos.Y + cursorPos.Y);
-        var endDrawBg = new Vector2(windowpos.X + cursorPos.X + cfg.size.X, windowpos.Y + cursorPos.Y + cfg.size.Y);
-        draw.AddRectFilled(startDrawBg, endDrawBg, borderColorActive, cfg.roundCorners);
-        var WindowbgColor = style.Colors[ImGuiCol.WindowBg.toInt()].toColor();
+        var endDrawBg = new Vector2(windowpos.X + cursorPos.X + cfg.Size.X, windowpos.Y + cursorPos.Y + cfg.Size.Y);
+        draw.AddRectFilled(startDrawBg, endDrawBg, borderColorActive, cfg.RoundCorners);
+        var windowbgColor = style.Colors[ImGuiCol.WindowBg.ToInt()].ToColor();
         //var temp = style.Colors[ImGuiCol.FrameBg.toInt()];
-        var temp2 = style.Colors[ImGuiCol.Text.toInt()];
+        var temp2 = style.Colors[ImGuiCol.Text.ToInt()];
         var temp3 = ImGui.GetFontSize();
         //style.Colors[ImGuiCol.FrameBg.toInt()] = cfg.bgcolor.toColor().toVec4();
         style.FrameBorderSize = 0;
-        style.Colors[ImGuiCol.Text.toInt()] = cfg.textColor.toColor().toVec4();
+        style.Colors[ImGuiCol.Text.ToInt()] = cfg.TextColor.ToColor().ToVec4();
 
         draw.AddText(
-            new Vector2(startDrawBg.X + cfg.size.X / 2.0f - ImGui.CalcTextSize(cfg.text).X / 2.0f
-                , windowpos.Y + cursorPos.Y + cfg.size.Y / 2.0f - ImGui.CalcTextSize(cfg.text).Y / 2.0f)
-            , cfg.textColor.toColor().ToUint(), cfg.text);
+            new Vector2(startDrawBg.X + cfg.Size.X / 2.0f - ImGui.CalcTextSize(cfg.Text).X / 2.0f
+                , windowpos.Y + cursorPos.Y + cfg.Size.Y / 2.0f - ImGui.CalcTextSize(cfg.Text).Y / 2.0f)
+            , cfg.TextColor.ToColor().ToUint(), cfg.Text);
 
         if (ImGui.IsMouseHoveringRect(startDrawBg, endDrawBg))
         {
-            if (ImGui.IsMouseClicked(ImGuiMouseButton.Left) && status == circleState.idle) return true;
-            borderColorActive = cfg.bgcolor.toColor().lerp(cfg.ColorHover.toColor(), hoverStep).ToUint();
+            if (ImGui.IsMouseClicked(ImGuiMouseButton.Left) && status == CircleState.Idle) return true;
+            borderColorActive = cfg.Bgcolor.ToColor().Lerp(cfg.ColorHover.ToColor(), hoverStep).ToUint();
             if (hoverStep <= 1)
                 hoverStep += 0.001f;
         }
@@ -208,48 +208,48 @@ public class Theme
         {
             if (hoverStep >= 0)
                 hoverStep -= 0.001f;
-            borderColorActive = cfg.bgcolor.toColor().lerp(cfg.ColorHover.toColor(), hoverStep).ToUint();
+            borderColorActive = cfg.Bgcolor.ToColor().Lerp(cfg.ColorHover.ToColor(), hoverStep).ToUint();
         }
 
-        frameData[label] = new circleButtonFrame
+        FrameData[label] = new CircleButtonFrame
         {
-            color = borderColorActive,
-            waitFade = Fadestep,
-            current = currentSpinValue,
-            status = status,
-            hoverFade = hoverStep
+            Color = borderColorActive,
+            WaitFade = fadestep,
+            Current = currentSpinValue,
+            Status = status,
+            HoverFade = hoverStep
         };
         //style.Colors[ImGuiCol.FrameBg.toInt()] = temp;
-        style.Colors[ImGuiCol.Text.toInt()] = temp2;
+        style.Colors[ImGuiCol.Text.ToInt()] = temp2;
         return results;
     }
 
-    public static bool buttonWait(string label, ButtonConfigurator cfg)
+    public static bool ButtonWait(string label, ButtonConfigurator cfg)
     {
         label = "##" + label;
         var results = false;
-        object obj = cfg.bgcolor;
+        object obj = cfg.Bgcolor;
         var borderColorActive = cfg.ColorHover;
-        var Fadestep = 0.0f;
-        var status = circleState.idle;
+        var fadestep = 0.0f;
+        var status = CircleState.Idle;
         var hoverStep = 0.0f;
         var currentSpinValue = 0f;
-        circleButtonFrame frameTickData;
-        var flag = frameData.TryGetValue(label, out obj);
+        CircleButtonFrame frameTickData;
+        var flag = FrameData.TryGetValue(label, out obj);
         if (flag)
         {
-            frameTickData = (circleButtonFrame)obj;
-            borderColorActive = frameTickData.color;
-            Fadestep = frameTickData.waitFade;
-            status = frameTickData.status;
-            currentSpinValue = frameTickData.current;
-            hoverStep = frameTickData.hoverFade;
+            frameTickData = (CircleButtonFrame)obj;
+            borderColorActive = frameTickData.Color;
+            fadestep = frameTickData.WaitFade;
+            status = frameTickData.Status;
+            currentSpinValue = frameTickData.Current;
+            hoverStep = frameTickData.HoverFade;
         }
         else
         {
-            frameData.Add(label, new circleButtonFrame
+            FrameData.Add(label, new CircleButtonFrame
             {
-                color = borderColorActive
+                Color = borderColorActive
             });
         }
 
@@ -257,65 +257,65 @@ public class Theme
         var style = ImGui.GetStyle();
         var draw = ImGui.GetWindowDrawList();
         var cursorPos = ImGui.GetCursorPos();
-        if (status != circleState.idle)
+        if (status != CircleState.Idle)
         {
             var yOffset = 0.0f;
             switch (status)
             {
-                case circleState.fadeIn:
-                    Fadestep += cfg.SlideSpeed;
-                    yOffset = Fadestep;
+                case CircleState.FadeIn:
+                    fadestep += cfg.SlideSpeed;
+                    yOffset = fadestep;
                     break;
 
-                case circleState.fadeOut:
-                    Fadestep -= cfg.SlideSpeed;
-                    yOffset = Fadestep;
+                case CircleState.FadeOut:
+                    fadestep -= cfg.SlideSpeed;
+                    yOffset = fadestep;
                     break;
 
-                case circleState.Spin:
-                    Fadestep += cfg.waitSpeed;
+                case CircleState.Spin:
+                    fadestep += cfg.WaitSpeed;
                     yOffset = 1;
                     break;
             }
 
-            circleProgressBarAnimated(label + "_CIRCLESPIN", new Vector2(cursorPos.X + cfg.size.X / 2.0f
-                    , cursorPos.Y + cfg.size.Y + yOffset * cfg.circlePositionY)
-                , cfg.circleRadius, cfg.circleColor, cfg.circleThickness, cfg.circleSpeed, 0.9f);
-            if (Fadestep >= 1 && status == circleState.fadeIn)
+            CircleProgressBarAnimated(label + "_CIRCLESPIN", new Vector2(cursorPos.X + cfg.Size.X / 2.0f
+                    , cursorPos.Y + cfg.Size.Y + yOffset * cfg.CirclePositionY)
+                , cfg.CircleRadius, cfg.CircleColor, cfg.CircleThickness, cfg.CircleSpeed, 0.9f);
+            if (fadestep >= 1 && status == CircleState.FadeIn)
             {
-                Fadestep = 0;
-                status = circleState.Spin;
+                fadestep = 0;
+                status = CircleState.Spin;
             }
 
-            if (Fadestep <= 0 && status == circleState.fadeOut)
+            if (fadestep <= 0 && status == CircleState.FadeOut)
             {
-                status = circleState.idle;
+                status = CircleState.Idle;
                 results = true;
             }
 
-            if (Fadestep >= 1 && status == circleState.Spin) status = circleState.fadeOut;
+            if (fadestep >= 1 && status == CircleState.Spin) status = CircleState.FadeOut;
         }
 
         var startDrawBg = new Vector2(windowpos.X + cursorPos.X, windowpos.Y + cursorPos.Y);
-        var endDrawBg = new Vector2(windowpos.X + cursorPos.X + cfg.size.X, windowpos.Y + cursorPos.Y + cfg.size.Y);
-        draw.AddRectFilled(startDrawBg, endDrawBg, borderColorActive, cfg.roundCorners);
-        var WindowbgColor = style.Colors[ImGuiCol.WindowBg.toInt()].toColor();
+        var endDrawBg = new Vector2(windowpos.X + cursorPos.X + cfg.Size.X, windowpos.Y + cursorPos.Y + cfg.Size.Y);
+        draw.AddRectFilled(startDrawBg, endDrawBg, borderColorActive, cfg.RoundCorners);
+        var windowbgColor = style.Colors[ImGuiCol.WindowBg.ToInt()].ToColor();
         //var temp = style.Colors[ImGuiCol.FrameBg.toInt()];
-        var temp2 = style.Colors[ImGuiCol.Text.toInt()];
+        var temp2 = style.Colors[ImGuiCol.Text.ToInt()];
         var temp3 = ImGui.GetFontSize();
         //style.Colors[ImGuiCol.FrameBg.toInt()] = cfg.bgcolor.toColor().toVec4();
         style.FrameBorderSize = 0;
-        style.Colors[ImGuiCol.Text.toInt()] = cfg.textColor.toColor().toVec4();
+        style.Colors[ImGuiCol.Text.ToInt()] = cfg.TextColor.ToColor().ToVec4();
 
         draw.AddText(
-            new Vector2(startDrawBg.X + cfg.size.X / 2.0f - ImGui.CalcTextSize(cfg.text).X / 2.0f
-                , windowpos.Y + cursorPos.Y + cfg.size.Y / 2.0f - ImGui.CalcTextSize(cfg.text).Y / 2.0f)
-            , cfg.textColor.toColor().ToUint(), cfg.text);
+            new Vector2(startDrawBg.X + cfg.Size.X / 2.0f - ImGui.CalcTextSize(cfg.Text).X / 2.0f
+                , windowpos.Y + cursorPos.Y + cfg.Size.Y / 2.0f - ImGui.CalcTextSize(cfg.Text).Y / 2.0f)
+            , cfg.TextColor.ToColor().ToUint(), cfg.Text);
 
         if (ImGui.IsMouseHoveringRect(startDrawBg, endDrawBg))
         {
-            if (ImGui.IsMouseClicked(ImGuiMouseButton.Left) && status == circleState.idle) status = circleState.fadeIn;
-            borderColorActive = cfg.bgcolor.toColor().lerp(cfg.ColorHover.toColor(), hoverStep).ToUint();
+            if (ImGui.IsMouseClicked(ImGuiMouseButton.Left) && status == CircleState.Idle) status = CircleState.FadeIn;
+            borderColorActive = cfg.Bgcolor.ToColor().Lerp(cfg.ColorHover.ToColor(), hoverStep).ToUint();
             if (hoverStep <= 1)
                 hoverStep += 0.001f;
         }
@@ -323,101 +323,101 @@ public class Theme
         {
             if (hoverStep >= 0)
                 hoverStep -= 0.001f;
-            borderColorActive = cfg.bgcolor.toColor().lerp(cfg.ColorHover.toColor(), hoverStep).ToUint();
+            borderColorActive = cfg.Bgcolor.ToColor().Lerp(cfg.ColorHover.ToColor(), hoverStep).ToUint();
         }
 
-        frameData[label] = new circleButtonFrame
+        FrameData[label] = new CircleButtonFrame
         {
-            color = borderColorActive,
-            waitFade = Fadestep,
-            current = currentSpinValue,
-            status = status,
-            hoverFade = hoverStep
+            Color = borderColorActive,
+            WaitFade = fadestep,
+            Current = currentSpinValue,
+            Status = status,
+            HoverFade = hoverStep
         };
         //style.Colors[ImGuiCol.FrameBg.toInt()] = temp;
-        style.Colors[ImGuiCol.Text.toInt()] = temp2;
+        style.Colors[ImGuiCol.Text.ToInt()] = temp2;
         return results;
     }
 
-    public static void gradientBorder(Vector4 topColor, Vector4 bottomColor)
+    public static void GradientBorder(Vector4 topColor, Vector4 bottomColor)
     {
         var windowpos = ImGui.GetWindowPos();
         var style = ImGui.GetStyle();
-        var Windowsize = ImGui.GetWindowSize();
+        var windowsize = ImGui.GetWindowSize();
         var draw = ImGui.GetForegroundDrawList();
-        var stepper = Windowsize.Y * 0.01f;
+        var stepper = windowsize.Y * 0.01f;
         style.WindowBorderSize = 0;
         for (var i = 0.01f; i < 1; i += 0.001f)
         {
             draw.AddLine(
                 new Vector2(windowpos.X,
-                    windowpos.Y + i * Windowsize.Y)
-                , new Vector2(windowpos.X + 1, windowpos.Y + (i - 0.01f) * Windowsize.Y),
-                topColor.toColor().lerp(bottomColor.toColor(), i).ToUint(), 2);
+                    windowpos.Y + i * windowsize.Y)
+                , new Vector2(windowpos.X + 1, windowpos.Y + (i - 0.01f) * windowsize.Y),
+                topColor.ToColor().Lerp(bottomColor.ToColor(), i).ToUint(), 2);
             draw.AddLine(
-                new Vector2(windowpos.X + Windowsize.X - 1,
-                    windowpos.Y + i * Windowsize.Y)
-                , new Vector2(windowpos.X + Windowsize.X, windowpos.Y + (i - 0.01f) * Windowsize.Y),
-                topColor.toColor().lerp(bottomColor.toColor(), i).ToUint(), 3);
+                new Vector2(windowpos.X + windowsize.X - 1,
+                    windowpos.Y + i * windowsize.Y)
+                , new Vector2(windowpos.X + windowsize.X, windowpos.Y + (i - 0.01f) * windowsize.Y),
+                topColor.ToColor().Lerp(bottomColor.ToColor(), i).ToUint(), 3);
         }
 
-        draw.AddRect(new Vector2(windowpos.X, windowpos.Y - 1), new Vector2(windowpos.X + Windowsize.X + 1, windowpos.Y)
-            , topColor.toColor().ToUint(), style.WindowRounding,
+        draw.AddRect(new Vector2(windowpos.X, windowpos.Y - 1), new Vector2(windowpos.X + windowsize.X + 1, windowpos.Y)
+            , topColor.ToColor().ToUint(), style.WindowRounding,
             ImDrawFlags.RoundCornersTopLeft | ImDrawFlags.RoundCornersTopRight, 1.5f);
     }
 
-    public static void gradientRect(Vector2 p_min, Vector2 p_max, Vector4 topColor, Vector4 bottomColor,
-        float CornerRadius)
+    public static void GradientRect(Vector2 pMin, Vector2 pMax, Vector4 topColor, Vector4 bottomColor,
+        float cornerRadius)
     {
         var windowpos = new Vector2(0, 0);
         var style = ImGui.GetStyle();
-        var Windowsize = new Vector2(p_min.X - p_max.X, p_min.Y - p_max.Y);
+        var windowsize = new Vector2(pMin.X - pMax.X, pMin.Y - pMax.Y);
         var draw = ImGui.GetForegroundDrawList();
-        var stepper = Windowsize.Y * 0.01f;
+        var stepper = windowsize.Y * 0.01f;
         style.WindowBorderSize = 0;
         for (var i = 0.01f; i < 1; i += 0.01f)
         {
             draw.AddLine(
-                new Vector2(windowpos.X + p_min.X,
-                    p_min.Y + windowpos.Y + i * Windowsize.Y)
-                , new Vector2(windowpos.X + 1 + p_min.X, p_min.Y + windowpos.Y + (i - 0.01f) * Windowsize.Y),
-                topColor.toColor().lerp(bottomColor.toColor(), i).ToUint(), 2);
+                new Vector2(windowpos.X + pMin.X,
+                    pMin.Y + windowpos.Y + i * windowsize.Y)
+                , new Vector2(windowpos.X + 1 + pMin.X, pMin.Y + windowpos.Y + (i - 0.01f) * windowsize.Y),
+                topColor.ToColor().Lerp(bottomColor.ToColor(), i).ToUint(), 2);
             draw.AddLine(
-                new Vector2(windowpos.X + Windowsize.X - 1 + p_min.X,
-                    windowpos.Y + i * Windowsize.Y + p_min.Y)
-                , new Vector2(windowpos.X + Windowsize.X + p_min.X, windowpos.Y + p_min.Y + (i - 0.01f) * Windowsize.Y),
-                topColor.toColor().lerp(bottomColor.toColor(), i).ToUint(), 3);
+                new Vector2(windowpos.X + windowsize.X - 1 + pMin.X,
+                    windowpos.Y + i * windowsize.Y + pMin.Y)
+                , new Vector2(windowpos.X + windowsize.X + pMin.X, windowpos.Y + pMin.Y + (i - 0.01f) * windowsize.Y),
+                topColor.ToColor().Lerp(bottomColor.ToColor(), i).ToUint(), 3);
         }
 
-        draw.AddRect(new Vector2(windowpos.X + p_min.X, windowpos.Y + p_min.Y - 1)
-            , new Vector2(windowpos.X + Windowsize.X + 1 + p_min.X, p_min.Y + windowpos.Y)
-            , topColor.toColor().ToUint(), CornerRadius,
+        draw.AddRect(new Vector2(windowpos.X + pMin.X, windowpos.Y + pMin.Y - 1)
+            , new Vector2(windowpos.X + windowsize.X + 1 + pMin.X, pMin.Y + windowpos.Y)
+            , topColor.ToColor().ToUint(), cornerRadius,
             ImDrawFlags.RoundCornersTopLeft | ImDrawFlags.RoundCornersTopRight, 1.5f);
-        draw.AddRect(new Vector2(windowpos.X + p_min.X, windowpos.Y + p_min.Y - 1 + Windowsize.Y)
-            , new Vector2(windowpos.X + Windowsize.X + 1 + p_min.X, p_min.Y + windowpos.Y + Windowsize.Y)
-            , bottomColor.toColor().ToUint(), CornerRadius,
+        draw.AddRect(new Vector2(windowpos.X + pMin.X, windowpos.Y + pMin.Y - 1 + windowsize.Y)
+            , new Vector2(windowpos.X + windowsize.X + 1 + pMin.X, pMin.Y + windowpos.Y + windowsize.Y)
+            , bottomColor.ToColor().ToUint(), cornerRadius,
             ImDrawFlags.RoundCornersTopLeft | ImDrawFlags.RoundCornersTopRight, 1.5f);
     }
 
-    public static void GradientGlowingInput(string label, ref string text, glowingInputConfigurator cfg,
+    public static void GradientGlowingInput(string label, ref string text, GlowingInputConfigurator cfg,
         Vector4 bottomColor, uint maxlength = 32)
     {
         label = "##" + label;
-        object obj = cfg.borderColor;
-        var borderColorActive = cfg.borderColorActive;
-        var BorderThicknessActive = cfg.borderThickness;
-        var flag = frameData.TryGetValue(label, out obj);
+        object obj = cfg.BorderColor;
+        var borderColorActive = cfg.BorderColorActive;
+        var borderThicknessActive = cfg.BorderThickness;
+        var flag = FrameData.TryGetValue(label, out obj);
         if (flag)
         {
-            borderColorActive = ((glowingInputFrame)obj).color;
-            BorderThicknessActive = ((glowingInputFrame)obj).borderThickness;
+            borderColorActive = ((GlowingInputFrame)obj).Color;
+            borderThicknessActive = ((GlowingInputFrame)obj).BorderThickness;
         }
         else
         {
-            frameData.Add(label, new glowingInputFrame
+            FrameData.Add(label, new GlowingInputFrame
             {
-                borderThickness = BorderThicknessActive,
-                color = borderColorActive
+                BorderThickness = borderThicknessActive,
+                Color = borderColorActive
             });
         }
 
@@ -426,19 +426,19 @@ public class Theme
         var draw = ImGui.GetWindowDrawList();
         var cursorPos = ImGui.GetCursorPos();
         var startDrawBg = new Vector2(windowpos.X + cursorPos.X, windowpos.Y + cursorPos.Y);
-        var endDrawBg = new Vector2(windowpos.X + cursorPos.X + cfg.size.X, windowpos.Y + cursorPos.Y + cfg.size.Y);
-        draw.AddRectFilled(startDrawBg, endDrawBg, cfg.bgcolor, cfg.roundCorners);
-        var WindowbgColor = style.Colors[ImGuiCol.WindowBg.toInt()].toColor();
-        var temp = style.Colors[ImGuiCol.FrameBg.toInt()];
-        var temp2 = style.Colors[ImGuiCol.Text.toInt()];
+        var endDrawBg = new Vector2(windowpos.X + cursorPos.X + cfg.Size.X, windowpos.Y + cursorPos.Y + cfg.Size.Y);
+        draw.AddRectFilled(startDrawBg, endDrawBg, cfg.Bgcolor, cfg.RoundCorners);
+        var windowbgColor = style.Colors[ImGuiCol.WindowBg.ToInt()].ToColor();
+        var temp = style.Colors[ImGuiCol.FrameBg.ToInt()];
+        var temp2 = style.Colors[ImGuiCol.Text.ToInt()];
         var temp3 = ImGui.GetFontSize();
-        style.Colors[ImGuiCol.FrameBg.toInt()] = cfg.bgcolor.toColor().toVec4();
+        style.Colors[ImGuiCol.FrameBg.ToInt()] = cfg.Bgcolor.ToColor().ToVec4();
         style.FrameBorderSize = 0;
-        style.Colors[ImGuiCol.Text.toInt()] = cfg.textColor.toColor().toVec4();
+        style.Colors[ImGuiCol.Text.ToInt()] = cfg.TextColor.ToColor().ToVec4();
         var currentCursor = ImGui.GetCursorPos();
 
         ImGui.SetCursorPos(new Vector2(ImGui.GetCursorPosX() + style.FramePadding.X,
-            ImGui.GetCursorPosY() + cfg.size.Y / 2.0f - ImGui.CalcTextSize(cfg.prefix).Y / 2.0f
+            ImGui.GetCursorPosY() + cfg.Size.Y / 2.0f - ImGui.CalcTextSize(cfg.Prefix).Y / 2.0f
         ));
         if (ImGui.InputText(label, ref text, maxlength))
         {
@@ -447,108 +447,108 @@ public class Theme
         if (text == string.Empty && !ImGui.IsItemActive())
             draw.AddText(
                 new Vector2(startDrawBg.X + style.FramePadding.X,
-                    windowpos.Y + cursorPos.Y + cfg.size.Y / 2.0f - ImGui.CalcTextSize(cfg.prefix).Y / 2.0f)
-                , cfg.textColor.toColor().brightness(0.4f).ToUint(), cfg.prefix);
+                    windowpos.Y + cursorPos.Y + cfg.Size.Y / 2.0f - ImGui.CalcTextSize(cfg.Prefix).Y / 2.0f)
+                , cfg.TextColor.ToColor().Brightness(0.4f).ToUint(), cfg.Prefix);
         if (ImGui.IsItemActive())
         {
-            borderColorActive = borderColorActive.toColor().lerp(cfg.borderColorActive.toColor(), 0.01f).ToUint();
-            if (BorderThicknessActive <= cfg.borderThickness + 3)
-                BorderThicknessActive += 0.01f;
+            borderColorActive = borderColorActive.ToColor().Lerp(cfg.BorderColorActive.ToColor(), 0.01f).ToUint();
+            if (borderThicknessActive <= cfg.BorderThickness + 3)
+                borderThicknessActive += 0.01f;
         }
         else
         {
-            if (BorderThicknessActive > cfg.borderThickness)
-                BorderThicknessActive -= 0.01f;
-            borderColorActive = borderColorActive.toColor().lerp(cfg.borderColor.toColor(), 0.01f).ToUint();
+            if (borderThicknessActive > cfg.BorderThickness)
+                borderThicknessActive -= 0.01f;
+            borderColorActive = borderColorActive.ToColor().Lerp(cfg.BorderColor.ToColor(), 0.01f).ToUint();
         }
 
-        frameData[label] = new glowingInputFrame
+        FrameData[label] = new GlowingInputFrame
         {
-            borderThickness = BorderThicknessActive,
-            color = borderColorActive
+            BorderThickness = borderThicknessActive,
+            Color = borderColorActive
         };
 
-        gradientRect(new Vector2(startDrawBg.X + cfg.size.X, startDrawBg.Y + +cfg.size.Y),
-            new Vector2(endDrawBg.X + cfg.size.X, endDrawBg.Y + cfg.size.Y), borderColorActive.toColor().toVec4(),
-            bottomColor, cfg.roundCorners);
+        GradientRect(new Vector2(startDrawBg.X + cfg.Size.X, startDrawBg.Y + +cfg.Size.Y),
+            new Vector2(endDrawBg.X + cfg.Size.X, endDrawBg.Y + cfg.Size.Y), borderColorActive.ToColor().ToVec4(),
+            bottomColor, cfg.RoundCorners);
 
-        style.Colors[ImGuiCol.FrameBg.toInt()] = temp;
-        style.Colors[ImGuiCol.Text.toInt()] = temp2;
+        style.Colors[ImGuiCol.FrameBg.ToInt()] = temp;
+        style.Colors[ImGuiCol.Text.ToInt()] = temp2;
     }
 
-    public static bool drawTextGradient(string label, Vector2 pos, string text, Color clrDefault, Color clrHover)
+    public static bool DrawTextGradient(string label, Vector2 pos, string text, Color clrDefault, Color clrHover)
     {
         object obj = clrDefault;
-        var ExitColorActive = clrDefault;
-        var flag = frameData.TryGetValue(label, out obj);
+        var exitColorActive = clrDefault;
+        var flag = FrameData.TryGetValue(label, out obj);
         var results = false;
         if (flag)
-            ExitColorActive = (Color)obj;
+            exitColorActive = (Color)obj;
         else
-            frameData.Add(label, ExitColorActive);
+            FrameData.Add(label, exitColorActive);
         var windowpos = ImGui.GetWindowPos();
         var style = ImGui.GetStyle();
         var draw = ImGui.GetWindowDrawList();
         var size = ImGui.CalcTextSize(text);
         var start = new Vector2(windowpos.X + pos.X, windowpos.Y + pos.Y);
         var end = new Vector2(start.X + size.X, start.Y + size.Y);
-        draw.AddText(start, ExitColorActive.ToUint(), text);
+        draw.AddText(start, exitColorActive.ToUint(), text);
         if (ImGui.IsMouseHoveringRect(start, end))
         {
-            ExitColorActive = ExitColorActive.lerp(clrHover, 0.025);
+            exitColorActive = exitColorActive.Lerp(clrHover, 0.025);
             if (ImGui.IsMouseClicked(ImGuiMouseButton.Left)) results = true;
         }
         else
         {
-            ExitColorActive = ExitColorActive.lerp(clrDefault, 0.025);
+            exitColorActive = exitColorActive.Lerp(clrDefault, 0.025);
         }
 
-        frameData[label] = ExitColorActive;
+        FrameData[label] = exitColorActive;
         return results;
     }
 
-    public static bool drawTextButton(string text)
+    public static bool DrawTextButton(string text)
     {
-        var clrDefault = textbuttonTheme.bgcolor.toColor();
+        var clrDefault = TextbuttonTheme.Bgcolor.ToColor();
         object obj = clrDefault;
-        var clrHover = textbuttonTheme.ColorHover.toColor();
-        var ExitColorActive = clrHover;
-        var flag = frameData.TryGetValue($"DrawTextButtonLabel{text}", out obj);
+        var clrHover = TextbuttonTheme.ColorHover.ToColor();
+        var exitColorActive = clrHover;
+        var flag = FrameData.TryGetValue($"DrawTextButtonLabel{text}", out obj);
         if (flag)
-            ExitColorActive = (Color)obj;
+            exitColorActive = (Color)obj;
         else
-            frameData.Add($"DrawTextButtonLabel{text}", ExitColorActive);
+            FrameData.Add($"DrawTextButtonLabel{text}", exitColorActive);
         var windowpos = ImGui.GetWindowPos();
         var style = ImGui.GetStyle();
         var draw = ImGui.GetWindowDrawList();
         var cursorPos = ImGui.GetCursorPos();
         var start = cursorPos;
         ImGui.Text(text);
-        draw.AddText(cursorPos, ExitColorActive.ToUint(), text);
+        draw.AddText(cursorPos, exitColorActive.ToUint(), text);
         var end = start + ImGui.CalcTextSize(text);
         if (ImGui.IsMouseHoveringRect(start, end))
         {
-            ExitColorActive = ExitColorActive.lerp(clrHover, 0.1);
+            exitColorActive = exitColorActive.Lerp(clrHover, 0.1);
             if (ImGui.IsMouseClicked(ImGuiMouseButton.Left)) return true;
         }
         else
         {
-            ExitColorActive = ExitColorActive.lerp(clrDefault, 0.1);
+            exitColorActive = exitColorActive.Lerp(clrDefault, 0.1);
         }
 
-        frameData[$"DrawTextButtonLabel{text}"] = ExitColorActive;
+        FrameData[$"DrawTextButtonLabel{text}"] = exitColorActive;
         return false;
     }
 
-    public static void drawExitButton(float size, Color clrDefault, Color clrHover)
+    public static void DrawExitButton(float size, Color clrDefault, Color clrHover)
     {
         object obj = clrDefault;
-        var ExitColorActive = clrDefault;
-        var flag = frameData.TryGetValue("DrawExitButtonLabel", out obj);
+        var exitColorActive = clrDefault;
+        var flag = FrameData.TryGetValue("DrawExitButtonLabel", out obj);
         if (flag)
-            ExitColorActive = (Color)obj;
+            exitColorActive = (Color)obj;
         else
-            frameData.Add("DrawExitButtonLabel", ExitColorActive);
+            FrameData.Add("DrawExitButtonLabel", exitColorActive);
         var windowpos = ImGui.GetWindowPos();
         var style = ImGui.GetStyle();
         var draw = ImGui.GetWindowDrawList();
@@ -557,56 +557,56 @@ public class Theme
         var end = new Vector2(start.X + size, start.Y + size);
         if (ImGui.IsMouseHoveringRect(start, end))
         {
-            ExitColorActive = ExitColorActive.lerp(clrHover, 0.1);
+            exitColorActive = exitColorActive.Lerp(clrHover, 0.1);
             if (ImGui.IsMouseClicked(ImGuiMouseButton.Left)) Environment.Exit(0);
         }
         else
         {
-            ExitColorActive = ExitColorActive.lerp(clrDefault, 0.1);
+            exitColorActive = exitColorActive.Lerp(clrDefault, 0.1);
         }
 
-        frameData["DrawExitButtonLabel"] = ExitColorActive;
-        draw.AddLine(start, end, ExitColorActive.ToUint(), 2);
-        draw.AddLine(new Vector2(end.X, start.Y), new Vector2(start.X, end.Y), ExitColorActive.ToUint(), 2);
+        FrameData["DrawExitButtonLabel"] = exitColorActive;
+        draw.AddLine(start, end, exitColorActive.ToUint(), 2);
+        draw.AddLine(new Vector2(end.X, start.Y), new Vector2(start.X, end.Y), exitColorActive.ToUint(), 2);
     }
 
-    public static bool slider(string label, float min, float max, ref float value, SliderInputConfigurator cfg)
+    public static bool Slider(string label, float min, float max, ref float value, SliderInputConfigurator cfg)
     {
         var scaled = (float)Imports.Scale(value, min, max, 0, 1);
-        var results = slider(label, ref scaled, cfg);
+        var results = Slider(label, ref scaled, cfg);
         value = (float)Imports.Scale(scaled, 0, 1, min, max);
         return results;
     }
 
-    public static bool slider(string label, ref float value, SliderInputConfigurator cfg)
+    public static bool Slider(string label, ref float value, SliderInputConfigurator cfg)
     {
         label = "##" + label;
         var results = false;
-        object obj = cfg.borderColor;
-        var borderColorActive = cfg.borderColorActive;
-        var BorderThicknessActive = cfg.borderThickness;
-        var sliderColorActive = cfg.sliderColor;
+        object obj = cfg.BorderColor;
+        var borderColorActive = cfg.BorderColorActive;
+        var borderThicknessActive = cfg.BorderThickness;
+        var sliderColorActive = cfg.SliderColor;
         float lerpProgress = 0;
-        var status = Sliderstatus.idle;
-        var flag = frameData.TryGetValue(label, out obj);
+        var status = Sliderstatus.Idle;
+        var flag = FrameData.TryGetValue(label, out obj);
         if (flag)
         {
             var frameData = (SliderInputFrame)obj;
-            borderColorActive = frameData.color;
-            BorderThicknessActive = frameData.borderThickness;
-            sliderColorActive = frameData.sliderColorActive;
-            lerpProgress = frameData.lerpProgress;
-            status = frameData.status;
+            borderColorActive = frameData.Color;
+            borderThicknessActive = frameData.BorderThickness;
+            sliderColorActive = frameData.SliderColorActive;
+            lerpProgress = frameData.LerpProgress;
+            status = frameData.Status;
         }
         else
         {
-            frameData.Add(label, new SliderInputFrame
+            FrameData.Add(label, new SliderInputFrame
             {
-                borderThickness = BorderThicknessActive,
-                color = borderColorActive,
-                sliderColorActive = sliderColorActive,
-                lerpProgress = lerpProgress,
-                status = status
+                BorderThickness = borderThicknessActive,
+                Color = borderColorActive,
+                SliderColorActive = sliderColorActive,
+                LerpProgress = lerpProgress,
+                Status = status
             });
         }
 
@@ -616,30 +616,30 @@ public class Theme
         var cursorPos = ImGui.GetCursorPos();
         var mousePos = ImGui.GetCursorPos();
         var startDrawBg = new Vector2(windowpos.X + cursorPos.X, windowpos.Y + cursorPos.Y);
-        var endDrawBg = new Vector2(windowpos.X + cursorPos.X + cfg.size.X, windowpos.Y + cursorPos.Y + cfg.size.Y);
-        draw.AddRectFilled(startDrawBg, endDrawBg, cfg.bgcolor, cfg.roundCorners);
+        var endDrawBg = new Vector2(windowpos.X + cursorPos.X + cfg.Size.X, windowpos.Y + cursorPos.Y + cfg.Size.Y);
+        draw.AddRectFilled(startDrawBg, endDrawBg, cfg.Bgcolor, cfg.RoundCorners);
         draw.AddRectFilled(new Vector2(startDrawBg.X, startDrawBg.Y),
-            new Vector2(startDrawBg.X + value * cfg.size.X, endDrawBg.Y)
-            , sliderColorActive, cfg.roundCorners);
-        var WindowbgColor = style.Colors[ImGuiCol.WindowBg.toInt()].toColor();
+            new Vector2(startDrawBg.X + value * cfg.Size.X, endDrawBg.Y)
+            , sliderColorActive, cfg.RoundCorners);
+        var windowbgColor = style.Colors[ImGuiCol.WindowBg.ToInt()].ToColor();
         style.FrameBorderSize = 0;
-        if (!ImGui.IsMouseDown(ImGuiMouseButton.Left) && status == Sliderstatus.start) status = Sliderstatus.end;
-        ImGui.InvisibleButton(label, cfg.size); //stop dragging
-        if (ImGui.IsMouseHoveringRect(startDrawBg, endDrawBg) || status == Sliderstatus.start)
+        if (!ImGui.IsMouseDown(ImGuiMouseButton.Left) && status == Sliderstatus.Start) status = Sliderstatus.End;
+        ImGui.InvisibleButton(label, cfg.Size); //stop dragging
+        if (ImGui.IsMouseHoveringRect(startDrawBg, endDrawBg) || status == Sliderstatus.Start)
         {
-            if (ImGui.IsMouseDown(ImGuiMouseButton.Left) || status == Sliderstatus.start)
+            if (ImGui.IsMouseDown(ImGuiMouseButton.Left) || status == Sliderstatus.Start)
             {
-                status = Sliderstatus.start;
+                status = Sliderstatus.Start;
                 var drawPos = mousePos.X - startDrawBg.X;
                 if (drawPos < 0)
                     drawPos = 0;
-                if (drawPos > cfg.size.X)
-                    drawPos = cfg.size.X;
-                value = drawPos / cfg.size.X;
+                if (drawPos > cfg.Size.X)
+                    drawPos = cfg.Size.X;
+                value = drawPos / cfg.Size.X;
                 results = true;
-                draw.AddRectFilled(startDrawBg, endDrawBg, cfg.bgcolor, cfg.roundCorners);
+                draw.AddRectFilled(startDrawBg, endDrawBg, cfg.Bgcolor, cfg.RoundCorners);
                 draw.AddRectFilled(new Vector2(startDrawBg.X, startDrawBg.Y),
-                    new Vector2(startDrawBg.X + drawPos, endDrawBg.Y), sliderColorActive, cfg.roundCorners);
+                    new Vector2(startDrawBg.X + drawPos, endDrawBg.Y), sliderColorActive, cfg.RoundCorners);
                 lerpProgress += 0.0025f;
             }
             else
@@ -647,16 +647,16 @@ public class Theme
                 lerpProgress -= 0.0025f;
             }
 
-            borderColorActive = borderColorActive.toColor().lerp(cfg.borderColorActive.toColor(), 0.01f).ToUint();
-            if (BorderThicknessActive <= cfg.borderThickness + 3)
-                BorderThicknessActive += 0.01f;
+            borderColorActive = borderColorActive.ToColor().Lerp(cfg.BorderColorActive.ToColor(), 0.01f).ToUint();
+            if (borderThicknessActive <= cfg.BorderThickness + 3)
+                borderThicknessActive += 0.01f;
         }
         else
         {
-            if (BorderThicknessActive > cfg.borderThickness)
-                BorderThicknessActive -= 0.01f;
+            if (borderThicknessActive > cfg.BorderThickness)
+                borderThicknessActive -= 0.01f;
             lerpProgress -= 0.0025f;
-            borderColorActive = borderColorActive.toColor().lerp(cfg.borderColor.toColor(), 0.01f).ToUint();
+            borderColorActive = borderColorActive.ToColor().Lerp(cfg.BorderColor.ToColor(), 0.01f).ToUint();
         }
 
         if (lerpProgress < 0)
@@ -668,13 +668,13 @@ public class Theme
             var drawPos = mousePos.X - startDrawBg.X;
             if (drawPos < 0)
                 drawPos = 0;
-            if (drawPos > cfg.size.X)
-                drawPos = cfg.size.X;
+            if (drawPos > cfg.Size.X)
+                drawPos = cfg.Size.X;
             var addZero = string.Empty;
             if ((value * 100).ToString().Count() < 4)
                 addZero += ".0";
-            var Text = new string((value * 100).ToString().Take(4).ToArray()) + addZero + "%";
-            var textSize = ImGui.CalcTextSize(Text);
+            var text = new string((value * 100).ToString().Take(4).ToArray()) + addZero + "%";
+            var textSize = ImGui.CalcTextSize(text);
             var startRect = new Vector2(startDrawBg.X + drawPos - textSize.X / 2,
                 startDrawBg.Y - textSize.Y + cfg.YoffsetLabel * lerpProgress);
             var endRect = new Vector2(startDrawBg.X + drawPos + textSize.X / 2,
@@ -687,47 +687,47 @@ public class Theme
                 sliderColorActive);
             draw.AddText(
                 new Vector2(startDrawBg.X + drawPos - textSize.X / 2,
-                    startDrawBg.Y - textSize.Y + cfg.YoffsetLabel * lerpProgress), Color.White.ToUint(), Text);
+                    startDrawBg.Y - textSize.Y + cfg.YoffsetLabel * lerpProgress), Color.White.ToUint(), text);
         }
 
-        sliderColorActive = cfg.sliderColor.toColor().lerp(cfg.sliderColorActive.toColor(), lerpProgress).ToUint();
-        frameData[label] = new SliderInputFrame
+        sliderColorActive = cfg.SliderColor.ToColor().Lerp(cfg.SliderColorActive.ToColor(), lerpProgress).ToUint();
+        FrameData[label] = new SliderInputFrame
         {
-            borderThickness = BorderThicknessActive,
-            color = borderColorActive,
-            sliderColorActive = sliderColorActive,
-            status = status,
-            lerpProgress = lerpProgress
+            BorderThickness = borderThicknessActive,
+            Color = borderColorActive,
+            SliderColorActive = sliderColorActive,
+            Status = status,
+            LerpProgress = lerpProgress
         };
 
-        for (float i = 0; i < BorderThicknessActive; i += 1f)
+        for (float i = 0; i < borderThicknessActive; i += 1f)
         {
-            var lerpedToBackground = borderColorActive.toColor().lerp(WindowbgColor, i / BorderThicknessActive);
+            var lerpedToBackground = borderColorActive.ToColor().Lerp(windowbgColor, i / borderThicknessActive);
             draw.AddRect(new Vector2(startDrawBg.X - i, startDrawBg.Y - i),
-                new Vector2(endDrawBg.X + i, endDrawBg.Y + i), lerpedToBackground.ToUint(), cfg.roundCorners);
+                new Vector2(endDrawBg.X + i, endDrawBg.Y + i), lerpedToBackground.ToUint(), cfg.RoundCorners);
         }
 
         return results;
     }
 
-    public static bool glowingInput(string label, ref string text, glowingInputConfigurator cfg, uint maxlength = 32)
+    public static bool GlowingInput(string label, ref string text, GlowingInputConfigurator cfg, uint maxlength = 32)
     {
         label = "##" + label;
-        object obj = cfg.borderColor;
-        var borderColorActive = cfg.borderColorActive;
-        var BorderThicknessActive = cfg.borderThickness;
-        var flag = frameData.TryGetValue(label, out obj);
+        object obj = cfg.BorderColor;
+        var borderColorActive = cfg.BorderColorActive;
+        var borderThicknessActive = cfg.BorderThickness;
+        var flag = FrameData.TryGetValue(label, out obj);
         if (flag)
         {
-            borderColorActive = ((glowingInputFrame)obj).color;
-            BorderThicknessActive = ((glowingInputFrame)obj).borderThickness;
+            borderColorActive = ((GlowingInputFrame)obj).Color;
+            borderThicknessActive = ((GlowingInputFrame)obj).BorderThickness;
         }
         else
         {
-            frameData.Add(label, new glowingInputFrame
+            FrameData.Add(label, new GlowingInputFrame
             {
-                borderThickness = BorderThicknessActive,
-                color = borderColorActive
+                BorderThickness = borderThicknessActive,
+                Color = borderColorActive
             });
         }
 
@@ -736,87 +736,88 @@ public class Theme
         var draw = ImGui.GetWindowDrawList();
         var cursorPos = ImGui.GetCursorPos();
         var startDrawBg = new Vector2(windowpos.X + cursorPos.X, windowpos.Y + cursorPos.Y);
-        var endDrawBg = new Vector2(windowpos.X + cursorPos.X + cfg.size.X, windowpos.Y + cursorPos.Y + cfg.size.Y);
-        draw.AddRectFilled(startDrawBg, endDrawBg, cfg.bgcolor, cfg.roundCorners);
-        var WindowbgColor = style.Colors[ImGuiCol.WindowBg.toInt()].toColor();
-        var temp = style.Colors[ImGuiCol.FrameBg.toInt()];
-        var temp2 = style.Colors[ImGuiCol.Text.toInt()];
+        var endDrawBg = new Vector2(windowpos.X + cursorPos.X + cfg.Size.X, windowpos.Y + cursorPos.Y + cfg.Size.Y);
+        draw.AddRectFilled(startDrawBg, endDrawBg, cfg.Bgcolor, cfg.RoundCorners);
+        var windowbgColor = style.Colors[ImGuiCol.WindowBg.ToInt()].ToColor();
+        var temp = style.Colors[ImGuiCol.FrameBg.ToInt()];
+        var temp2 = style.Colors[ImGuiCol.Text.ToInt()];
         var temp3 = ImGui.GetFontSize();
-        style.Colors[ImGuiCol.FrameBg.toInt()] = cfg.bgcolor.toColor().toVec4();
+        style.Colors[ImGuiCol.FrameBg.ToInt()] = cfg.Bgcolor.ToColor().ToVec4();
         style.FrameBorderSize = 0;
-        style.Colors[ImGuiCol.Text.toInt()] = cfg.textColor.toColor().toVec4();
+        style.Colors[ImGuiCol.Text.ToInt()] = cfg.TextColor.ToColor().ToVec4();
         var currentCursor = ImGui.GetCursorPos();
         ImGui.SetCursorPos(new Vector2(ImGui.GetCursorPosX() + style.FramePadding.X,
-            ImGui.GetCursorPosY() + cfg.size.Y / 2.0f - ImGui.CalcTextSize(cfg.prefix).Y / 2.0f
+            ImGui.GetCursorPosY() + cfg.Size.Y / 2.0f - ImGui.CalcTextSize(cfg.Prefix).Y / 2.0f
         ));
-        ImGui.SetNextItemWidth(cfg.size.X);
+        ImGui.SetNextItemWidth(cfg.Size.X);
         var valuechanged = ImGui.InputText(label, ref text, maxlength);
-        if (cfg.passwordChar != '\0')
+        if (cfg.PasswordChar != '\0')
         {
             var hiddenText = string.Empty;
-            for (var i = 0; i < text.Length; i++) hiddenText += cfg.passwordChar;
-            draw.AddRectFilled(startDrawBg, endDrawBg, cfg.bgcolor, cfg.roundCorners);
+            for (var i = 0; i < text.Length; i++) hiddenText += cfg.PasswordChar;
+            draw.AddRectFilled(startDrawBg, endDrawBg, cfg.Bgcolor, cfg.RoundCorners);
             draw.AddText(
                 new Vector2(startDrawBg.X + style.FramePadding.X,
-                    windowpos.Y + cursorPos.Y + cfg.size.Y / 2.0f - ImGui.CalcTextSize(hiddenText).Y / 2.0f)
-                , cfg.textColor, hiddenText);
+                    windowpos.Y + cursorPos.Y + cfg.Size.Y / 2.0f - ImGui.CalcTextSize(hiddenText).Y / 2.0f)
+                , cfg.TextColor, hiddenText);
         }
 
         if (text == string.Empty && !ImGui.IsItemActive())
             draw.AddText(
                 new Vector2(startDrawBg.X + style.FramePadding.X,
-                    windowpos.Y + cursorPos.Y + cfg.size.Y / 2.0f - ImGui.CalcTextSize(cfg.prefix).Y / 2.0f)
-                , cfg.textColor.toColor().brightness(0.4f).ToUint(), cfg.prefix);
+                    windowpos.Y + cursorPos.Y + cfg.Size.Y / 2.0f - ImGui.CalcTextSize(cfg.Prefix).Y / 2.0f)
+                , cfg.TextColor.ToColor().Brightness(0.4f).ToUint(), cfg.Prefix);
         if (ImGui.IsItemActive())
         {
-            borderColorActive = borderColorActive.toColor().lerp(cfg.borderColorActive.toColor(), 0.01f).ToUint();
-            if (BorderThicknessActive <= cfg.borderThickness + 3)
-                BorderThicknessActive += 0.01f;
+            borderColorActive = borderColorActive.ToColor().Lerp(cfg.BorderColorActive.ToColor(), 0.01f).ToUint();
+            if (borderThicknessActive <= cfg.BorderThickness + 3)
+                borderThicknessActive += 0.01f;
+            
         }
         else
         {
-            if (BorderThicknessActive > cfg.borderThickness)
-                BorderThicknessActive -= 0.01f;
-            borderColorActive = borderColorActive.toColor().lerp(cfg.borderColor.toColor(), 0.01f).ToUint();
+            if (borderThicknessActive > cfg.BorderThickness)
+                borderThicknessActive -= 0.01f;
+            borderColorActive = borderColorActive.ToColor().Lerp(cfg.BorderColor.ToColor(), 0.01f).ToUint();
         }
 
-        frameData[label] = new glowingInputFrame
+        FrameData[label] = new GlowingInputFrame
         {
-            borderThickness = BorderThicknessActive,
-            color = borderColorActive
+            BorderThickness = borderThicknessActive,
+            Color = borderColorActive
         };
 
-        for (float i = 0; i < BorderThicknessActive; i += 1f)
+        for (float i = 0; i < borderThicknessActive; i += 1f)
         {
-            var lerpedToBackground = borderColorActive.toColor().lerp(WindowbgColor, i / BorderThicknessActive);
+            var lerpedToBackground = borderColorActive.ToColor().Lerp(windowbgColor, i / borderThicknessActive);
             draw.AddRect(new Vector2(startDrawBg.X - i, startDrawBg.Y - i),
-                new Vector2(endDrawBg.X + i, endDrawBg.Y + i), lerpedToBackground.ToUint(), cfg.roundCorners);
+                new Vector2(endDrawBg.X + i, endDrawBg.Y + i), lerpedToBackground.ToUint(), cfg.RoundCorners);
         }
 
-        style.Colors[ImGuiCol.FrameBg.toInt()] = temp;
-        style.Colors[ImGuiCol.Text.toInt()] = temp2;
+        style.Colors[ImGuiCol.FrameBg.ToInt()] = temp;
+        style.Colors[ImGuiCol.Text.ToInt()] = temp2;
         return valuechanged;
     }
 
-    public static bool glowingCombo(string label, ref int selectedIndx, string[] items, glowingInputConfigurator cfg,
+    public static bool GlowingCombo(string label, ref int selectedIndx, string[] items, GlowingInputConfigurator cfg,
         uint maxlength = 32)
     {
         label = "##" + label;
-        object obj = cfg.borderColor;
-        var borderColorActive = cfg.borderColorActive;
-        var BorderThicknessActive = cfg.borderThickness;
-        var flag = frameData.TryGetValue(label, out obj);
+        object obj = cfg.BorderColor;
+        var borderColorActive = cfg.BorderColorActive;
+        var borderThicknessActive = cfg.BorderThickness;
+        var flag = FrameData.TryGetValue(label, out obj);
         if (flag)
         {
-            borderColorActive = ((glowingInputFrame)obj).color;
-            BorderThicknessActive = ((glowingInputFrame)obj).borderThickness;
+            borderColorActive = ((GlowingInputFrame)obj).Color;
+            borderThicknessActive = ((GlowingInputFrame)obj).BorderThickness;
         }
         else
         {
-            frameData.Add(label, new glowingInputFrame
+            FrameData.Add(label, new GlowingInputFrame
             {
-                borderThickness = BorderThicknessActive,
-                color = borderColorActive
+                BorderThickness = borderThicknessActive,
+                Color = borderColorActive
             });
         }
 
@@ -825,68 +826,68 @@ public class Theme
         var draw = ImGui.GetWindowDrawList();
         var cursorPos = ImGui.GetCursorPos();
         var startDrawBg = new Vector2(windowpos.X + cursorPos.X, windowpos.Y + cursorPos.Y);
-        var endDrawBg = new Vector2(windowpos.X + cursorPos.X + cfg.size.X, windowpos.Y + cursorPos.Y + cfg.size.Y);
-        draw.AddRectFilled(startDrawBg, endDrawBg, cfg.bgcolor, cfg.roundCorners);
-        var WindowbgColor = style.Colors[ImGuiCol.WindowBg.toInt()].toColor();
-        var temp = style.Colors[ImGuiCol.FrameBg.toInt()];
-        var temp2 = style.Colors[ImGuiCol.Text.toInt()];
+        var endDrawBg = new Vector2(windowpos.X + cursorPos.X + cfg.Size.X, windowpos.Y + cursorPos.Y + cfg.Size.Y);
+        draw.AddRectFilled(startDrawBg, endDrawBg, cfg.Bgcolor, cfg.RoundCorners);
+        var windowbgColor = style.Colors[ImGuiCol.WindowBg.ToInt()].ToColor();
+        var temp = style.Colors[ImGuiCol.FrameBg.ToInt()];
+        var temp2 = style.Colors[ImGuiCol.Text.ToInt()];
         var temp3 = ImGui.GetFontSize();
-        style.Colors[ImGuiCol.FrameBg.toInt()] = cfg.bgcolor.toColor().toVec4();
+        style.Colors[ImGuiCol.FrameBg.ToInt()] = cfg.Bgcolor.ToColor().ToVec4();
         style.FrameBorderSize = 0;
-        style.Colors[ImGuiCol.Text.toInt()] = cfg.textColor.toColor().toVec4();
-        style.Colors[ImGuiCol.FrameBgHovered.toInt()] = cfg.bgcolor.toColor().toVec4();
-        style.Colors[ImGuiCol.Button.toInt()] = cfg.bgcolor.toColor().toVec4();
-        style.Colors[ImGuiCol.ButtonHovered.toInt()] = cfg.bgcolor.toColor().toVec4();
+        style.Colors[ImGuiCol.Text.ToInt()] = cfg.TextColor.ToColor().ToVec4();
+        style.Colors[ImGuiCol.FrameBgHovered.ToInt()] = cfg.Bgcolor.ToColor().ToVec4();
+        style.Colors[ImGuiCol.Button.ToInt()] = cfg.Bgcolor.ToColor().ToVec4();
+        style.Colors[ImGuiCol.ButtonHovered.ToInt()] = cfg.Bgcolor.ToColor().ToVec4();
         var currentCursor = ImGui.GetCursorPos();
         ImGui.SetCursorPos(new Vector2(ImGui.GetCursorPosX() + style.FramePadding.X,
-            ImGui.GetCursorPosY() + cfg.size.Y / 2.0f - ImGui.CalcTextSize(cfg.prefix).Y / 2.0f
+            ImGui.GetCursorPosY() + cfg.Size.Y / 2.0f - ImGui.CalcTextSize(cfg.Prefix).Y / 2.0f
         ));
-        ImGui.SetNextItemWidth(cfg.size.X - 3 * scaleSize.X);
+        ImGui.SetNextItemWidth(cfg.Size.X - 3 * _scaleSize.X);
         var results = ImGui.Combo(label, ref selectedIndx, items, items.Length);
         if (ImGui.IsItemActive())
         {
-            borderColorActive = borderColorActive.toColor().lerp(cfg.borderColorActive.toColor(), 0.01f).ToUint();
-            if (BorderThicknessActive <= cfg.borderThickness + 3)
-                BorderThicknessActive += 0.01f;
+            borderColorActive = borderColorActive.ToColor().Lerp(cfg.BorderColorActive.ToColor(), 0.01f).ToUint();
+            if (borderThicknessActive <= cfg.BorderThickness + 3)
+                borderThicknessActive += 0.01f;
         }
         else
         {
-            if (BorderThicknessActive > cfg.borderThickness)
-                BorderThicknessActive -= 0.01f;
-            borderColorActive = borderColorActive.toColor().lerp(cfg.borderColor.toColor(), 0.01f).ToUint();
+            if (borderThicknessActive > cfg.BorderThickness)
+                borderThicknessActive -= 0.01f;
+            borderColorActive = borderColorActive.ToColor().Lerp(cfg.BorderColor.ToColor(), 0.01f).ToUint();
         }
 
-        frameData[label] = new glowingInputFrame
+        FrameData[label] = new GlowingInputFrame
         {
-            borderThickness = BorderThicknessActive,
-            color = borderColorActive
+            BorderThickness = borderThicknessActive,
+            Color = borderColorActive
         };
 
-        for (float i = 0; i < BorderThicknessActive; i += 1f)
+        for (float i = 0; i < borderThicknessActive; i += 1f)
         {
-            var lerpedToBackground = borderColorActive.toColor().lerp(WindowbgColor, i / BorderThicknessActive);
+            var lerpedToBackground = borderColorActive.ToColor().Lerp(windowbgColor, i / borderThicknessActive);
             draw.AddRect(new Vector2(startDrawBg.X - i, startDrawBg.Y - i),
-                new Vector2(endDrawBg.X + i, endDrawBg.Y + i), lerpedToBackground.ToUint(), cfg.roundCorners);
+                new Vector2(endDrawBg.X + i, endDrawBg.Y + i), lerpedToBackground.ToUint(), cfg.RoundCorners);
         }
 
-        style.Colors[ImGuiCol.FrameBg.toInt()] = temp;
-        style.Colors[ImGuiCol.Text.toInt()] = temp2;
+        style.Colors[ImGuiCol.FrameBg.ToInt()] = temp;
+        style.Colors[ImGuiCol.Text.ToInt()] = temp2;
         return results;
     }
 
-    public static void circleProgressBarAnimated(string label, Vector2 pos, float radius, uint Color, float tickness,
+    public static void CircleProgressBarAnimated(string label, Vector2 pos, float radius, uint color, float tickness,
         float speed, float progress)
     {
         var windowpos = ImGui.GetWindowPos();
         pos = new Vector2(windowpos.X + pos.X, windowpos.Y + pos.Y);
         object obj = 0.0f;
-        var flag = frameData.TryGetValue(label, out obj);
+        var flag = FrameData.TryGetValue(label, out obj);
         var draw = ImGui.GetWindowDrawList();
         float angle;
         if (!flag)
         {
             angle = 0;
-            frameData.Add(label, angle);
+            FrameData.Add(label, angle);
         }
         else
         {
@@ -894,175 +895,175 @@ public class Theme
         }
 
         var style = ImGui.GetStyle();
-        var bg = style.Colors[ImGuiCol.WindowBg.toInt()].toColor();
+        var bg = style.Colors[ImGuiCol.WindowBg.ToInt()].ToColor();
 
         angle += speed;
         var lim = 2.0f * (float)Math.PI * progress;
         for (float i = 0; i < lim; i += 0.01f)
         {
             var unDiscover = new Vector2(radius * (float)Math.Sin(angle + i), radius * (float)Math.Cos(angle + i));
-            var steppedColor = bg.lerp(Color.toColor(), i / lim);
+            var steppedColor = bg.Lerp(color.ToColor(), i / lim);
             draw.AddLine(new Vector2(pos.X + unDiscover.X - 1, pos.Y + unDiscover.Y - 1)
                 , new Vector2(pos.X + unDiscover.X, pos.Y + unDiscover.Y), steppedColor.ToUint(), tickness);
         }
 
         if (angle >= 2 * Math.PI) angle = 0;
-        frameData[label] = angle;
+        FrameData[label] = angle;
     }
 
-    public static void newLine()
+    public static void NewLine()
     {
-        ImGui.Dummy(new Vector2(0, 45.0f * scaleSize.Y)); // Adds 20px vertical space
+        ImGui.Dummy(new Vector2(0, 45.0f * _scaleSize.Y)); // Adds 20px vertical space
     }
 
-    public static void sameLine()
+    public static void SameLine()
     {
         ImGui.SameLine();
-        ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 320 * scaleSize.X);
+        ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 320 * _scaleSize.X);
     }
 
-    public static glowingInputConfigurator getTextTheme()
+    public static GlowingInputConfigurator GetTextTheme()
     {
-        var textboxTheme = new glowingInputConfigurator();
-        textboxTheme.size = new Vector2(320 * scaleSize.X, 45f * scaleSize.Y);
-        textboxTheme.roundCorners = 5;
-        textboxTheme.prefix = "Username";
-        textboxTheme.borderThickness = 3f;
-        textboxTheme.bgcolor = Color.FromArgb(28, 28, 32).ToUint();
-        textboxTheme.borderColor = Color.FromArgb(88, 37, 227).ToUint();
-        textboxTheme.borderColorActive = Color.FromArgb(115, 70, 232).ToUint();
-        textboxTheme.textColor = Color.White.ToUint();
-        textboxTheme.fontScale = 16f;
+        var textboxTheme = new GlowingInputConfigurator();
+        textboxTheme.Size = new Vector2(320 * _scaleSize.X, 45f * _scaleSize.Y);
+        textboxTheme.RoundCorners = 5;
+        textboxTheme.Prefix = "Username";
+        textboxTheme.BorderThickness = 3f;
+        textboxTheme.Bgcolor = Color.FromArgb(28, 28, 32).ToUint();
+        textboxTheme.BorderColor = Color.FromArgb(88, 37, 227).ToUint();
+        textboxTheme.BorderColorActive = Color.FromArgb(115, 70, 232).ToUint();
+        textboxTheme.TextColor = Color.White.ToUint();
+        textboxTheme.FontScale = 16f;
         return textboxTheme;
     }
 
-    public static SliderInputConfigurator getSliderTheme()
+    public static SliderInputConfigurator GetSliderTheme()
     {
         var textboxTheme = new SliderInputConfigurator();
-        textboxTheme.size = new Vector2(320 * scaleSize.X, 45f * scaleSize.Y);
-        textboxTheme.roundCorners = 2;
-        textboxTheme.borderThickness = 3f;
-        textboxTheme.bgcolor = Color.FromArgb(28, 28, 32).ToUint();
-        textboxTheme.borderColor = Color.FromArgb(88, 37, 227).ToUint();
-        textboxTheme.borderColorActive = Color.FromArgb(115, 70, 232).ToUint();
-        textboxTheme.sliderColor = Color.FromArgb(82, 34, 204).ToUint();
-        textboxTheme.sliderColorActive = Color.FromArgb(119, 73, 226).ToUint();
+        textboxTheme.Size = new Vector2(320 * _scaleSize.X, 45f * _scaleSize.Y);
+        textboxTheme.RoundCorners = 2;
+        textboxTheme.BorderThickness = 3f;
+        textboxTheme.Bgcolor = Color.FromArgb(28, 28, 32).ToUint();
+        textboxTheme.BorderColor = Color.FromArgb(88, 37, 227).ToUint();
+        textboxTheme.BorderColorActive = Color.FromArgb(115, 70, 232).ToUint();
+        textboxTheme.SliderColor = Color.FromArgb(82, 34, 204).ToUint();
+        textboxTheme.SliderColorActive = Color.FromArgb(119, 73, 226).ToUint();
         textboxTheme.YoffsetLabel = -20;
         return textboxTheme;
     }
 
-    public static ButtonConfigurator getTextButtonTheme()
+    public static ButtonConfigurator GetTextButtonTheme()
     {
         var textboxTheme = new ButtonConfigurator();
-        textboxTheme.size = new Vector2(320 * scaleSize.X, 45f * scaleSize.Y);
-        textboxTheme.roundCorners = 5;
-        textboxTheme.text = "NULL";
-        textboxTheme.bgcolor = Color.FromArgb(100, 100, 100).ToUint();
+        textboxTheme.Size = new Vector2(320 * _scaleSize.X, 45f * _scaleSize.Y);
+        textboxTheme.RoundCorners = 5;
+        textboxTheme.Text = "NULL";
+        textboxTheme.Bgcolor = Color.FromArgb(100, 100, 100).ToUint();
         textboxTheme.ColorHover = Color.FromArgb(222, 222, 222).ToUint();
-        textboxTheme.textColor = Color.White.ToUint();
-        textboxTheme.waitSpeed = 0.00025f;
+        textboxTheme.TextColor = Color.White.ToUint();
+        textboxTheme.WaitSpeed = 0.00025f;
         textboxTheme.SlideSpeed = 0.0025f;
-        textboxTheme.circleThickness = 4;
-        textboxTheme.circleRadius = 20;
-        textboxTheme.circleColor = Color.FromArgb(82, 34, 204).ToUint();
-        textboxTheme.circleSpeed = 0.005f;
-        textboxTheme.circlePositionY = -90;
+        textboxTheme.CircleThickness = 4;
+        textboxTheme.CircleRadius = 20;
+        textboxTheme.CircleColor = Color.FromArgb(82, 34, 204).ToUint();
+        textboxTheme.CircleSpeed = 0.005f;
+        textboxTheme.CirclePositionY = -90;
         return textboxTheme;
     }
 
-    public static ButtonConfigurator getbuttonTheme()
+    public static ButtonConfigurator GetbuttonTheme()
     {
         var textboxTheme = new ButtonConfigurator();
-        textboxTheme.size = new Vector2(320 * scaleSize.X, 45f * scaleSize.Y);
-        textboxTheme.roundCorners = 5;
-        textboxTheme.text = "NULL";
-        textboxTheme.bgcolor = Color.FromArgb(91, 36, 221).ToUint();
+        textboxTheme.Size = new Vector2(320 * _scaleSize.X, 45f * _scaleSize.Y);
+        textboxTheme.RoundCorners = 5;
+        textboxTheme.Text = "NULL";
+        textboxTheme.Bgcolor = Color.FromArgb(91, 36, 221).ToUint();
         textboxTheme.ColorHover = Color.FromArgb(114, 71, 224).ToUint();
-        textboxTheme.textColor = Color.White.ToUint();
-        textboxTheme.waitSpeed = 0.00025f;
+        textboxTheme.TextColor = Color.White.ToUint();
+        textboxTheme.WaitSpeed = 0.00025f;
         textboxTheme.SlideSpeed = 0.0025f;
-        textboxTheme.circleThickness = 4;
-        textboxTheme.circleRadius = 20;
-        textboxTheme.circleColor = Color.FromArgb(82, 34, 204).ToUint();
-        textboxTheme.circleSpeed = 0.005f;
-        textboxTheme.circlePositionY = -90;
+        textboxTheme.CircleThickness = 4;
+        textboxTheme.CircleRadius = 20;
+        textboxTheme.CircleColor = Color.FromArgb(82, 34, 204).ToUint();
+        textboxTheme.CircleSpeed = 0.005f;
+        textboxTheme.CirclePositionY = -90;
         return textboxTheme;
     }
 
-    private struct colFrame
+    private struct ColFrame
     {
-        public ImGuiCol type;
-        public Color start;
-        public Color end;
-        public float speed;
-        public float progress;
+        public ImGuiCol Type;
+        public Color Start;
+        public Color End;
+        public float Speed;
+        public float Progress;
     }
 
-    private struct glowingInputFrame
+    private struct GlowingInputFrame
     {
-        public uint color;
-        public float borderThickness;
+        public uint Color;
+        public float BorderThickness;
     }
 
     private struct SliderInputFrame
     {
-        public uint color;
-        public float borderThickness;
-        public float lerpProgress;
-        public uint sliderColorActive;
-        public Sliderstatus status;
+        public uint Color;
+        public float BorderThickness;
+        public float LerpProgress;
+        public uint SliderColorActive;
+        public Sliderstatus Status;
     }
 
-    private struct circleButtonFrame
+    private struct CircleButtonFrame
     {
-        public float current;
-        public float waitFade;
-        public float hoverFade;
-        public uint color;
-        public circleState status;
+        public float Current;
+        public float WaitFade;
+        public float HoverFade;
+        public uint Color;
+        public CircleState Status;
     }
 
-    public struct glowingInputConfigurator
+    public struct GlowingInputConfigurator
     {
-        public uint bgcolor;
-        public uint borderColorActive;
-        public uint borderColor;
-        public uint textColor;
-        public float roundCorners;
-        public float borderThickness;
-        public Vector2 size;
-        public string prefix;
-        public float fontScale;
-        public char passwordChar;
+        public uint Bgcolor;
+        public uint BorderColorActive;
+        public uint BorderColor;
+        public uint TextColor;
+        public float RoundCorners;
+        public float BorderThickness;
+        public Vector2 Size;
+        public string Prefix;
+        public float FontScale;
+        public char PasswordChar;
     }
 
     public struct SliderInputConfigurator
     {
-        public uint bgcolor;
-        public uint borderColorActive;
-        public uint borderColor;
-        public uint sliderColor;
-        public float roundCorners;
-        public float borderThickness;
-        public Vector2 size;
-        public uint sliderColorActive;
+        public uint Bgcolor;
+        public uint BorderColorActive;
+        public uint BorderColor;
+        public uint SliderColor;
+        public float RoundCorners;
+        public float BorderThickness;
+        public Vector2 Size;
+        public uint SliderColorActive;
         public float YoffsetLabel;
     }
 
     public struct ButtonConfigurator
     {
-        public uint bgcolor;
+        public uint Bgcolor;
         public uint ColorHover;
-        public uint textColor;
-        public float roundCorners;
-        public Vector2 size;
-        public string text;
-        public float circleRadius;
-        public float circleSpeed;
-        public uint circleColor;
-        public uint circleThickness;
+        public uint TextColor;
+        public float RoundCorners;
+        public Vector2 Size;
+        public string Text;
+        public float CircleRadius;
+        public float CircleSpeed;
+        public uint CircleColor;
+        public uint CircleThickness;
         public float SlideSpeed;
-        public float waitSpeed;
-        public float circlePositionY;
+        public float WaitSpeed;
+        public float CirclePositionY;
     }
 }

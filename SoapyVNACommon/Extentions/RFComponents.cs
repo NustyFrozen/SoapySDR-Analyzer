@@ -1,34 +1,33 @@
 ﻿using System.Numerics;
 
-namespace SoapyVNACommon.Extentions
+namespace SoapyVNACommon.Extentions;
+
+public class IqdcBlocker
 {
-    public class IQDCBlocker
+    private readonly double _alpha;
+    private double _prevI;
+    private double _prevOutI;
+    private double _prevOutQ;
+    private double _prevQ;
+
+    public IqdcBlocker(double alpha = 0.995f)
     {
-        private double alpha;
-        private double prevI = 0.0f;
-        private double prevQ = 0.0f;
-        private double prevOutI = 0.0f;
-        private double prevOutQ = 0.0f;
+        this._alpha = alpha;
+    }
 
-        public IQDCBlocker(double alpha = 0.995f)
+    public void ProcessSignal(Complex[] input)
+    {
+        var data = input.AsSpan();
+        for (var pos = 0; pos < data.Length; pos++)
         {
-            this.alpha = alpha;
-        }
+            var sample = data[pos];
 
-        public void ProcessSignal(Complex[] input)
-        {
-            var data = input.AsSpan();
-            for (int pos = 0; pos < data.Length; pos++)
-            {
-                var sample = data[pos];
-
-                input[pos] = new Complex(sample.Real - prevI + alpha * prevOutI
-                    , sample.Imaginary - prevQ + alpha * prevOutQ);
-                prevI = sample.Real;
-                prevQ = sample.Imaginary;
-                prevOutI = input[pos].Real;
-                prevOutQ = input[pos].Imaginary;
-            }
+            input[pos] = new Complex(sample.Real - _prevI + _alpha * _prevOutI
+                , sample.Imaginary - _prevQ + _alpha * _prevOutQ);
+            _prevI = sample.Real;
+            _prevQ = sample.Imaginary;
+            _prevOutI = input[pos].Real;
+            _prevOutQ = input[pos].Imaginary;
         }
     }
 }

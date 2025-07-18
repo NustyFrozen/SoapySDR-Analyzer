@@ -2,22 +2,22 @@
 
 namespace SoapyRL.View.tabs;
 
-public class tab_Marker(MainWindow initiator)
+public class TabMarker(MainWindow initiator)
 {
-    public MainWindow parent = initiator;
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
-    public marker s_Marker;
+    public MainWindow Parent = initiator;
+    public Marker SMarker;
 
-    public struct marker
+    public struct Marker
     {
-        public marker()
+        public Marker()
         {
         }
 
-        public int id, reference = 1;
-        public string txtStatus;
-        public bool isActive;
-        public double position, value;
-        public double valueRef;
+        public int Id, Reference = 1;
+        public string TxtStatus;
+        public bool IsActive;
+        public double Position, Value;
+        public double ValueRef;
     }
 }

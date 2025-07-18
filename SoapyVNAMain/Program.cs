@@ -6,7 +6,7 @@ using SoapyVNAMain;
 using SoapyVNAMain.View;
 
 ApplicationConfiguration.Initialize();
-DeviceHelper.setupSoapyEnvironment();
+DeviceHelper.SetupSoapyEnvironment();
 Imports.AllocConsole();
 using var overlay = new WidgetsWindow();
 await overlay.Run();

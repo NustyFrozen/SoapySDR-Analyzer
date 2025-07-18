@@ -1,17 +1,18 @@
-﻿using ImGuiNET;
+﻿using System.Numerics;
+using ImGuiNET;
 using Newtonsoft.Json;
 using NLog;
 using SoapyRL.Extentions;
 using SoapyRL.View;
+using SoapyRL.View.tabs;
 using SoapyVNACommon.Extentions;
-using System.Numerics;
 
 namespace SoapyRL;
 
-public class Configuration(string widgetName, MainWindow initiator, Vector2 windowSize, Vector2 Pos)
+public class Configuration(string widgetName, MainWindow initiator, Vector2 windowSize, Vector2 pos)
 {
-    private Logger _logger = LogManager.GetCurrentClassLogger();
-    private MainWindow parent = initiator;
+    private readonly Logger _logger = LogManager.GetCurrentClassLogger();
+    private readonly MainWindow _parent = initiator;
 #if DEBUG
     public ImGuiWindowFlags mainWindowFlags = ImGuiWindowFlags.NoScrollbar;
 
@@ -21,103 +22,111 @@ new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.To
     public Vector2 mainWindowPos = new Vector2(600, 0);
 #else
 
-    public ImGuiWindowFlags mainWindowFlags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoTitleBar |
-                                                     ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoMove;
+    public ImGuiWindowFlags MainWindowFlags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoTitleBar |
+                                              ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoMove;
 
-    public Vector2 getScreenSize() => new(Screen.PrimaryScreen.Bounds.Width,
-        Screen.PrimaryScreen.Bounds.Height);
+    public Vector2 GetScreenSize()
+    {
+        return new Vector2(Screen.PrimaryScreen.Bounds.Width,
+            Screen.PrimaryScreen.Bounds.Height);
+    }
 
-    public Vector2 getDefaultScaleSize() => getScreenSize() / new Vector2(1920.0f, 1080.0f);
+    public Vector2 GetDefaultScaleSize()
+    {
+        return GetScreenSize() / new Vector2(1920.0f, 1080.0f);
+    }
 
-    public readonly Vector2 s_widgetSize = windowSize;
+    public readonly Vector2 SWidgetSize = windowSize;
 
-    public Vector2 mainWindowPos = Pos;
+    public Vector2 MainWindowPos = pos;
 #endif
 
     public Vector2
-        scaleSize = new(windowSize.X / 1920.0f, windowSize.Y / 1080.0f),
-        positionOffset = new(50 * windowSize.X / 1920.0f, 10 * windowSize.Y / 1080.0f),
-        graphSize = new(Convert.ToInt16(windowSize.X * .8), Convert.ToInt16(windowSize.Y * .9)),
-        optionSize = new(Convert.ToInt16(windowSize.X * .2), Convert.ToInt16(windowSize.Y));
+        ScaleSize = new(windowSize.X / 1920.0f, windowSize.Y / 1080.0f),
+        PositionOffset = new(50 * windowSize.X / 1920.0f, 10 * windowSize.Y / 1080.0f),
+        GraphSize = new(Convert.ToInt16(windowSize.X * .8), Convert.ToInt16(windowSize.Y * .9)),
+        OptionSize = new(Convert.ToInt16(windowSize.X * .2), Convert.ToInt16(windowSize.Y));
 
     //Path.GetDirectoryName(Application.ExecutablePath)
-    public string presetPath = Path.Combine(Global.configPath, widgetName, "Preset.json");
+    public string PresetPath = Path.Combine(Global.ConfigPath, widgetName, "Preset.json");
 
-    public string tracesPath = Path.Combine(Global.configPath, widgetName, "traces.json");
-    public string markersPath = Path.Combine(Global.configPath, widgetName, "markers.json");
+    public string TracesPath = Path.Combine(Global.ConfigPath, widgetName, "traces.json");
+    public string MarkersPath = Path.Combine(Global.ConfigPath, widgetName, "markers.json");
 
-    public string calibrationPath = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "config", widgetName, "Cal.json");
+    public string CalibrationPath =
+        Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "config", widgetName, "Cal.json");
 
-    public enum saVar
+    public enum SaVar
     {
-        leakageSleep,
-        deviecOptions,
-        iqCorrection,
-        freqStart,
-        freqStop,
-        fftSegment,
-        fftOverlap,
-        scalePerDivision,
-        validImpedanceTol
+        LeakageSleep,
+        DeviecOptions,
+        IqCorrection,
+        FreqStart,
+        FreqStop,
+        FftSegment,
+        FftOverlap,
+        ScalePerDivision,
+        ValidImpedanceTol
     }
 
-    public ObservableDictionary<saVar, object> config = new();
+    public ObservableDictionary<SaVar, object> Config = new();
 
-    public void initDefaultConfig()
+    public void InitDefaultConfig()
     {
-        config.CollectionChanged += updateUIElementsOnConfigChanged;
-        config[saVar.leakageSleep] = 5;
-        config.Add(saVar.deviecOptions, new string[] { });
-        config[saVar.iqCorrection] = true;
-        config[saVar.freqStart] = 800e6;
-        config[saVar.freqStop] = 3000e6;
-        config[saVar.fftSegment] = 400;
-        config[saVar.fftOverlap] = 0.95;
-        config[saVar.scalePerDivision] = 20;
-        config[saVar.validImpedanceTol] = 0.9f;
-        config.CollectionChanged += updateUIElementsOnConfigChanged;
-        updateALLConfigElements();
-        if (File.Exists(presetPath))
-            loadConfig();
+        Config.CollectionChanged += updateUIElementsOnConfigChanged;
+        Config[SaVar.LeakageSleep] = 5;
+        Config.Add(SaVar.DeviecOptions, new string[] { });
+        Config[SaVar.IqCorrection] = true;
+        Config[SaVar.FreqStart] = 800e6;
+        Config[SaVar.FreqStop] = 3000e6;
+        Config[SaVar.FftSegment] = 400;
+        Config[SaVar.FftOverlap] = 0.95;
+        Config[SaVar.ScalePerDivision] = 20;
+        Config[SaVar.ValidImpedanceTol] = 0.9f;
+        Config.CollectionChanged += updateUIElementsOnConfigChanged;
+        UpdateAllConfigElements();
+        if (File.Exists(PresetPath))
+            LoadConfig();
     }
 
-    public void loadConfig()
+    public void LoadConfig()
     {
         try
         {
             //fftmanager constantly uses config so we gotta stop it
-            bool resume = false;
-            if (parent.rlManager.isRunning)
+            var resume = false;
+            if (_parent.RlManager.IsRunning)
             {
                 resume = true;
-                parent.rlManager.stopRL();
+                _parent.RlManager.StopRl();
             }
-            var cfg = JsonConvert.DeserializeObject<ObservableDictionary<saVar, object>>(File.ReadAllText(presetPath),
+
+            var cfg = JsonConvert.DeserializeObject<ObservableDictionary<SaVar, object>>(File.ReadAllText(PresetPath),
                 new JsonSerializerSettings
                 {
                     TypeNameHandling = TypeNameHandling.Auto,
                     Converters = new List<JsonConverter> { new ForceIntConverter() }
                 });
-            parent.tab_Marker.s_Marker = JsonConvert.DeserializeObject<View.tabs.tab_Marker.marker>(File.ReadAllText(markersPath),
+            _parent.TabMarker.SMarker = JsonConvert.DeserializeObject<TabMarker.Marker>(File.ReadAllText(MarkersPath),
                 new JsonSerializerSettings
                 {
                     TypeNameHandling = TypeNameHandling.Auto,
                     Converters = new List<JsonConverter> { new ForceIntConverter() }
                 });
-            parent.tab_Trace.s_traces = JsonConvert.DeserializeObject<View.tabs.tab_Trace.Trace[]>(File.ReadAllText(tracesPath),
-                                new JsonSerializerSettings
-                                {
-                                    TypeNameHandling = TypeNameHandling.Auto,
-                                    Converters = new List<JsonConverter> { new ForceIntConverter() }
-                                });
+            _parent.TabTrace.STraces = JsonConvert.DeserializeObject<TabTrace.Trace[]>(File.ReadAllText(TracesPath),
+                new JsonSerializerSettings
+                {
+                    TypeNameHandling = TypeNameHandling.Auto,
+                    Converters = new List<JsonConverter> { new ForceIntConverter() }
+                });
 
             foreach (var keyvaluepair in cfg)
-                config[keyvaluepair.Key] = keyvaluepair.Value;
+                Config[keyvaluepair.Key] = keyvaluepair.Value;
 
-            updateALLConfigElements();
+            UpdateAllConfigElements();
             //resuming RL
             if (resume)
-                parent.rlManager.beginRL();
+                _parent.RlManager.BeginRl();
         }
         catch (Exception ex)
         {
@@ -125,22 +134,23 @@ new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.To
         }
     }
 
-    public void saveConfig()
+    public void SaveConfig()
     {
         try
         {
-            bool resume = false;
-            if (parent.rlManager.isRunning)
+            var resume = false;
+            if (_parent.RlManager.IsRunning)
             {
                 resume = true;
-                parent.rlManager.stopRL();
+                _parent.RlManager.StopRl();
             }
-            File.WriteAllText(presetPath, Newtonsoft.Json.JsonConvert.SerializeObject(config));
-            File.WriteAllText(markersPath, Newtonsoft.Json.JsonConvert.SerializeObject(parent.tab_Marker.s_Marker));
-            File.WriteAllText(tracesPath, Newtonsoft.Json.JsonConvert.SerializeObject(parent.tab_Trace.s_traces));
+
+            File.WriteAllText(PresetPath, JsonConvert.SerializeObject(Config));
+            File.WriteAllText(MarkersPath, JsonConvert.SerializeObject(_parent.TabMarker.SMarker));
+            File.WriteAllText(TracesPath, JsonConvert.SerializeObject(_parent.TabTrace.STraces));
 
             if (resume)
-                parent.rlManager.beginRL();
+                _parent.RlManager.BeginRl();
         }
         catch (Exception ex)
         {
@@ -148,23 +158,23 @@ new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.To
         }
     }
 
-    private void updateALLConfigElements()
+    private void UpdateAllConfigElements()
     {
-        List<saVar> savarTypes = Enum.GetValues(typeof(saVar)).Cast<saVar>().ToList();
+        var savarTypes = Enum.GetValues(typeof(SaVar)).Cast<SaVar>().ToList();
         foreach (var savar in savarTypes)
-            updateUIElementsOnConfigChanged(null, new keyOfChangedValueEventArgs(savar));
+            updateUIElementsOnConfigChanged(null, new KeyOfChangedValueEventArgs(savar));
     }
 
-    private void updateUIElementsOnConfigChanged(object? sender, keyOfChangedValueEventArgs e)
+    private void updateUIElementsOnConfigChanged(object? sender, KeyOfChangedValueEventArgs e)
     {
-        switch (e.key)
+        switch (e.Key)
         {
-            case saVar.leakageSleep:
-                parent.tab_Device.s_osciliatorLeakageSleep = config[saVar.leakageSleep].ToString();
+            case SaVar.LeakageSleep:
+                _parent.TabDevice.SOsciliatorLeakageSleep = Config[SaVar.LeakageSleep].ToString();
                 break;
 
-            case saVar.iqCorrection:
-                parent.tab_Device.isCorrectIQEnabled = (bool)config[saVar.iqCorrection];
+            case SaVar.IqCorrection:
+                _parent.TabDevice.IsCorrectIqEnabled = (bool)Config[SaVar.IqCorrection];
                 break;
         }
     }

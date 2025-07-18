@@ -1,27 +1,27 @@
-﻿using ImGuiNET;
-using System.Drawing;
+﻿using System.Drawing;
 using System.Numerics;
+using ImGuiNET;
 
 namespace SoapyVNACommon.Extentions;
 
 public static class ColorExtention
 {
-    public static int toInt(this ImGuiCol col)
+    public static int ToInt(this ImGuiCol col)
     {
         return (int)col;
     }
 
-    public static Vector4 toVec4(this Color clr)
+    public static Vector4 ToVec4(this Color clr)
     {
         return new Vector4(clr.R / 255.0f, clr.G / 255.0f, clr.B / 255.0f, clr.A / 255.0f);
     }
 
-    public static Color toColor(this Vector4 vec)
+    public static Color ToColor(this Vector4 vec)
     {
         return Color.FromArgb((int)(vec.W * 255.0f), (int)(vec.X * 255.0f), (int)(vec.Y * 255.0), (int)(vec.Z * 255.0));
     }
 
-    public static Color toColor(this uint col)
+    public static Color ToColor(this uint col)
     {
         var a = (byte)(col >> 24);
         var r = (byte)(col >> 16);
@@ -31,27 +31,27 @@ public static class ColorExtention
         return Color.FromArgb(a, b, g, r);
     }
 
-    public static int lerp(this int x, int final, double progress)
+    public static int Lerp(this int x, int final, double progress)
     {
         return Convert.ToInt16((1 - progress) * x + final * progress);
     }
 
-    public static float lerp(this float x, float final, double progress)
+    public static float Lerp(this float x, float final, double progress)
     {
         return (float)((1 - progress) * x + final * progress);
     }
 
-    public static Color brightness(this Color A, float t) //linear interpolation
+    public static Color Brightness(this Color a, float t) //linear interpolation
     {
-        return Color.FromArgb(Convert.ToInt32(A.R * t), Convert.ToInt32(A.G * t), Convert.ToInt32(A.B * t));
+        return Color.FromArgb(Convert.ToInt32(a.R * t), Convert.ToInt32(a.G * t), Convert.ToInt32(a.B * t));
     }
 
-    public static Color lerp(this Color A, Color B, double t) //linear interpolation
+    public static Color Lerp(this Color a, Color b, double t) //linear interpolation
     {
-        var R = (1 - t) * A.R + B.R * t;
-        var G = (1 - t) * A.G + B.G * t;
-        var BB = (1 - t) * A.B + B.B * t;
-        return Color.FromArgb((int)255.0f, Convert.ToInt32(R), Convert.ToInt32(G), Convert.ToInt32(BB));
+        var r = (1 - t) * a.R + b.R * t;
+        var g = (1 - t) * a.G + b.G * t;
+        var bb = (1 - t) * a.B + b.B * t;
+        return Color.FromArgb((int)255.0f, Convert.ToInt32(r), Convert.ToInt32(g), Convert.ToInt32(bb));
     }
 
     public static uint ToUint(this Color c)
@@ -69,15 +69,15 @@ public static class StringExtention
     }
 }
 
-public static class dbConverterHelper
+public static class DbConverterHelper
 {
-    public static double toDBm(this double mW)
+    public static double ToDBm(this double mW)
     {
         var big = 10.0 * Math.Log10(mW);
         return big;
     }
 
-    public static double toMW(this double dB)
+    public static double ToMw(this double dB)
     {
         var mehane = dB / 10.0;
         var value = Math.Pow(10, mehane);

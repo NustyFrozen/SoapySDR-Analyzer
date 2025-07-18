@@ -1,18 +1,19 @@
-﻿using ImGuiNET;
+﻿using System.Numerics;
+using ImGuiNET;
 using Newtonsoft.Json;
 using NLog;
 using SoapySA.Extentions;
+using SoapySA.Model;
 using SoapySA.View;
-using SoapySA.View.tabs;
 using SoapyVNACommon.Extentions;
-using System.Numerics;
+using Trace = SoapySA.Model.Trace;
 
-namespace SoapySA
+namespace SoapySA;
+
+public class Configuration(string widgetName, MainWindowView initiator, Vector2 windowSize, Vector2 pos)
 {
-    public class Configuration(string widgetName, MainWindow initiator, Vector2 windowSize, Vector2 Pos)
-    {
-        private Logger _logger = LogManager.GetCurrentClassLogger();
-        private MainWindow parent = initiator;
+    private readonly Logger _logger = LogManager.GetCurrentClassLogger();
+    private readonly MainWindowView _parent = initiator;
 #if DEBUG
     public ImGuiWindowFlags mainWindowFlags = ImGuiWindowFlags.NoScrollbar;
 
@@ -22,257 +23,265 @@ new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.To
     public Vector2 mainWindowPos = new Vector2(600, 0);
 #else
 
-        public static ImGuiWindowFlags mainWindowFlags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoTitleBar |
-                                                         ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoMove;
+    public static ImGuiWindowFlags MainWindowFlags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoTitleBar |
+                                                     ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoMove;
 
-        public static Vector2 getScreenSize() => new(Screen.PrimaryScreen.Bounds.Width,
+    public static Vector2 GetScreenSize()
+    {
+        return new Vector2(Screen.PrimaryScreen.Bounds.Width,
             Screen.PrimaryScreen.Bounds.Height);
+    }
 
-        public static Vector2 getDefaultScaleSize() => getScreenSize() / new Vector2(1920.0f, 1080.0f);
+    public static Vector2 GetDefaultScaleSize()
+    {
+        return GetScreenSize() / new Vector2(1920.0f, 1080.0f);
+    }
 
-        public readonly Vector2 s_widgetSize = windowSize;
+    public readonly Vector2 SWidgetSize = windowSize;
 
-        public Vector2 mainWindowPos = Pos;
+    public Vector2 MainWindowPos = pos;
 #endif
 
-        public Vector2
-            scaleSize = new(windowSize.X / 1920.0f, windowSize.Y / 1080.0f),
-            positionOffset = new(50 * windowSize.X / 1920.0f, 10 * windowSize.Y / 1080.0f),
-            graphSize = new(Convert.ToInt16(windowSize.X * .8), Convert.ToInt16(windowSize.Y * .9)),
-            optionSize = new(Convert.ToInt16(windowSize.X * .2), Convert.ToInt16(windowSize.Y));
+    public Vector2
+        ScaleSize = new(windowSize.X / 1920.0f, windowSize.Y / 1080.0f),
+        PositionOffset = new(50 * windowSize.X / 1920.0f, 10 * windowSize.Y / 1080.0f),
+        GraphSize = new(Convert.ToInt16(windowSize.X * .8), Convert.ToInt16(windowSize.Y * .9)),
+        OptionSize = new(Convert.ToInt16(windowSize.X * .2), Convert.ToInt16(windowSize.Y));
 
-        //Path.GetDirectoryName(Application.ExecutablePath)
-        public string presetPath = Path.Combine(Global.configPath, widgetName, "Preset.json");
+    //Path.GetDirectoryName(Application.ExecutablePath)
+    public string PresetPath = Path.Combine(Global.ConfigPath, widgetName, "Preset.json");
 
-        public string tracesPath = Path.Combine(Global.configPath, widgetName, "traces.json");
-        public string markersPath = Path.Combine(Global.configPath, widgetName, "markers.json");
+    public string TracesPath = Path.Combine(Global.ConfigPath, widgetName, "traces.json");
+    public string MarkersPath = Path.Combine(Global.ConfigPath, widgetName, "markers.json");
 
-        public string calibrationPath = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "config", widgetName, "Cal.json");
+    public string CalibrationPath =
+        Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "config", widgetName, "Cal.json");
 
-        public enum saVar
+    public enum SaVar
+    {
+        //frequency
+        FreqStart,
+
+        FreqStop,
+
+        //device
+        LeakageSleep,
+
+        DeviecOptions,
+        IqCorrection,
+        FreqInterleaving, //big credit to hackrf_sweep by the gsg team for this method to remove DC bias and nyquist alaiasing
+
+        //amplitude
+        GraphStartDb,
+
+        GraphStopDb,
+        GraphOffsetDb,
+        GraphRefLevel,
+
+        ///vbw
+        FftWindow,
+
+        FftRbw,
+        FftSegment,
+        FftOverlap,
+
+        //measurement Channel
+        ChannelBw,
+
+        ChannelOcp,
+
+        //others
+        RefreshRate,
+
+        AutomaticLevel,
+        ScalePerDivision
+    }
+
+    public ObservableDictionary<SaVar, object> Config = new();
+
+    public void InitConfiguration()
+    {
+        if (!Directory.Exists(CalibrationPath))
+            Directory.CreateDirectory(CalibrationPath);
+        var calibrations = new List<string>();
+        foreach (var file in Directory.GetFiles(CalibrationPath))
+            if (file.EndsWith(".cal"))
+                calibrations.Add(file.Replace(CalibrationPath, "").Replace("\\", "").Replace("/", "")
+                    .Replace(".cal", ""));
+
+        //tab_Cal.s_AvailableCal = calibrations.ToArray();
+
+        Config[SaVar.FreqStart] = 933.4e6;
+        Config[SaVar.FreqStop] = 943.4e6;
+        Config[SaVar.LeakageSleep] = 5;
+        Config[SaVar.DeviecOptions] = new string[] { };
+        Config[SaVar.IqCorrection] = true;
+        Config[SaVar.FreqInterleaving] = false;
+        Config[SaVar.GraphStartDb] = (double)-136;
+        Config[SaVar.GraphStopDb] = (double)0;
+        Config[SaVar.GraphOffsetDb] = (double)0;
+        Config[SaVar.GraphRefLevel] = (double)-40;
+        Config[SaVar.FftRbw] = 0.01e6;
+        Config[SaVar.FftSegment] = 13;
+        Config[SaVar.FftOverlap] = 0.5;
+        Config[SaVar.RefreshRate] = 0;
+        Config[SaVar.AutomaticLevel] = false;
+        Config[SaVar.ScalePerDivision] = 20;
+        Config[SaVar.ChannelBw] = 5e6;
+        Config[SaVar.ChannelOcp] = 0.9;
+        Config.CollectionChanged += updateUIElementsOnConfigChanged;
+        UpdateAllConfigElements();
+        if (File.Exists(PresetPath))
+            LoadConfig();
+    }
+
+    public void LoadConfig()
+    {
+        try
         {
-            //frequency
-            freqStart,
-
-            freqStop,
-
-            //device
-            leakageSleep,
-
-            deviecOptions,
-            iqCorrection,
-            freqInterleaving, //big credit to hackrf_sweep by the gsg team for this method to remove DC bias and nyquist alaiasing
-
-            //amplitude
-            graphStartDB,
-
-            graphStopDB,
-            graphOffsetDB,
-            graphRefLevel,
-
-            ///vbw
-            fftWindow,
-
-            fftRBW,
-            fftSegment,
-            fftOverlap,
-
-            //measurement Channel
-            channelBW,
-
-            channelOCP,
-
-            //others
-            refreshRate,
-
-            automaticLevel,
-            scalePerDivision
-        }
-
-        public ObservableDictionary<saVar, object> config = new();
-
-        public void initConfiguration()
-        {
-            if (!Directory.Exists(calibrationPath))
-                Directory.CreateDirectory(calibrationPath);
-            var calibrations = new List<string>();
-            foreach (var file in Directory.GetFiles(calibrationPath))
-                if (file.EndsWith(".cal"))
-                    calibrations.Add(file.Replace(calibrationPath, "").Replace("\\", "").Replace("/", "")
-                        .Replace(".cal", ""));
-
-            //tab_Cal.s_AvailableCal = calibrations.ToArray();
-
-            config[saVar.freqStart] = 933.4e6;
-            config[saVar.freqStop] = 943.4e6;
-            config[saVar.leakageSleep] = 5;
-            config[saVar.deviecOptions] = new string[] { };
-            config[saVar.iqCorrection] = true;
-            config[saVar.freqInterleaving] = false;
-            config[saVar.graphStartDB] = (double)-136;
-            config[saVar.graphStopDB] = (double)0;
-            config[saVar.graphOffsetDB] = (double)0;
-            config[saVar.graphRefLevel] = (double)-40;
-            config[saVar.fftRBW] = 0.01e6;
-            config[saVar.fftSegment] = 13;
-            config[saVar.fftOverlap] = 0.5;
-            config[saVar.refreshRate] = 0;
-            config[saVar.automaticLevel] = false;
-            config[saVar.scalePerDivision] = 20;
-            config[saVar.channelBW] = 5e6;
-            config[saVar.channelOCP] = 0.9;
-            config.CollectionChanged += updateUIElementsOnConfigChanged;
-            updateALLConfigElements();
-            if (File.Exists(presetPath))
-                loadConfig();
-        }
-
-        public void loadConfig()
-        {
-            try
+            //fftmanager constantly uses config so we gotta stop it
+            var resume = false;
+            if (_parent.FftManager.IsRunning)
             {
-                //fftmanager constantly uses config so we gotta stop it
-                bool resume = false;
-                if (parent.fftManager.isRunning)
+                resume = true;
+                _parent.FftManager.StopFft();
+            }
+
+            var cfg = JsonConvert.DeserializeObject<ObservableDictionary<SaVar, object>>(File.ReadAllText(PresetPath),
+                new JsonSerializerSettings
                 {
-                    resume = true;
-                    parent.fftManager.stopFFT();
-                }
-                var cfg = JsonConvert.DeserializeObject<ObservableDictionary<saVar, object>>(File.ReadAllText(presetPath),
-                    new JsonSerializerSettings
-                    {
-                        TypeNameHandling = TypeNameHandling.Auto,
-                        Converters = new List<JsonConverter> { new ForceIntConverter() }
-                    });
-                parent.tab_Marker.s_markers = JsonConvert.DeserializeObject<tab_Marker.marker[]>(File.ReadAllText(markersPath),
-                    new JsonSerializerSettings
-                    {
-                        TypeNameHandling = TypeNameHandling.Auto,
-                        Converters = new List<JsonConverter> { new ForceIntConverter() }
-                    });
-                parent.tab_Trace.s_traces = JsonConvert.DeserializeObject<tab_Trace.Trace[]>(File.ReadAllText(tracesPath),
-                                    new JsonSerializerSettings
-                                    {
-                                        TypeNameHandling = TypeNameHandling.Auto,
-                                        Converters = new List<JsonConverter> { new ForceIntConverter() }
-                                    });
-
-                foreach (var keyvaluepair in cfg)
-                    config[keyvaluepair.Key] = keyvaluepair.Value;
-
-                updateALLConfigElements();
-                //resuming fftmanager
-                if (resume)
-                    parent.fftManager.beginFFT();
-            }
-            catch (Exception ex)
-            {
-                _logger.Error($"Failed to load preset -> {ex.Message}");
-            }
-        }
-
-        public void saveConfig()
-        {
-            try
-            {
-                bool resume = false;
-                if (parent.fftManager.isRunning)
+                    TypeNameHandling = TypeNameHandling.Auto,
+                    Converters = new List<JsonConverter> { new ForceIntConverter() }
+                });
+            _parent.MarkerView.SMarkers = JsonConvert.DeserializeObject<Marker[]>(File.ReadAllText(MarkersPath),
+                new JsonSerializerSettings
                 {
-                    resume = true;
-                    parent.fftManager.stopFFT();
-                }
-                File.WriteAllText(presetPath, Newtonsoft.Json.JsonConvert.SerializeObject(config));
-                File.WriteAllText(markersPath, Newtonsoft.Json.JsonConvert.SerializeObject(parent.tab_Marker.s_markers));
-                File.WriteAllText(tracesPath, Newtonsoft.Json.JsonConvert.SerializeObject(parent.tab_Trace.s_traces));
+                    TypeNameHandling = TypeNameHandling.Auto,
+                    Converters = new List<JsonConverter> { new ForceIntConverter() }
+                });
+            _parent.TraceView.STraces = JsonConvert.DeserializeObject<Trace[]>(File.ReadAllText(TracesPath),
+                new JsonSerializerSettings
+                {
+                    TypeNameHandling = TypeNameHandling.Auto,
+                    Converters = new List<JsonConverter> { new ForceIntConverter() }
+                });
 
-                if (resume)
-                    parent.fftManager.beginFFT();
-            }
-            catch (Exception ex)
-            {
-                _logger.Error($"Failed to save preset -> {ex.Message}");
-            }
+            foreach (var keyvaluepair in cfg)
+                Config[keyvaluepair.Key] = keyvaluepair.Value;
+
+            UpdateAllConfigElements();
+            //resuming fftmanager
+            if (resume)
+                _parent.FftManager.BeginFft();
         }
-
-        private void updateALLConfigElements()
+        catch (Exception ex)
         {
-            List<saVar> savarTypes = Enum.GetValues(typeof(saVar)).Cast<saVar>().ToList();
-            foreach (var savar in savarTypes)
-                updateUIElementsOnConfigChanged(null, new keyOfChangedValueEventArgs(savar));
+            _logger.Error($"Failed to load preset -> {ex.Message}");
         }
+    }
 
-        private void updateUIElementsOnConfigChanged(object? sender, keyOfChangedValueEventArgs e)
+    public void SaveConfig()
+    {
+        try
         {
-            switch (e.key)
+            var resume = false;
+            if (_parent.FftManager.IsRunning)
             {
-                case saVar.freqStart:
-                    var start = (double)parent.Configuration.config[Configuration.saVar.freqStart];
-                    var stop = (double)parent.Configuration.config[Configuration.saVar.freqStop];
-                    parent.tab_Frequency.s_displaySpan = (stop - start).ToString();
-                    parent.tab_Frequency.s_displayFreqCenter = ((stop - start) / 2.0 + start).ToString();
-                    parent.tab_Frequency.s_displayFreqStart = config[saVar.freqStart].ToString();
-                    break;
-
-                case saVar.freqStop:
-                    var start2 = (double)parent.Configuration.config[Configuration.saVar.freqStart];
-                    var stop2 = (double)parent.Configuration.config[Configuration.saVar.freqStop];
-                    parent.tab_Frequency.s_displaySpan = (stop2 - start2).ToString();
-                    parent.tab_Frequency.s_displayFreqCenter = ((stop2 - start2) / 2.0 + start2).ToString();
-                    parent.tab_Frequency.s_displayFreqStop = config[saVar.freqStop].ToString();
-                    break;
-
-                case saVar.leakageSleep:
-                    parent.tab_Device.s_osciliatorLeakageSleep = config[saVar.leakageSleep].ToString();
-                    break;
-
-                case saVar.iqCorrection:
-                    parent.tab_Device.s_isCorrectIQEnabled = (bool)config[saVar.iqCorrection];
-                    break;
-
-                case saVar.freqInterleaving:
-                    parent.tab_Device.s_isinterleavingEnabled = (bool)config[saVar.freqInterleaving];
-                    break;
-
-                case saVar.graphStartDB:
-                    parent.tab_Amplitude.s_displayStartDB = config[saVar.graphStartDB].ToString();
-                    break;
-
-                case saVar.graphStopDB:
-                    parent.tab_Amplitude.s_displayStopDB = config[saVar.graphStopDB].ToString();
-                    break;
-
-                case saVar.graphOffsetDB:
-                    parent.tab_Amplitude.s_displayOffset = config[saVar.graphOffsetDB].ToString();
-                    break;
-
-                case saVar.graphRefLevel:
-                    parent.tab_Amplitude.s_displayRefLevel = config[saVar.graphRefLevel].ToString();
-                    break;
-
-                case saVar.fftSegment:
-                    parent.tab_Video.s_fftSegments = config[saVar.fftSegment].ToString();
-                    break;
-
-                case saVar.automaticLevel:
-                    parent.tab_Amplitude.s_automaticLevelingEnabled = (bool)config[saVar.automaticLevel];
-                    break;
-
-                case saVar.scalePerDivision:
-                    parent.tab_Amplitude.s_scalePerDivision = (int)config[saVar.scalePerDivision];
-                    break;
-
-                case saVar.fftRBW:
-                    parent.tab_Video._fftRBW = config[saVar.fftRBW].ToString();
-                    break;
-
-                case saVar.fftOverlap:
-                    parent.tab_Video.s_fftOverlap = (((double)config[saVar.fftOverlap]) * 100.0).ToString();
-                    break;
-
-                case saVar.refreshRate:
-                    parent.tab_Video._displayRefreshRate = (((int)config[saVar.refreshRate]) * 1000).ToString();
-                    break;
+                resume = true;
+                _parent.FftManager.StopFft();
             }
+
+            File.WriteAllText(PresetPath, JsonConvert.SerializeObject(Config));
+            File.WriteAllText(MarkersPath, JsonConvert.SerializeObject(_parent.MarkerView.SMarkers));
+            File.WriteAllText(TracesPath, JsonConvert.SerializeObject(_parent.TraceView.STraces));
+
+            if (resume)
+                _parent.FftManager.BeginFft();
+        }
+        catch (Exception ex)
+        {
+            _logger.Error($"Failed to save preset -> {ex.Message}");
+        }
+    }
+
+    private void UpdateAllConfigElements()
+    {
+        var savarTypes = Enum.GetValues(typeof(SaVar)).Cast<SaVar>().ToList();
+        foreach (var savar in savarTypes)
+            updateUIElementsOnConfigChanged(null, new KeyOfChangedValueEventArgs(savar));
+    }
+
+    private void updateUIElementsOnConfigChanged(object? sender, KeyOfChangedValueEventArgs e)
+    {
+        switch (e.Key)
+        {
+            case SaVar.FreqStart:
+                var start = (double)_parent.Configuration.Config[SaVar.FreqStart];
+                var stop = (double)_parent.Configuration.Config[SaVar.FreqStop];
+                _parent.FrequencyView.SDisplaySpan = (stop - start).ToString();
+                _parent.FrequencyView.SDisplayFreqCenter = ((stop - start) / 2.0 + start).ToString();
+                _parent.FrequencyView.SDisplayFreqStart = Config[SaVar.FreqStart].ToString();
+                break;
+
+            case SaVar.FreqStop:
+                var start2 = (double)_parent.Configuration.Config[SaVar.FreqStart];
+                var stop2 = (double)_parent.Configuration.Config[SaVar.FreqStop];
+                _parent.FrequencyView.SDisplaySpan = (stop2 - start2).ToString();
+                _parent.FrequencyView.SDisplayFreqCenter = ((stop2 - start2) / 2.0 + start2).ToString();
+                _parent.FrequencyView.SDisplayFreqStop = Config[SaVar.FreqStop].ToString();
+                break;
+
+            case SaVar.LeakageSleep:
+                _parent.DeviceView.SOsciliatorLeakageSleep = Config[SaVar.LeakageSleep].ToString();
+                break;
+
+            case SaVar.IqCorrection:
+                _parent.DeviceView.SIsCorrectIqEnabled = (bool)Config[SaVar.IqCorrection];
+                break;
+
+            case SaVar.FreqInterleaving:
+                _parent.DeviceView.SIsinterleavingEnabled = (bool)Config[SaVar.FreqInterleaving];
+                break;
+
+            case SaVar.GraphStartDb:
+                _parent.AmplitudeView.SDisplayStartDb = Config[SaVar.GraphStartDb].ToString();
+                break;
+
+            case SaVar.GraphStopDb:
+                _parent.AmplitudeView.SDisplayStopDb = Config[SaVar.GraphStopDb].ToString();
+                break;
+
+            case SaVar.GraphOffsetDb:
+                _parent.AmplitudeView.SDisplayOffset = Config[SaVar.GraphOffsetDb].ToString();
+                break;
+
+            case SaVar.GraphRefLevel:
+                _parent.AmplitudeView.SDisplayRefLevel = Config[SaVar.GraphRefLevel].ToString();
+                break;
+
+            case SaVar.FftSegment:
+                _parent.VideoView.SFftSegments = Config[SaVar.FftSegment].ToString();
+                break;
+
+            case SaVar.AutomaticLevel:
+                _parent.AmplitudeView.SAutomaticLevelingEnabled = (bool)Config[SaVar.AutomaticLevel];
+                break;
+
+            case SaVar.ScalePerDivision:
+                _parent.AmplitudeView.SScalePerDivision = (int)Config[SaVar.ScalePerDivision];
+                break;
+
+            case SaVar.FftRbw:
+                _parent.VideoView.FftRbw = Config[SaVar.FftRbw].ToString();
+                break;
+
+            case SaVar.FftOverlap:
+                _parent.VideoView.SFftOverlap = ((double)Config[SaVar.FftOverlap] * 100.0).ToString();
+                break;
+
+            case SaVar.RefreshRate:
+                _parent.VideoView.DisplayRefreshRate = ((int)Config[SaVar.RefreshRate] * 1000).ToString();
+                break;
         }
     }
 }

@@ -1,13 +1,12 @@
-﻿namespace SoapyVNACommon
+﻿namespace SoapyVNACommon;
+
+public interface IWidget
 {
-    public interface Widget
-    {
-        void renderWidget();
+    void RenderWidget();
 
-        void releaseSDR();
+    void ReleaseSdr();
 
-        void handleSDR();
+    void HandleSdr();
 
-        void initWidget();
-    }
+    void InitWidget();
 }

@@ -3,28 +3,28 @@ using Range = Pothosware.SoapySDR.Range;
 
 namespace SoapyVNACommon.Extentions;
 
-public enum saVar
+public enum SaVar
 {
-    leakageSleep,
-    deviecOptions,
-    iqCorrection,
-    graphStartDB,
-    graphStopDB,
-    graphOffsetDB,
-    graphRefLevel,
-    fftWindow,
-    fftSize,
-    fftSegment,
-    fftOverlap,
-    refreshRate,
-    automaticLevel,
-    scalePerDivision
+    LeakageSleep,
+    DeviecOptions,
+    IqCorrection,
+    GraphStartDb,
+    GraphStopDb,
+    GraphOffsetDb,
+    GraphRefLevel,
+    FftWindow,
+    FftSize,
+    FftSegment,
+    FftOverlap,
+    RefreshRate,
+    AutomaticLevel,
+    ScalePerDivision
 }
 
 public static class Global
 {
-    public static readonly string configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config");
-    public static readonly string calibrationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "calibration");
+    public static readonly string ConfigPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config");
+    public static readonly string CalibrationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "calibration");
 
     public static bool TryFormatFreq(string input, out double value)
     {
@@ -48,132 +48,134 @@ public static class Global
     }
 }
 
-public struct sdrDeviceCOM
+public struct SdrDeviceCom
 {
-    public Device sdrDevice;
-    private string[] deviceSensorData;
+    public Device SdrDevice;
+    private string[] _deviceSensorData;
 
     //channel,anntenna
-    public Tuple<uint, string> rxAntenna = new Tuple<uint, string>(0, string.Empty), txAntenna = new Tuple<uint, string>(0, string.Empty);
+    public Tuple<uint, string> RxAntenna = new(0, string.Empty), TxAntenna = new(0, string.Empty);
 
-    public double rxSampleRate, txSampleRate;
+    public double RxSampleRate, TxSampleRate;
 
     //channel, anntennas
-    public Dictionary<uint, StringList> availableRxAntennas, availableTxAntennas;
+    public Dictionary<uint, StringList> AvailableRxAntennas, AvailableTxAntennas;
 
-    public uint availableRxChannels, availableTxChannels;
-    public Dictionary<int, RangeList> deviceRxFrequencyRange = new(), deviceTxFrequencyRange = new();
-    public Dictionary<int, RangeList> deviceRxSampleRates = new(), deviceTxSampleRates = new();
-    public Dictionary<Tuple<uint, string>, Tuple<Range, int>> rxGains = new Dictionary<Tuple<uint, string>, Tuple<Range, int>>(), txGains = new Dictionary<Tuple<uint, string>, Tuple<Range, int>>();
-    public List<double> rxGainValues = new List<double>(), txGainValues = new List<double>();
+    public uint AvailableRxChannels, AvailableTxChannels;
+    public Dictionary<int, RangeList> DeviceRxFrequencyRange = new(), DeviceTxFrequencyRange = new();
+    public Dictionary<int, RangeList> DeviceRxSampleRates = new(), DeviceTxSampleRates = new();
+    public Dictionary<Tuple<uint, string>, Tuple<Range, int>> RxGains = new(), TxGains = new();
+    public List<double> RxGainValues = new(), TxGainValues = new();
     public string Descriptor;
-    public string sensorData;
+    public string SensorData;
 
-    public sdrDeviceCOM(string sdrKwargs)
+    public SdrDeviceCom(string sdrKwargs)
     {
         Descriptor = sdrKwargs;
-        sdrDevice = new Device(sdrKwargs);
+        SdrDevice = new Device(sdrKwargs);
     }
 
-    public sdrDeviceCOM(sdrDeviceCOM cpy)
+    public SdrDeviceCom(SdrDeviceCom cpy)
     {
         this = cpy;
     }
 
-    public void fetchSDRData()
+    public void FetchSdrData()
     {
-        availableRxChannels = sdrDevice.GetNumChannels(Direction.Rx);
-        availableTxChannels = sdrDevice.GetNumChannels(Direction.Tx);
-        availableRxAntennas = new Dictionary<uint, StringList>();
-        availableTxAntennas = new Dictionary<uint, StringList>();
+        AvailableRxChannels = SdrDevice.GetNumChannels(Direction.Rx);
+        AvailableTxChannels = SdrDevice.GetNumChannels(Direction.Tx);
+        AvailableRxAntennas = new Dictionary<uint, StringList>();
+        AvailableTxAntennas = new Dictionary<uint, StringList>();
 
-        deviceRxSampleRates.Clear();
-        deviceTxSampleRates.Clear();
-        deviceRxFrequencyRange.Clear();
-        deviceTxFrequencyRange.Clear();
-        sensorData = string.Empty;
+        DeviceRxSampleRates.Clear();
+        DeviceTxSampleRates.Clear();
+        DeviceRxFrequencyRange.Clear();
+        DeviceTxFrequencyRange.Clear();
+        SensorData = string.Empty;
         uint i = 0;
-        int GainCounter = 0;
-        for (; i < availableRxChannels; i++)
+        var gainCounter = 0;
+        for (; i < AvailableRxChannels; i++)
         {
-            var gains = sdrDevice.ListGains(Direction.Rx, i).ToArray();
+            var gains = SdrDevice.ListGains(Direction.Rx, i).ToArray();
             foreach (var gain in gains)
             {
-                rxGainValues.Add(sdrDevice.GetGain(Direction.Rx, i, gain));
-                rxGains.Add(new Tuple<uint, string>(i, gain),
-                    new Tuple<Range, int>(sdrDevice.GetGainRange(Direction.Rx, i, gain), GainCounter++));
+                RxGainValues.Add(SdrDevice.GetGain(Direction.Rx, i, gain));
+                RxGains.Add(new Tuple<uint, string>(i, gain),
+                    new Tuple<Range, int>(SdrDevice.GetGainRange(Direction.Rx, i, gain), gainCounter++));
             }
 
-            availableRxAntennas.Add(i, sdrDevice.ListAntennas(Direction.Rx, i));
-            deviceRxSampleRates[(int)i] = sdrDevice.GetSampleRateRange(Direction.Rx, i);
-            deviceRxSampleRates[(int)i].Add(new Range(0, double.MaxValue, 0));
-            deviceRxFrequencyRange.Add((int)i, sdrDevice.GetFrequencyRange(Direction.Rx, i));
+            AvailableRxAntennas.Add(i, SdrDevice.ListAntennas(Direction.Rx, i));
+            DeviceRxSampleRates[(int)i] = SdrDevice.GetSampleRateRange(Direction.Rx, i);
+            DeviceRxSampleRates[(int)i].Add(new Range(0, double.MaxValue, 0));
+            DeviceRxFrequencyRange.Add((int)i, SdrDevice.GetFrequencyRange(Direction.Rx, i));
         }
+
         i = 0;
-        GainCounter = 0;
-        for (; i < availableTxChannels; i++)
+        gainCounter = 0;
+        for (; i < AvailableTxChannels; i++)
         {
-            var gains = sdrDevice.ListGains(Direction.Tx, i).ToArray();
+            var gains = SdrDevice.ListGains(Direction.Tx, i).ToArray();
             foreach (var gain in gains)
             {
-                txGainValues.Add(sdrDevice.GetGain(Direction.Tx, i, gain));
-                txGains.Add(new Tuple<uint, string>(i, gain),
-                    new Tuple<Range, int>(sdrDevice.GetGainRange(Direction.Tx, i, gain), GainCounter++));
+                TxGainValues.Add(SdrDevice.GetGain(Direction.Tx, i, gain));
+                TxGains.Add(new Tuple<uint, string>(i, gain),
+                    new Tuple<Range, int>(SdrDevice.GetGainRange(Direction.Tx, i, gain), gainCounter++));
             }
 
-            availableTxAntennas.Add(i, sdrDevice.ListAntennas(Direction.Tx, i));
-            deviceTxSampleRates[(int)i] = sdrDevice.GetSampleRateRange(Direction.Tx, i);
-            deviceTxSampleRates[(int)i].Add(new Range(0, double.MaxValue, 0));
-            deviceTxFrequencyRange.Add((int)i, sdrDevice.GetFrequencyRange(Direction.Tx, i));
+            AvailableTxAntennas.Add(i, SdrDevice.ListAntennas(Direction.Tx, i));
+            DeviceTxSampleRates[(int)i] = SdrDevice.GetSampleRateRange(Direction.Tx, i);
+            DeviceTxSampleRates[(int)i].Add(new Range(0, double.MaxValue, 0));
+            DeviceTxFrequencyRange.Add((int)i, SdrDevice.GetFrequencyRange(Direction.Tx, i));
         }
-        var sensors = sdrDevice.ListSensors();
-        foreach (var sensor in sensors) this.sensorData += $"{sensor}: {sdrDevice.ReadSensor(sensor)}\n";
+
+        var sensors = SdrDevice.ListSensors();
+        foreach (var sensor in sensors) SensorData += $"{sensor}: {SdrDevice.ReadSensor(sensor)}\n";
     }
 }
 
-public enum traceViewStatus
+public enum TraceViewStatus
 {
-    active,
-    clear,
-    view
+    Active,
+    Clear,
+    View
 }
 
-public enum traceDataStatus
+public enum TraceDataStatus
 {
-    normal,
+    Normal,
     Average,
-    maxHold,
-    minHold
+    MaxHold,
+    MinHold
 }
 
-public struct trace
+public struct Trace
 {
-    public int average;
+    public int Average;
 
-    private traceDataStatus datastatus;
+    private TraceDataStatus _datastatus;
 
     //channel,anntena
-    public Tuple<int, int> source;
+    public Tuple<int, int> Source;
 
-    public trace()
+    public Trace()
     {
-        plot = new SortedDictionary<float, float>();
-        dataStatus = traceDataStatus.normal;
-        average = 1;
-        viewStatus = traceViewStatus.clear;
+        Plot = new SortedDictionary<float, float>();
+        DataStatus = TraceDataStatus.Normal;
+        Average = 1;
+        ViewStatus = TraceViewStatus.Clear;
     }
 
-    public traceDataStatus dataStatus // property
+    public TraceDataStatus DataStatus // property
     {
-        get => datastatus; // get method
+        get => _datastatus; // get method
         set
         {
-            average = 1;
-            datastatus = value;
-            plot.Clear();
+            Average = 1;
+            _datastatus = value;
+            Plot.Clear();
         } // set method
     }
 
-    public traceViewStatus viewStatus;
-    public SortedDictionary<float, float> plot;
+    public TraceViewStatus ViewStatus;
+    public SortedDictionary<float, float> Plot;
 }
