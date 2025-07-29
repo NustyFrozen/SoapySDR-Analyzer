@@ -15,7 +15,7 @@ public class Configuration(string widgetName, MainWindowView initiator, Vector2 
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
     private readonly MainWindowView _parent = initiator;
 #if DEBUG
-    public ImGuiWindowFlags mainWindowFlags = ImGuiWindowFlags.NoScrollbar;
+    public static ImGuiWindowFlags mainWindowFlags = ImGuiWindowFlags.NoScrollbar;
 
     private Vector2 screenSize =
 new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.ToInt16(Screen.PrimaryScreen.Bounds.Height / 1.5));
@@ -26,6 +26,11 @@ new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.To
     public static ImGuiWindowFlags MainWindowFlags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoTitleBar |
                                                      ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoMove;
 
+
+    public readonly Vector2 SWidgetSize = windowSize;
+
+    public Vector2 MainWindowPos = pos;
+#endif
     public static Vector2 GetScreenSize()
     {
         return new Vector2(Screen.PrimaryScreen.Bounds.Width,
@@ -36,11 +41,6 @@ new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.To
     {
         return GetScreenSize() / new Vector2(1920.0f, 1080.0f);
     }
-
-    public readonly Vector2 SWidgetSize = windowSize;
-
-    public Vector2 MainWindowPos = pos;
-#endif
 
     public Vector2
         ScaleSize = new(windowSize.X / 1920.0f, windowSize.Y / 1080.0f),
