@@ -16,10 +16,10 @@
 
 namespace SoapySDR
 {
-	/*!
-	 * Get the size of a single element in the specified format.
-	 * \param format a supported format string
-	 * \return the size of an element in bytes
-	 */
+    /*!
+     * Get the size of a single element in the specified format.
+     * \param format a supported format string
+     * \return the size of an element in bytes
+     */
 	SOAPY_SDR_API size_t formatToSize(const std::string& format);
 }

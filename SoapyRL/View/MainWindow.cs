@@ -1,119 +1,67 @@
-﻿using ClickableTransparentOverlay;
+﻿using System.Numerics;
 using ImGuiNET;
 using NLog;
-using SoapyRL.Extentions;
 using SoapyRL.View.tabs;
-using System.Numerics;
+using SoapyVNACommon;
+using SoapyVNACommon.Extentions;
 
 namespace SoapyRL.View;
 
-public class UI : Overlay
+public class MainWindow : IWidget
 {
-    private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+    private readonly Logger _logger = LogManager.GetCurrentClassLogger();
+    public Configuration Configuration;
+    public Graph Graph;
+    public PerformRl RlManager;
+    public TabDevice TabDevice;
+    public TabMarker TabMarker;
+    public TabTrace TabTrace;
 
-    private static ushort[] iconRange = new ushort[] { 0xe005, 0xf8ff, 0 };
-
-    private static ImFontPtr PoppinsFont, IconFont;
-
-    public bool initializedResources;
-    private bool visble = true;
-
-    public UI() : base(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height)
+    public MainWindow(string widgetName, Vector2 position, Vector2 windowSize, SdrDeviceCom deviceCom)
     {
-        VSync = true;
+        Configuration = new Configuration(widgetName, this, windowSize, position);
+        Graph = new Graph(this);
+        TabDevice = new TabDevice(this, deviceCom);
+        RlManager = new PerformRl(this);
+        TabMarker = new TabMarker(this);
+        TabTrace = new TabTrace(this);
     }
 
-    protected override Task PostInitialized()
+    public void RenderWidget()
     {
-        VSync = false;
-        return Task.CompletedTask;
+        Render();
     }
 
-    public static uint ToUint(Color c)
+    public void ReleaseSdr()
     {
-        var u = (uint)c.A << 24;
-        u += (uint)c.B << 16;
-        u += (uint)c.G << 8;
-        u += c.R;
-        return u;
+        RlManager.StopRl();
     }
 
-    public unsafe void loadResources()
+    public void HandleSdr()
     {
-        Logger.Debug("Loading Application Resources");
-        var io = ImGui.GetIO();
-
-        ReplaceFont(config =>
-        {
-            var io = ImGui.GetIO();
-            io.Fonts.AddFontFromFileTTF(@"Fonts\Poppins-Light.ttf", 16, config,
-                io.Fonts.GetGlyphRangesChineseSimplifiedCommon());
-            config->MergeMode = 1;
-            config->OversampleH = 1;
-            config->OversampleV = 1;
-            config->PixelSnapH = 1;
-
-            var custom2 = new ushort[] { 0xe005, 0xf8ff, 0x00 };
-            fixed (ushort* p = &custom2[0])
-            {
-                io.Fonts.AddFontFromFileTTF("Fonts\\fa-solid-900.ttf", 16, config, new IntPtr(p));
-            }
-        });
-        Logger.Debug("Replaced font");
-
-        PoppinsFont = io.Fonts.AddFontFromFileTTF(@"Fonts\Poppins-Light.ttf", 16);
-        //IconFont = io.Fonts.AddFontFromFileTTF(@"Fonts\fa-solid-900.ttf", 16,, new ushort[] { 0xe005,
-        //0xf8ff,0});
+        /* user will enable RL on his own */
     }
 
-    public static void drawCursor()
+    public void InitWidget()
     {
-        ImGui.SetMouseCursor(ImGuiMouseCursor.None);
-        var cursorpos = ImGui.GetMousePos();
-        ImGui.GetForegroundDrawList().AddLine(new Vector2(cursorpos.X - 5, cursorpos.Y),
-            new Vector2(cursorpos.X + 5, cursorpos.Y), Color.White.ToUint());
-        ImGui.GetForegroundDrawList().AddLine(new Vector2(cursorpos.X, cursorpos.Y - 5),
-            new Vector2(cursorpos.X, cursorpos.Y + 5), Color.White.ToUint());
+        Configuration.InitDefaultConfig();
+        Theme.InitDefaultTheme();
+        Graph.SWaitForMouseClick.Start();
+        Graph.InitializeGraphElements();
     }
 
-    protected override void Render()
+    protected void Render()
     {
-        var inputTheme = Theme.getTextTheme();
-        if (Imports.GetAsyncKeyState(Keys.Insert))
-        {
-            Thread.Sleep(200);
-            visble = !visble;
-        }
-
-        if (!visble) return;
-        if (!initializedResources)
-        {
-            Theme.initDefaultTheme();
-            tab_Device.setupSoapyEnvironment();
-            tab_Device.refreshDevices();
-            Graph.s_waitForMouseClick.Start();
-            Graph.initializeGraphElements();
-            loadResources();
-            ImGui.SetNextWindowPos(Configuration.mainWindowPos);
-            ImGui.SetNextWindowSize(Configuration.mainWindowSize);
-            ImGui.GetIO().FontGlobalScale = 1.4f;
-            initializedResources = true;
-        }
-
-        ImGui.Begin("Return Loss", Configuration.mainWindowFlags);
-        Theme.drawExitButton(15, Color.Gray, Color.White);
-
-        ImGui.BeginChild("Spectrum Graph", Configuration.graphSize);
-        Graph.drawGraph();
+        ImGui.BeginChild("RL Graph", Configuration.GraphSize);
+        Graph.DrawGraph();
         ImGui.EndChild();
 
-        ImGui.SetCursorPos(new Vector2(Configuration.graphSize.X + 60 * Configuration.scaleSize.X, 10));
-        ImGui.BeginChild("Options", Configuration.optionSize);
-        Theme.newLine();
-        tab_Device.renderDevice();
+        ImGui.SetCursorPos(new Vector2(Configuration.GraphSize.X + 60 * Configuration.ScaleSize.X, 10));
+        ImGui.BeginChild("Options", Configuration.OptionSize);
+        Theme.NewLine();
+        TabDevice.RenderDevice();
 
         ImGui.EndChild();
-        drawCursor();
-        ImGui.End();
+        ;
     }
 }

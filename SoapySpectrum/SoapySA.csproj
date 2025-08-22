@@ -1,84 +1,78 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
-    <Nullable>enable</Nullable>
-    <UseWindowsForms>true</UseWindowsForms>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-    <ApplicationIcon>Untitled.ico</ApplicationIcon>
-    <Configurations>Debug;Release;debug-verbose</Configurations>
-    <Platforms>AnyCPU;x64</Platforms>
-  </PropertyGroup>
+    <PropertyGroup>
+        <OutputType>Library</OutputType>
+        <TargetFramework>net8.0-windows</TargetFramework>
+        <Nullable>enable</Nullable>
+        <UseWindowsForms>true</UseWindowsForms>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+        <ApplicationIcon>Untitled.ico</ApplicationIcon>
+        <Configurations>Debug;Release;debug-verbose</Configurations>
+        <Platforms>AnyCPU;x64</Platforms>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <Content Include="Untitled.ico" />
-  </ItemGroup>
-<ItemGroup>
-  <Compile Remove="Model\**" />
-  <EmbeddedResource Remove="Model\**" />
-  <None Remove="Model\**" />
-</ItemGroup>
-  <ItemGroup>
-    <None Update="libfftw3f-3.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <ItemGroup>
+        <Content Include="Untitled.ico"/>
+    </ItemGroup>
+    <ItemGroup>
+        <None Update="libfftw3f-3.dll">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
 
-  </ItemGroup>
+    </ItemGroup>
 
-  <ItemGroup>
-    <None Remove="C:\Users\NU\.nuget\packages\fftw.net\1.0.1\build\netstandard1.3\libfftw3-3-x64.dll" />
-  </ItemGroup>
+    <ItemGroup>
+        <None Remove="C:\Users\NU\.nuget\packages\fftw.net\1.0.1\build\netstandard1.3\libfftw3-3-x64.dll"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <None Remove="C:\Users\NU\.nuget\packages\fftw.net\1.0.1\build\netstandard1.3\libfftw3-3-x86.dll" />
-  </ItemGroup>
+    <ItemGroup>
+        <None Remove="C:\Users\NU\.nuget\packages\fftw.net\1.0.1\build\netstandard1.3\libfftw3-3-x86.dll"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <None Remove="C:\Users\NU\.nuget\packages\fftw.net\1.0.1\build\netstandard1.3\libfftw3-3-x64.dll" />
-  </ItemGroup>
+    <ItemGroup>
+        <None Remove="C:\Users\NU\.nuget\packages\fftw.net\1.0.1\build\netstandard1.3\libfftw3-3-x64.dll"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <None Remove="C:\Users\NU\.nuget\packages\fftw.net\1.0.1\build\netstandard1.3\libfftw3-3-x86.dll" />
-  </ItemGroup>
+    <ItemGroup>
+        <None Remove="C:\Users\NU\.nuget\packages\fftw.net\1.0.1\build\netstandard1.3\libfftw3-3-x86.dll"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <None Remove="C:\Users\NU\.nuget\packages\fftw.net\1.0.1\build\netstandard1.3\libfftw3-3-x64.dll" />
-  </ItemGroup>
+    <ItemGroup>
+        <None Remove="C:\Users\NU\.nuget\packages\fftw.net\1.0.1\build\netstandard1.3\libfftw3-3-x64.dll"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <None Remove="C:\Users\NU\.nuget\packages\fftw.net\1.0.1\build\netstandard1.3\libfftw3-3-x86.dll" />
-  </ItemGroup>
+    <ItemGroup>
+        <None Remove="C:\Users\NU\.nuget\packages\fftw.net\1.0.1\build\netstandard1.3\libfftw3-3-x86.dll"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <None Remove="C:\Users\NU\.nuget\packages\fftw.net\1.0.1\build\netstandard1.3\libfftw3-3-x64.dll" />
-  </ItemGroup>
+    <ItemGroup>
+        <None Remove="C:\Users\NU\.nuget\packages\fftw.net\1.0.1\build\netstandard1.3\libfftw3-3-x64.dll"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <None Remove="C:\Users\NU\.nuget\packages\fftw.net\1.0.1\build\netstandard1.3\libfftw3-3-x86.dll" />
-  </ItemGroup>
+    <ItemGroup>
+        <None Remove="C:\Users\NU\.nuget\packages\fftw.net\1.0.1\build\netstandard1.3\libfftw3-3-x86.dll"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <None Remove="C:\Users\NU\.nuget\packages\fftw.net\1.0.1\build\netstandard1.3\libfftw3-3-x64.dll" />
-  </ItemGroup>
+    <ItemGroup>
+        <None Remove="C:\Users\NU\.nuget\packages\fftw.net\1.0.1\build\netstandard1.3\libfftw3-3-x64.dll"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <None Remove="C:\Users\NU\.nuget\packages\fftw.net\1.0.1\build\netstandard1.3\libfftw3-3-x86.dll" />
-  </ItemGroup>
+    <ItemGroup>
+        <None Remove="C:\Users\NU\.nuget\packages\fftw.net\1.0.1\build\netstandard1.3\libfftw3-3-x86.dll"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <None Remove="C:\Users\NU\.nuget\packages\fftw.net\1.0.1\build\netstandard1.3\libfftw3-3-x64.dll" />
-  </ItemGroup>
+    <ItemGroup>
+        <None Remove="C:\Users\NU\.nuget\packages\fftw.net\1.0.1\build\netstandard1.3\libfftw3-3-x64.dll"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\SoapyVNACommon\SoapyVNACommon.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\SoapyVNACommon\SoapyVNACommon.csproj"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="Pothosware.SoapySDR">
-      <HintPath>..\SoapyVNACommon\SoapySDR\Libs\Pothosware.SoapySDR.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
+    <ItemGroup>
+        <Reference Include="Pothosware.SoapySDR">
+            <HintPath>..\SoapyVNACommon\SoapySDR\Libs\Pothosware.SoapySDR.dll</HintPath>
+        </Reference>
+    </ItemGroup>
 </Project>

@@ -4,8 +4,8 @@ namespace SoapyVNACommon.Fonts;
 
 public class FontAwesome5
 {
-    public const string FontIconFileNameFAR = "fa-regular-400.ttf";
-    public const string FontIconFileNameFAS = "fa-solid-900.ttf";
+    public const string FontIconFileNameFar = "fa-regular-400.ttf";
+    public const string FontIconFileNameFas = "fa-solid-900.ttf";
 
     /// <summary>
     ///     fa-0 unicode value ("\u0030").
@@ -137,7 +137,7 @@ public class FontAwesome5
     ///     <para />
     ///     See https://fontawesome.com/icons/360-degrees
     /// </summary>
-    [Description("360-degrees")] public const string ThreeHundred_And_SixtyDegrees = "\ue2dc";
+    [Description("360-degrees")] public const string ThreeHundredAndSixtyDegrees = "\ue2dc";
 
     /// <summary>
     ///     fa-42-group unicode value ("\ue080").
@@ -159,7 +159,7 @@ public class FontAwesome5
     ///     <para />
     ///     See https://fontawesome.com/icons/500px
     /// </summary>
-    [Description("500px")] public const string FiveHundredPX = "\uf26e";
+    [Description("500px")] public const string FiveHundredPx = "\uf26e";
 
     /// <summary>
     ///     fa-a unicode value ("\u0041").
@@ -469,7 +469,7 @@ public class FontAwesome5
     ///     <para />
     ///     See https://fontawesome.com/icons/alien-8bit
     /// </summary>
-    [Description("alien-8bit")] public const string Alien8bit = "\uf8f6";
+    [Description("alien-8bit")] public const string Alien8Bit = "\uf8f6";
 
     /// <summary>
     ///     fa-align-center unicode value ("\uf037").
@@ -1009,7 +1009,7 @@ public class FontAwesome5
     ///     <para />
     ///     See https://fontawesome.com/icons/arrow-down-a-z
     /// </summary>
-    [Description("arrow-down-a-z")] public const string ArrowDownAZ = "\uf15d";
+    [Description("arrow-down-a-z")] public const string ArrowDownAz = "\uf15d";
 
     /// <summary>
     ///     fa-arrow-down-arrow-up unicode value ("\uf883").
@@ -1257,7 +1257,7 @@ public class FontAwesome5
     ///     <para />
     ///     See https://fontawesome.com/icons/arrow-down-z-a
     /// </summary>
-    [Description("arrow-down-z-a")] public const string ArrowDownZA = "\uf881";
+    [Description("arrow-down-z-a")] public const string ArrowDownZa = "\uf881";
 
     /// <summary>
     ///     fa-arrow-left unicode value ("\uf060").
@@ -1658,7 +1658,7 @@ public class FontAwesome5
     ///     <para />
     ///     See https://fontawesome.com/icons/arrow-up-a-z
     /// </summary>
-    [Description("arrow-up-a-z")] public const string ArrowUpAZ = "\uf15e";
+    [Description("arrow-up-a-z")] public const string ArrowUpAz = "\uf15e";
 
     /// <summary>
     ///     fa-arrow-up-arrow-down unicode value ("\ue099").
@@ -1942,7 +1942,7 @@ public class FontAwesome5
     ///     <para />
     ///     See https://fontawesome.com/icons/arrow-up-z-a
     /// </summary>
-    [Description("arrow-up-z-a")] public const string ArrowUpZA = "\uf882";
+    [Description("arrow-up-z-a")] public const string ArrowUpZa = "\uf882";
 
     /// <summary>
     ///     fa-arrows-cross unicode value ("\ue0a2").
@@ -21130,7 +21130,7 @@ public class FontAwesome5
     ///     <para />
     ///     See https://fontawesome.com/icons/i-cursor
     /// </summary>
-    [Description("i-cursor")] public const string ICursor = "\uf246";
+    [Description("i-cursor")] public const string Cursor = "\uf246";
 
     /// <summary>
     ///     fa-ice-cream unicode value ("\uf810").
@@ -35872,7 +35872,7 @@ public class FontAwesome5
     ///     <para />
     ///     See https://fontawesome.com/icons/t-rex
     /// </summary>
-    [Description("t-rex")] public const string TRex = "\ue629";
+    [Description("t-rex")] public const string Rex = "\ue629";
 
     /// <summary>
     ///     fa-table unicode value ("\uf0ce").

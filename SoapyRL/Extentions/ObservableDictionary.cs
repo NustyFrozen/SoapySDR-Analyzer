@@ -3,7 +3,7 @@
 //https://stackoverflow.com/questions/61858644/c-sharp-add-event-to-value-inside-dictionarytkey-tvalue
 public class ObservableDictionary<TKey, TValue> : Dictionary<TKey, TValue>
 {
-    public delegate void customHandler(object sender, keyOfChangedValueEventArgs e);
+    public delegate void CustomHandler(object sender, KeyOfChangedValueEventArgs e);
 
     public new TValue this[TKey key]
     {
@@ -15,7 +15,7 @@ public class ObservableDictionary<TKey, TValue> : Dictionary<TKey, TValue>
         }
     }
 
-    public event customHandler CollectionChanged;
+    public event CustomHandler CollectionChanged;
 
     public new void Add(TKey key, TValue value)
     {
@@ -25,11 +25,11 @@ public class ObservableDictionary<TKey, TValue> : Dictionary<TKey, TValue>
 
     protected void OnCollectionChanged(TKey key)
     {
-        CollectionChanged?.Invoke(this, new keyOfChangedValueEventArgs((Configuration.saVar)Convert.ToInt16(key)));
+        CollectionChanged?.Invoke(this, new KeyOfChangedValueEventArgs((Configuration.SaVar)Convert.ToInt16(key)));
     }
 }
 
-public class keyOfChangedValueEventArgs(Configuration.saVar key) : EventArgs
+public class KeyOfChangedValueEventArgs(Configuration.SaVar key) : EventArgs
 {
-    public Configuration.saVar key = key;
+    public Configuration.SaVar Key = key;
 }

@@ -14,11 +14,11 @@
 
 namespace SoapySDR
 {
-	/*!
-	 * Convert a error code to a string for printing purposes.
-	 * If the error code is unrecognized, errToStr returns "UNKNOWN".
-	 * \param errorCode a negative integer return code
-	 * \return a pointer to a string representing the error
-	 */
+    /*!
+     * Convert a error code to a string for printing purposes.
+     * If the error code is unrecognized, errToStr returns "UNKNOWN".
+     * \param errorCode a negative integer return code
+     * \return a pointer to a string representing the error
+     */
 	SOAPY_SDR_API const char* errToStr(const int errorCode);
 }

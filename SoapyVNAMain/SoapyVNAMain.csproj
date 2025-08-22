@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0-windows</TargetFramework>
+        <Nullable>enable</Nullable>
+        <UseWindowsForms>true</UseWindowsForms>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Google.Protobuf" Version="3.31.0"/>
+        <PackageReference Include="protobuf-net" Version="3.2.52"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\SoapyRL\SoapyRL.csproj"/>
+        <ProjectReference Include="..\SoapySpectrum\SoapySA.csproj"/>
+        <ProjectReference Include="..\SoapyVNACommon\SoapyVNACommon.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="Pothosware.SoapySDR">
+        <HintPath>..\SoapyVNACommon\SoapySDR\Libs\Pothosware.SoapySDR.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+</Project>

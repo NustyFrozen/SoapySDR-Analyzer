@@ -1,25 +1,26 @@
-﻿using ImGuiNET;
+﻿using System.Diagnostics;
+using System.Numerics;
+using ImGuiNET;
 using NLog;
 using SoapyRL.Extentions;
 using SoapyRL.View.tabs;
-using System.Diagnostics;
-using System.Numerics;
 
 namespace SoapyRL.View;
 
-public static class Graph
+public class Graph(MainWindow initiator)
 {
-    private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+    private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
-    private static Thread _calculateBandPowerThread;
+    private Thread _calculateBandPowerThread;
+    public MainWindow Parent = initiator;
 
-    public static Stopwatch s_waitForMouseClick = new();
+    public Stopwatch SWaitForMouseClick = new();
 
-    public static void initializeGraphElements()
+    public void InitializeGraphElements()
     {
-        for (var i = 0; i < tab_Trace.s_traces.Length; i++)
+        for (var i = 0; i < Parent.TabTrace.STraces.Length; i++)
         {
-            tab_Trace.s_traces[i] = new tab_Trace.Trace();
+            Parent.TabTrace.STraces[i] = new TabTrace.Trace();
             var color = Color.White.ToUint();
             switch (i)
             {
@@ -31,72 +32,79 @@ public static class Graph
                     color = Color.Red.ToUint();
                     break;
             }
-            tab_Trace.s_traces[i].color = color;
+
+            Parent.TabTrace.STraces[i].Color = color;
         }
-        tab_Marker.s_Marker = new tab_Marker.marker();
-        tab_Marker.s_Marker.id = 0;
-        tab_Trace.s_traces[0].viewStatus = tab_Trace.traceViewStatus.active;
-        tab_Marker.s_Marker.isActive = true;
+
+        Parent.TabMarker.SMarker = new TabMarker.Marker();
+        Parent.TabMarker.SMarker.Id = 0;
+        Parent.TabTrace.STraces[0].ViewStatus = TabTrace.TraceViewStatus.Active;
+        Parent.TabMarker.SMarker.IsActive = true;
     }
 
-    public static void clearPlotData()
+    public void ClearPlotData()
     {
-        for (var i = 0; i < tab_Trace.s_traces.Length; i++)
+        for (var i = 0; i < Parent.TabTrace.STraces.Length; i++)
         {
-            if (tab_Trace.s_traces[i].viewStatus != tab_Trace.traceViewStatus.active) continue;
-            var plot = tab_Trace.s_traces[i].plot;
+            if (Parent.TabTrace.STraces[i].ViewStatus != TabTrace.TraceViewStatus.Active) continue;
+            var plot = Parent.TabTrace.STraces[i].Plot;
             plot.Clear();
         }
     }
 
-    public static void updateData(float[][] psd)
+    public void UpdateData(float[][] psd)
     {
         var data = psd.AsSpan();
-        for (var i = 0; i < tab_Trace.s_traces.Length; i++)
+        for (var i = 0; i < Parent.TabTrace.STraces.Length; i++)
         {
-            if (tab_Trace.s_traces[i].viewStatus != tab_Trace.traceViewStatus.active) continue;
-            var plot = tab_Trace.s_traces[i].plot;
+            if (Parent.TabTrace.STraces[i].ViewStatus != TabTrace.TraceViewStatus.Active) continue;
+            var plot = Parent.TabTrace.STraces[i].Plot;
             lock (plot)
             {
                 for (var k = 0; k < data[0].Length; k++)
                     if (plot.ContainsKey(data[1][k]))
-                        plot[data[1][k]] = data[0][k];
+                    {
+                        if (plot[data[1][k]] < data[0][k])
+                            plot[data[1][k]] = data[0][k];
+                    }
                     else
+                    {
                         plot.Add(data[1][k], data[0][k]);
+                    }
             }
         }
     }
 
-    private static Vector2 scaleToGraph(float left, float top, float right, float bottom, float freq, float dB,
-        double freqStart, double freqStop, double graph_startDB, double graph_endDB)
+    private Vector2 ScaleToGraph(float left, float top, float right, float bottom, float freq, float dB,
+        double freqStart, double freqStop, double graphStartDb, double graphEndDb)
     {
         var scale = freqStop - freqStart;
         var scale2 = freq - freqStart;
-        var scaledX = left + Configuration.graphSize.X * (scale2 / scale);
+        var scaledX = left + Parent.Configuration.GraphSize.X * (scale2 / scale);
         //endb = 0
 
-        var scaledY = Imports.Scale(dB, graph_startDB, graph_endDB, bottom, top);
+        var scaledY = Imports.Scale(dB, graphStartDb, graphEndDb, bottom, top);
         return new Vector2((float)scaledX, (float)scaledY);
     }
 
-    public static void drawGraph()
+    public void DrawGraph()
     {
         #region Canvas_Data
 
         var draw = ImGui.GetForegroundDrawList();
 
-        var left = ImGui.GetWindowPos().X + Configuration.positionOffset.X;
-        var right = left + Configuration.graphSize.X;
-        var top = ImGui.GetWindowPos().Y + Configuration.positionOffset.Y;
-        var bottom = top + Configuration.graphSize.Y;
+        var left = ImGui.GetWindowPos().X + Parent.Configuration.PositionOffset.X;
+        var right = left + Parent.Configuration.GraphSize.X;
+        var top = ImGui.GetWindowPos().Y + Parent.Configuration.PositionOffset.Y;
+        var bottom = top + Parent.Configuration.GraphSize.Y;
 
         var graphLabelIdx = 20.0f;
 
-        var freqStart = (double)Configuration.config[Configuration.saVar.freqStart];
-        var freqStop = (double)Configuration.config[Configuration.saVar.freqStop];
+        var freqStart = (double)Parent.Configuration.Config[Configuration.SaVar.FreqStart];
+        var freqStop = (double)Parent.Configuration.Config[Configuration.SaVar.FreqStop];
         var mousePos = ImGui.GetMousePos();
-        double graph_startDB = 100;
-        double graph_endDB = 0;
+        double graphStartDb = 100;
+        double graphEndDb = 0;
         var graphStatus = new Vector2();
         draw.AddRectFilled(new Vector2(left, top), new Vector2(right, bottom), Color.FromArgb(16, 16, 16).ToUint());
         var mouseRange = new Vector2();
@@ -106,7 +114,8 @@ public static class Graph
 
         #region backgroundDraw
 
-        if (new RectangleF(left, top, Configuration.graphSize.X, Configuration.graphSize.Y).Contains(mousePos.X,
+        if (new RectangleF(left, top, Parent.Configuration.GraphSize.X, Parent.Configuration.GraphSize.Y).Contains(
+                mousePos.X,
                 mousePos.Y))
         {
             draw.AddLine(new Vector2(left, mousePos.Y), new Vector2(right, mousePos.Y),
@@ -115,10 +124,10 @@ public static class Graph
                 Color.FromArgb(100, 100, 100).ToUint());
 
             mousePosFreq =
-                (float)(freqStart + (mousePos.X - left) / Configuration.graphSize.X * (freqStop - freqStart));
-            mousePosdB = (float)(graph_startDB -
+                (float)(freqStart + (mousePos.X - left) / Parent.Configuration.GraphSize.X * (freqStop - freqStart));
+            mousePosdB = (float)(graphStartDb -
                                  (bottom - mousePos.Y + top) / bottom *
-                                 (Math.Abs(graph_endDB) - Math.Abs(graph_startDB)));
+                                 (Math.Abs(graphEndDb) - Math.Abs(graphStartDb)));
             mouseRange.X = (float)(mousePosFreq - (freqStop - freqStart) / graphLabelIdx);
             mouseRange.Y = (float)(mousePosFreq + (freqStop - freqStart) / graphLabelIdx);
             draw.AddText(new Vector2(mousePos.X + 5, mousePos.Y + 5), Color.FromArgb(100, 100, 100).ToUint(),
@@ -130,16 +139,16 @@ public static class Graph
             //draw X axis
             var text = $"{(freqStart + i / graphLabelIdx * (freqStop - freqStart)) / 1e6}".TruncateLongString(5);
             text += "M";
-            var posX = left + i / graphLabelIdx * Configuration.graphSize.X - ImGui.CalcTextSize(text).X / 2;
+            var posX = left + i / graphLabelIdx * Parent.Configuration.GraphSize.X - ImGui.CalcTextSize(text).X / 2;
             draw.AddText(new Vector2(posX, bottom), Color.LightGray.ToUint(), text);
 
             draw.AddLine(new Vector2(posX + ImGui.CalcTextSize(text).X / 2, bottom),
                 new Vector2(posX + ImGui.CalcTextSize(text).X / 2, top), Color.FromArgb(100, Color.Gray).ToUint());
 
             //draw Y axis
-            text = Imports.Scale(i, 0, graphLabelIdx, graph_endDB, graph_startDB).ToString().TruncateLongString(5);
+            text = Imports.Scale(i, 0, graphLabelIdx, graphEndDb, graphStartDb).ToString().TruncateLongString(5);
             //((graph_startDB - (graphLabelIdx - i) / graphLabelIdx * (Math.Abs(graph_endDB) - Math.Abs(graph_startDB))) + dbOffset).ToString().TruncateLongString(5);
-            var posY = top + i / graphLabelIdx * Configuration.graphSize.Y;
+            var posY = top + i / graphLabelIdx * Parent.Configuration.GraphSize.Y;
             draw.AddText(new Vector2(left - ImGui.CalcTextSize(text).X, posY - ImGui.CalcTextSize(text).Y / 2),
                 Color.LightGray.ToUint(), text);
             draw.AddLine(new Vector2(left, posY), new Vector2(right, posY), Color.FromArgb(100, Color.Gray).ToUint());
@@ -149,50 +158,51 @@ public static class Graph
 
         try
         {
-            var data = tab_Trace.s_traces[0].plot.ToArray();
+            var data = Parent.TabTrace.STraces[0].Plot.ToArray();
             var referenceData = data.AsSpan();
-            var minDB = (data.Length == 0) ? 0 : data.MinBy(x => x.Value).Value;
-            var traceColor_uint = tab_Trace.s_traces[0].color;
-            var fadedColorYellow = tab_Trace.s_traces[0].liteColor;
+            var minDb = data.Length == 0 ? 0 : data.MinBy(x => x.Value).Value;
+            var traceColorUint = Parent.TabTrace.STraces[0].Color;
+            var fadedColorYellow = Parent.TabTrace.STraces[0].LiteColor;
             for (var i = 1; i < referenceData.Length; i++)
             {
                 var sampleA = referenceData[i - 1];
-                var sampleADB = 0;
+                var sampleAdb = 0;
                 var sampleB = referenceData[i];
-                var sampleBDB = 0;
-                var sampleAPos = scaleToGraph(left, top, right, bottom, sampleA.Key, sampleADB, freqStart, freqStop,
-                    graph_startDB, graph_endDB);
-                var sampleBPos = scaleToGraph(left, top, right, bottom, sampleB.Key, sampleBDB, freqStart, freqStop,
-                    graph_startDB, graph_endDB);
+                var sampleBdb = 0;
+                var sampleAPos = ScaleToGraph(left, top, right, bottom, sampleA.Key, sampleAdb, freqStart, freqStop,
+                    graphStartDb, graphEndDb);
+                var sampleBPos = ScaleToGraph(left, top, right, bottom, sampleB.Key, sampleBdb, freqStart, freqStop,
+                    graphStartDb, graphEndDb);
                 //bounds check
                 if (sampleBPos.X > right || sampleAPos.X < left) continue;
 
-                draw.AddLine(sampleAPos, sampleBPos, tab_Trace.s_traces[0].color, 1.0f);
+                draw.AddLine(sampleAPos, sampleBPos, Parent.TabTrace.STraces[0].Color, 1.0f);
 
-                var sampleAPosRef = scaleToGraph(left, top, right, bottom, sampleA.Key,
-                    sampleA.Value - minDB + (float)graph_startDB / 2, freqStart, freqStop, graph_startDB, graph_endDB);
-                var sampleBPosRef = scaleToGraph(left, top, right, bottom, sampleB.Key,
-                    sampleB.Value - minDB + (float)graph_startDB / 2, freqStart, freqStop, graph_startDB, graph_endDB);
+                var sampleAPosRef = ScaleToGraph(left, top, right, bottom, sampleA.Key,
+                    sampleA.Value - minDb + (float)graphStartDb / 2, freqStart, freqStop, graphStartDb, graphEndDb);
+                var sampleBPosRef = ScaleToGraph(left, top, right, bottom, sampleB.Key,
+                    sampleB.Value - minDb + (float)graphStartDb / 2, freqStart, freqStop, graphStartDb, graphEndDb);
 
-                draw.AddLine(sampleAPosRef, sampleBPosRef, tab_Trace.s_traces[0].liteColor, 1.0f);
+                draw.AddLine(sampleAPosRef, sampleBPosRef, Parent.TabTrace.STraces[0].LiteColor, 1.0f);
             }
-            var impedanceTol = (float)Configuration.config[Configuration.saVar.validImpedanceTol];
-            var anntennaData = tab_Trace.s_traces[1].plot.ToArray().AsSpan(); //asspan is fastest iteration
-            double rangeStart = 0.0, RangeEnd = 0.0;
+
+            var impedanceTol = (float)Parent.Configuration.Config[Configuration.SaVar.ValidImpedanceTol];
+            var anntennaData = Parent.TabTrace.STraces[1].Plot.ToArray().AsSpan(); //asspan is fastest iteration
+            double rangeStart = 0.0, rangeEnd = 0.0;
             var iscalculatingValidRange = false;
-            List<Tuple<double, double>> validRanges = new List<Tuple<double, double>>();
+            var validRanges = new List<Tuple<double, double>>();
             for (var i = 1; i < anntennaData.Length; i++)
             {
                 var sampleA = anntennaData[i - 1];
-                var sampleARL = referenceData[i - 1].Value - sampleA.Value;
+                var sampleArl = referenceData[i - 1].Value - sampleA.Value;
                 var sampleB = anntennaData[i];
                 var valueRefB = referenceData[i].Value;
-                var sampleBRL = valueRefB - sampleB.Value;
+                var sampleBrl = valueRefB - sampleB.Value;
 
-                var sampleAPos = scaleToGraph(left, top, right, bottom, sampleA.Key, sampleARL, freqStart, freqStop,
-                    graph_startDB, graph_endDB);
-                var sampleBPos = scaleToGraph(left, top, right, bottom, sampleB.Key, sampleBRL, freqStart, freqStop,
-                    graph_startDB, graph_endDB);
+                var sampleAPos = ScaleToGraph(left, top, right, bottom, sampleA.Key, sampleArl, freqStart, freqStop,
+                    graphStartDb, graphEndDb);
+                var sampleBPos = ScaleToGraph(left, top, right, bottom, sampleB.Key, sampleBrl, freqStart, freqStop,
+                    graphStartDb, graphEndDb);
                 //bounds check
                 if (sampleAPos.Y < top || sampleBPos.Y < top
                                        || sampleAPos.Y > bottom || sampleBPos.Y > bottom)
@@ -201,22 +211,24 @@ public static class Graph
                     sampleBPos.Y = sampleBPos.Y < top ? top : sampleBPos.Y > bottom ? bottom : sampleBPos.Y;
                 }
 
-                var sampleAPosRef = scaleToGraph(left, top, right, bottom, sampleA.Key,
-                    sampleA.Value - minDB + (float)graph_startDB / 2, freqStart, freqStop, graph_startDB, graph_endDB);
-                var sampleBPosRef = scaleToGraph(left, top, right, bottom, sampleB.Key,
-                    sampleB.Value - minDB + (float)graph_startDB / 2, freqStart, freqStop, graph_startDB, graph_endDB);
-                if (tab_Device.s_showValidRange)
+                var sampleAPosRef = ScaleToGraph(left, top, right, bottom, sampleA.Key,
+                    sampleA.Value - minDb + (float)graphStartDb / 2, freqStart, freqStop, graphStartDb, graphEndDb);
+                var sampleBPosRef = ScaleToGraph(left, top, right, bottom, sampleB.Key,
+                    sampleB.Value - minDb + (float)graphStartDb / 2, freqStart, freqStop, graphStartDb, graphEndDb);
+                if (Parent.TabDevice.IsShowValidRangeEnabled)
                 {
-                    double foward = 1 - ((double)-(valueRefB - sampleB.Value)).toMW();
+                    var foward = 1 - ((double)-(valueRefB - sampleB.Value)).ToMw();
                     if (foward >= impedanceTol)
                     {
                         if (iscalculatingValidRange)
-                            RangeEnd = sampleB.Key;
+                        {
+                            rangeEnd = sampleB.Key;
+                        }
                         else
                         {
                             iscalculatingValidRange = true;
                             rangeStart = sampleB.Key;
-                            tab_Trace.s_traces[1].color = Color.White.ToUint();
+                            Parent.TabTrace.STraces[1].Color = Color.White.ToUint();
                         }
                     }
                     else
@@ -224,80 +236,85 @@ public static class Graph
                         if (iscalculatingValidRange)
                         {
                             iscalculatingValidRange = false;
-                            tab_Trace.s_traces[1].color = Color.LimeGreen.ToUint();
-                            validRanges.Add(new Tuple<double, double>(rangeStart, RangeEnd));
+                            Parent.TabTrace.STraces[1].Color = Color.LimeGreen.ToUint();
+                            validRanges.Add(new Tuple<double, double>(rangeStart, rangeEnd));
                         }
                     }
+
                     if (i + 1 > anntennaData.Length && iscalculatingValidRange)
                     {
-                        validRanges.Add(new Tuple<double, double>(rangeStart, RangeEnd));
-                        tab_Trace.s_traces[1].color = Color.LimeGreen.ToUint();
+                        validRanges.Add(new Tuple<double, double>(rangeStart, rangeEnd));
+                        Parent.TabTrace.STraces[1].Color = Color.LimeGreen.ToUint();
                     }
                 }
-                draw.AddLine(sampleAPos, sampleBPos, tab_Trace.s_traces[1].color, 1.0f);
-                draw.AddLine(sampleAPosRef, sampleBPosRef, tab_Trace.s_traces[1].liteColor, 1.0f);
+
+                draw.AddLine(sampleAPos, sampleBPos, Parent.TabTrace.STraces[1].Color, 1.0f);
+                draw.AddLine(sampleAPosRef, sampleBPosRef, Parent.TabTrace.STraces[1].LiteColor, 1.0f);
 
                 //apply new db value for marker
-                if (tab_Marker.s_Marker.position >= sampleA.Key && tab_Marker.s_Marker.position <= sampleB.Key)
+                if (Parent.TabMarker.SMarker.Position >= sampleA.Key &&
+                    Parent.TabMarker.SMarker.Position <= sampleB.Key)
                 {
-                    tab_Marker.s_Marker.value = sampleB.Value;
-                    tab_Marker.s_Marker.valueRef = valueRefB;
+                    Parent.TabMarker.SMarker.Value = sampleB.Value;
+                    Parent.TabMarker.SMarker.ValueRef = valueRefB;
                 }
             }
 
             if (ImGui.IsMouseDown(ImGuiMouseButton.Left) && ImGui.IsMouseHoveringRect(new Vector2(left, top),
                                                              new Vector2(right, bottom))
-                                                         && s_waitForMouseClick.ElapsedMilliseconds > 100)
-                tab_Marker.s_Marker.position =
-                    tab_Trace.getClosestSampeledFrequency(tab_Marker.s_Marker.reference, mousePosFreq).Key;
+                                                         && SWaitForMouseClick.ElapsedMilliseconds > 100)
+                Parent.TabMarker.SMarker.Position =
+                    Parent.TabTrace.GetClosestSampeledFrequency(Parent.TabMarker.SMarker.Reference, mousePosFreq)
+                        .Key;
             if (mouseRange.X != 0 && ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left))
             {
-                tab_Marker.s_Marker.position =
-                    tab_Trace.findMaxHoldRange(tab_Trace.s_traces[1].plot, mouseRange.X, mouseRange.Y).Key;
-                s_waitForMouseClick.Restart();
+                Parent.TabMarker.SMarker.Position =
+                    Parent.TabTrace.FindMaxHoldRange(Parent.TabTrace.STraces[1].Plot, mouseRange.X, mouseRange.Y)
+                        .Key;
+                SWaitForMouseClick.Restart();
             }
 
-            var markerValue = tab_Marker.s_Marker.value;
-            var markerPosition = tab_Marker.s_Marker.position;
-            var markerRefValue = tab_Marker.s_Marker.valueRef;
+            var markerValue = Parent.TabMarker.SMarker.Value;
+            var markerPosition = Parent.TabMarker.SMarker.Position;
+            var markerRefValue = Parent.TabMarker.SMarker.ValueRef;
 
-            double RL = markerRefValue - markerValue,
-                RC = Math.Pow(10, (markerValue - markerRefValue) / 20.0),
-                VSWR = (1.0 + RC) / (1.0 - RC),
-                mismatchLoss = -10 * Math.Log10(1 - Math.Pow(RC, 2));
-            double reflected = (-RL).toMW();
-            double forwarded = 1 - reflected;
-            var markerPosOnGraph = scaleToGraph(left, top, right, bottom, (float)tab_Marker.s_Marker.position,
-                (float)RL, freqStart, freqStop, graph_startDB, graph_endDB);
-            draw.AddCircleFilled(markerPosOnGraph, 4f, tab_Trace.s_traces[1].color);
+            double rl = markerRefValue - markerValue,
+                rc = Math.Pow(10, (markerValue - markerRefValue) / 20.0),
+                vswr = (1.0 + rc) / (1.0 - rc),
+                mismatchLoss = -10 * Math.Log10(1 - Math.Pow(rc, 2));
+            var reflected = (-rl).ToMw();
+            var forwarded = 1 - reflected;
+            var markerPosOnGraph = ScaleToGraph(left, top, right, bottom, (float)Parent.TabMarker.SMarker.Position,
+                (float)rl, freqStart, freqStop, graphStartDb, graphEndDb);
+            draw.AddCircleFilled(markerPosOnGraph, 4f, Parent.TabTrace.STraces[1].Color);
             draw.AddCircle(markerPosOnGraph, 4.1f, Color.Black.ToUint()); //outline
 
-            tab_Marker.s_Marker.txtStatus += $"Marker\n" +
-                                             $"Freq {(markerPosition / 1e6).ToString().TruncateLongString(5)}" +
-                                             $"\nReturn Loss: {RL.ToString().TruncateLongString(5)}dB" +
-                                             $"\nReflection Coefficient: {RC.ToString().TruncateLongString(5)}" +
-                                             $"\nVSWR: {VSWR.ToString().TruncateLongString(5)}" +
-                                             $"\nMismatch Loss {mismatchLoss.ToString().TruncateLongString(5)}" +
-                                             $"\nForward {(forwarded * 100).ToString().TruncateLongString(5)}% reflected {(reflected * 100).ToString().TruncateLongString(5)}%";
-            var markerstatusText = tab_Marker.s_Marker.txtStatus;
+            Parent.TabMarker.SMarker.TxtStatus += $"Marker\n" +
+                                                    $"Freq {(markerPosition / 1e6).ToString().TruncateLongString(5)}" +
+                                                    $"\nReturn Loss: {rl.ToString().TruncateLongString(5)}dB" +
+                                                    $"\nReflection Coefficient: {rc.ToString().TruncateLongString(5)}" +
+                                                    $"\nVSWR: {vswr.ToString().TruncateLongString(5)}" +
+                                                    $"\nMismatch Loss {mismatchLoss.ToString().TruncateLongString(5)}" +
+                                                    $"\nForward {(forwarded * 100).ToString().TruncateLongString(5)}% reflected {(reflected * 100).ToString().TruncateLongString(5)}%";
+            var markerstatusText = Parent.TabMarker.SMarker.TxtStatus;
             var textStatusSize = ImGui.CalcTextSize(markerstatusText);
-            draw.AddText(new Vector2(left + Configuration.graphSize.X / 2 - textStatusSize.X / 2,
-                                    bottom - graphStatus.Y - textStatusSize.Y), tab_Trace.s_traces[1].color,
+            draw.AddText(new Vector2(left + Parent.Configuration.GraphSize.X / 2 - textStatusSize.X / 2,
+                    bottom - graphStatus.Y - textStatusSize.Y), Parent.TabTrace.STraces[1].Color,
                 markerstatusText);
-            tab_Marker.s_Marker.txtStatus = string.Empty; //clear
-            if (tab_Device.s_showValidRange)
+            Parent.TabMarker.SMarker.TxtStatus = string.Empty; //clear
+            if (Parent.TabDevice.IsShowValidRangeEnabled)
             {
                 var text = "Valid Ranges\n";
                 foreach (var range in validRanges)
                     text += $"{range.Item1.ToString()} - {range.Item2.ToString()}\n";
                 var textSize = ImGui.CalcTextSize(text);
                 draw.AddText(new Vector2(left,
-                                    bottom - graphStatus.Y - textSize.Y), tab_Trace.s_traces[1].color, text);
+                    bottom - graphStatus.Y - textSize.Y), Parent.TabTrace.STraces[1].Color, text);
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Render Error -> {ex.Message} {ex.StackTrace}");
+            _logger.Error($"Render Error -> {ex.Message} {ex.StackTrace}");
         }
     }
 }

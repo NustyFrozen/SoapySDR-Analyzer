@@ -6,10 +6,10 @@ namespace SoapyRL.Extentions;
 
 public class Imports
 {
-    public const int SW_HIDE = 0;
-    public const int SW_SHOW = 5;
+    public const int SwHide = 0;
+    public const int SwShow = 5;
 
-    internal const int CTRL_C_EVENT = 0;
+    internal const int CtrlCEvent = 0;
 
     public static string RandomString(int length)
     {
@@ -25,7 +25,7 @@ public class Imports
     public static extern IntPtr GetConsoleWindow();
 
     [DllImport("user32.dll", SetLastError = true)]
-    public static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
+    public static extern bool MoveWindow(IntPtr hWnd, int x, int y, int nWidth, int nHeight, bool bRepaint);
 
     [DllImport("user32.dll")]
     public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
@@ -76,14 +76,14 @@ public class Imports
     internal static extern bool FreeConsole();
 
     [DllImport("kernel32.dll")]
-    private static extern bool SetConsoleCtrlHandler(ConsoleCtrlDelegate HandlerRoutine, bool Add);
+    private static extern bool SetConsoleCtrlHandler(ConsoleCtrlDelegate handlerRoutine, bool add);
 
     [DllImport("user32.dll")]
     public static extern bool GetCursorPos(ref Point lpPoint);
 
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    internal static extern bool GetWindowRect(IntPtr hwnd, out RECT lpRect);
+    internal static extern bool GetWindowRect(IntPtr hwnd, out Rect lpRect);
 
     [DllImport("gdi32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -109,9 +109,9 @@ public class Imports
     public static string GetActiveWindowTitle()
     {
         const int nChars = 256;
-        var Buff = new StringBuilder(nChars);
+        var buff = new StringBuilder(nChars);
         var handle = GetForegroundWindow();
-        if (GetWindowText(handle, Buff, nChars) > 0) return Buff.ToString();
+        if (GetWindowText(handle, buff, nChars) > 0) return buff.ToString();
         return "NULL";
     }
 
@@ -212,61 +212,61 @@ public class Imports
     internal enum TernaryRasterOperations : uint
     {
         /// <summary>dest = source</summary>
-        SRCCOPY = 0x00CC0020,
+        Srccopy = 0x00CC0020,
 
         /// <summary>dest = source OR dest</summary>
-        SRCPAINT = 0x00EE0086,
+        Srcpaint = 0x00EE0086,
 
         /// <summary>dest = source AND dest</summary>
-        SRCAND = 0x008800C6,
+        Srcand = 0x008800C6,
 
         /// <summary>dest = source XOR dest</summary>
-        SRCINVERT = 0x00660046,
+        Srcinvert = 0x00660046,
 
         /// <summary>dest = source AND (NOT dest)</summary>
-        SRCERASE = 0x00440328,
+        Srcerase = 0x00440328,
 
         /// <summary>dest = (NOT source)</summary>
-        NOTSRCCOPY = 0x00330008,
+        Notsrccopy = 0x00330008,
 
         /// <summary>dest = (NOT src) AND (NOT dest)</summary>
-        NOTSRCERASE = 0x001100A6,
+        Notsrcerase = 0x001100A6,
 
         /// <summary>dest = (source AND pattern)</summary>
-        MERGECOPY = 0x00C000CA,
+        Mergecopy = 0x00C000CA,
 
         /// <summary>dest = (NOT source) OR dest</summary>
-        MERGEPAINT = 0x00BB0226,
+        Mergepaint = 0x00BB0226,
 
         /// <summary>dest = pattern</summary>
-        PATCOPY = 0x00F00021,
+        Patcopy = 0x00F00021,
 
         /// <summary>dest = DPSnoo</summary>
-        PATPAINT = 0x00FB0A09,
+        Patpaint = 0x00FB0A09,
 
         /// <summary>dest = pattern XOR dest</summary>
-        PATINVERT = 0x005A0049,
+        Patinvert = 0x005A0049,
 
         /// <summary>dest = (NOT dest)</summary>
-        DSTINVERT = 0x00550009,
+        Dstinvert = 0x00550009,
 
         /// <summary>dest = BLACK</summary>
-        BLACKNESS = 0x00000042,
+        Blackness = 0x00000042,
 
         /// <summary>dest = WHITE</summary>
-        WHITENESS = 0x00FF0062,
+        Whiteness = 0x00FF0062,
 
         /// <summary>
         ///     Capture window as seen on screen.  This includes layered windows
         ///     such as WPF windows with AllowsTransparency="true"
         /// </summary>
-        CAPTUREBLT = 0x40000000
+        Captureblt = 0x40000000
     }
 
     // Delegate type to be used as the Handler Routine for SCCH
-    private delegate bool ConsoleCtrlDelegate(uint CtrlType);
+    private delegate bool ConsoleCtrlDelegate(uint ctrlType);
 
-    public struct RECT
+    public struct Rect
     {
         public int Left; // x position of upper-left corner
         public int Top; // y position of upper-left corner
