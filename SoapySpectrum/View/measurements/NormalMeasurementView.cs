@@ -164,7 +164,7 @@ public partial class NormalMeasurementView(MainWindowView initiator)
                                                                      new Vector2(Right, Bottom))
                                                                  && SWaitForMouseClick.ElapsedMilliseconds > 100)
                         _parent.MarkerView.SMarkers[_parent.MarkerView.SSelectedMarker].Position = _parent.TraceView
-                            .GetClosestSampeledFrequency(
+                            .GetClosestSampledFrequency(
                                 _parent.MarkerView.SMarkers[_parent.MarkerView.SSelectedMarker].Reference,
                                 mousePosFreq).Key;
                     if (mouseRange.X != 0 && ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left))
@@ -219,9 +219,9 @@ public partial class NormalMeasurementView(MainWindowView initiator)
 
                     if (currentActiveMarkers[c].BandPower)
                     {
-                        var powerBandLeft = _parent.TraceView.GetClosestSampeledFrequency(x,
+                        var powerBandLeft = _parent.TraceView.GetClosestSampledFrequency(x,
                             (float)(currentActiveMarkers[c].Position - currentActiveMarkers[c].BandPowerSpan / 2));
-                        var powerBandRight = _parent.TraceView.GetClosestSampeledFrequency(x,
+                        var powerBandRight = _parent.TraceView.GetClosestSampledFrequency(x,
                             (float)(currentActiveMarkers[c].Position + currentActiveMarkers[c].BandPowerSpan / 2));
                         var scaledPowerBandLeft = _parent.GraphView.ScaleToGraph(Left, Top, Right, Bottom,
                             powerBandLeft.Key,

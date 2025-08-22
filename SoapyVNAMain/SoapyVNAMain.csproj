@@ -21,9 +21,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Reference Include="Pothosware.SoapySDR">
-            <HintPath>..\SoapyVNACommon\bin\Debug\net8.0\SoapySDR\Libs\Pothosware.SoapySDR.dll</HintPath>
-        </Reference>
+      <Reference Include="Pothosware.SoapySDR">
+        <HintPath>..\SoapyVNACommon\SoapySDR\Libs\Pothosware.SoapySDR.dll</HintPath>
+      </Reference>
     </ItemGroup>
 
 </Project>

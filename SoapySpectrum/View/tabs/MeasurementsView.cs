@@ -48,6 +48,9 @@ public partial class MeasurementsView(MainWindowView initiator)
             case 1:
                 _parent.ChannelPowerView.RenderChannelPowerSettings();
                 break;
+            case 4:
+                _parent.NoiseFigureMeasurementView.RenderNoiseFigureSettings();
+                break;
         }
     }
 }

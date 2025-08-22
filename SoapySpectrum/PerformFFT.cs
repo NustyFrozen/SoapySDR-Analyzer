@@ -84,8 +84,8 @@ public class PerformFft(MainWindowView initiator)
 
             // Average over segments and convert to dBm if needed
             var calibration = 0.0f;
-            //if (tab_Cal.s_currentCalData.Count > 0)
-            //     calibration = tab_Cal.s_currentCalData.OrderBy(x => Math.Abs(x.frequency - center)).First().results;
+            if (_parent.CalibrationView.calibrationData is {})
+                 calibration = _parent.CalibrationView.calibrationData.OrderBy(x => Math.Abs(x.Item1 - center)).First().Item2;
 
             // Convert to dBm
             for (var k = 0; k < segmentLength; k++)

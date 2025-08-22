@@ -5,5 +5,6 @@ public enum MeasurementMode
     None,
     ChannelPower,
     FilterBw,
-    Acp
+    Acp,
+    NoiseFigure
 }

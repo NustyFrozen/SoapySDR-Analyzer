@@ -21,7 +21,6 @@ public class DefinedWidget
     [ProtoIgnore] public SdrDeviceCom Device;
 
     [ProtoMember(1)] public bool IsComplete;
-
     [ProtoMember(2)] public int WidgetType;
 
     [ProtoIgnore] public IWidget Window; // interface

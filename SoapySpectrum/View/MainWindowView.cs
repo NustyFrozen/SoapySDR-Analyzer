@@ -14,7 +14,7 @@ public partial class MainWindowView : IWidget
         Configuration = new Configuration(widgetName, this, windowSize, position);
         GraphView = new GraphView(this);
         FftManager = new PerformFft(this);
-
+        CalibrationView = new CalibrationView(this);
         DeviceView = new DeviceView(this, deviceCom);
         AmplitudeView = new AmplitudeView(this);
         FrequencyView = new FrequencyView(this);
@@ -24,6 +24,7 @@ public partial class MainWindowView : IWidget
         TraceView = new TraceView(this);
         NormalMeasurementView = new NormalMeasurementView(this);
         ChannelPowerView = new ChannelPowerView(this);
+        NoiseFigureMeasurementView = new NoiseFigureMeasurementView(this);
         FilterBandwithView = new FilterBandwithView(this);
     }
 
@@ -161,7 +162,7 @@ public partial class MainWindowView : IWidget
                 break;
 
             case 6:
-                //tab_Cal.renderCalibration();
+                CalibrationView.renderCalibration();
                 break;
 
             case 7:

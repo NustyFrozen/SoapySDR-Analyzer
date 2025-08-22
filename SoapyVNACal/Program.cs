@@ -18,7 +18,6 @@ if (option == options.Length - 1)
     goto selectDevice;
 var device = DeviceHelper.AvailableDevicesCom[option];
 Console.Clear();
-Calibrator.calibrateRX(device, 0, "TX/RX", 900e6, 2000e6, 100e6, -40);
 selectCalibrationType:
 options = new String[] { "TX", "RX" };
 

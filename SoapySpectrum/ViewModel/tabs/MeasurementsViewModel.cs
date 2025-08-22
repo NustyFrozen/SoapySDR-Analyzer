@@ -5,7 +5,7 @@ namespace SoapySA.View.tabs;
 public partial class MeasurementsView
 {
     private static readonly string[] AvailableMeasurements =
-        { "None", "Channel Power", "Filter Bandwidth", "Adjacent Channel Power" };
+        { "None", "Channel Power", "Filter Bandwidth", "Adjacent Channel Power","Noise Figure (Y method)" };
 
     private readonly MainWindowView _parent = initiator;
 

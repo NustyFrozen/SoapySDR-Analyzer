@@ -13,7 +13,7 @@ public partial class TraceView
     public int SSelectedTrace;
     public Trace[] STraces = new Trace[6];
 
-    public KeyValuePair<float, float> GetClosestSampeledFrequency(int traceId, float mhz)
+    public KeyValuePair<float, float> GetClosestSampledFrequency(int traceId, float mhz)
     {
         lock (STraces[traceId].Plot)
         {
@@ -31,5 +31,12 @@ public partial class TraceView
                 results = sample;
 
         return results;
+    }
+
+    public void DisableAllTraces()
+    {
+        for (int i = 0; i < STraces.Length; i++) 
+            STraces[i].ViewStatus = TraceViewStatus.Clear;
+        
     }
 }

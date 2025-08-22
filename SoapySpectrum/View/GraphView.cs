@@ -8,7 +8,7 @@ public partial class GraphView(MainWindowView initiator)
     {
         switch (_parent.TabMeasurementView.SSelectedMeasurementMode)
         {
-            case MeasurementMode.None:
+            case MeasurementMode.None or MeasurementMode.NoiseFigure:
                 _parent.NormalMeasurementView.RenderNormal();
                 break;
 

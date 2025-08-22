@@ -39,30 +39,11 @@ public partial class FrequencyView(MainWindowView initiator)
 
         if (hasFrequencyChanged) //apply frequency change in settings
         {
-            double freqStart, freqStop;
-            if (Global.TryFormatFreq(SDisplayFreqStart, out freqStart) &&
-                Global.TryFormatFreq(SDisplayFreqStop, out freqStop))
-            {
-                if (freqStart >= freqStop || !_parent.DeviceView.DeviceCom
-                        .DeviceRxFrequencyRange[(int)_parent.DeviceView.DeviceCom.RxAntenna.Item1]
-                        .ToList().Exists(x => x.Minimum <= freqStart && x.Maximum >= freqStop))
-                {
-                    _logger.Error("$ Start or End Frequency is not valid");
-                }
-                else
-                {
-                    SDisplaySpan = (freqStop - freqStart).ToString();
-                    SDisplayFreqCenter = ((freqStop - freqStart) / 2.0 + freqStart).ToString();
-                    _parent.Configuration.Config[Configuration.SaVar.FreqStart] = freqStart;
-                    _parent.Configuration.Config[Configuration.SaVar.FreqStop] = freqStop;
-                }
-
-                _parent.FftManager.ResetIqFilter();
-            }
-            else
-            {
-                _logger.Error("$ Start or End Frequency span is not a valid double");
-            }
+            if (Global.TryFormatFreq(SDisplayFreqStart, out double freqStart) &&
+                Global.TryFormatFreq(SDisplayFreqStop, out double freqStop))
+                ChangeFrequencyByRange(freqStart,freqStop);
+            else _logger.Error("$ Start or End Frequency span is not a valid double");
         }
+        
     }
 }

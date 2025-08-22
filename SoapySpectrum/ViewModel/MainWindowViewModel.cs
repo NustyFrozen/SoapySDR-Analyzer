@@ -16,12 +16,14 @@ public partial class MainWindowView
     };
 
     public AmplitudeView AmplitudeView;
+    public NoiseFigureMeasurementView NoiseFigureMeasurementView;
     public ChannelPowerView ChannelPowerView;
     public Configuration Configuration;
     public DeviceView DeviceView;
     public PerformFft FftManager;
     public FilterBandwithView FilterBandwithView;
     public FrequencyView FrequencyView;
+    public CalibrationView CalibrationView;
     public GraphView GraphView;
     public MarkerView MarkerView;
     public NormalMeasurementView NormalMeasurementView;

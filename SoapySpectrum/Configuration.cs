@@ -5,6 +5,7 @@ using NLog;
 using SoapySA.Extentions;
 using SoapySA.Model;
 using SoapySA.View;
+using SoapySA.View.tabs;
 using SoapyVNACommon.Extentions;
 using Trace = SoapySA.Model.Trace;
 
@@ -53,10 +54,7 @@ new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.To
 
     public string TracesPath = Path.Combine(Global.ConfigPath, widgetName, "traces.json");
     public string MarkersPath = Path.Combine(Global.ConfigPath, widgetName, "markers.json");
-
-    public string CalibrationPath =
-        Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "config", widgetName, "Cal.json");
-
+    
     public enum SaVar
     {
         //frequency
@@ -78,6 +76,8 @@ new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.To
         GraphOffsetDb,
         GraphRefLevel,
 
+        //calibration
+        selectedCalibration,
         ///vbw
         FftWindow,
 
@@ -101,16 +101,15 @@ new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.To
 
     public void InitConfiguration()
     {
-        if (!Directory.Exists(CalibrationPath))
-            Directory.CreateDirectory(CalibrationPath);
+        if (!Directory.Exists(Global.CalibrationPath))
+            Directory.CreateDirectory(Global.CalibrationPath);
         var calibrations = new List<string>();
-        foreach (var file in Directory.GetFiles(CalibrationPath))
-            if (file.EndsWith(".cal"))
-                calibrations.Add(file.Replace(CalibrationPath, "").Replace("\\", "").Replace("/", "")
-                    .Replace(".cal", ""));
+        foreach (var file in Directory.GetFiles(Global.CalibrationPath))
+            if (file.EndsWith(".json"))
+                calibrations.Add(file.Replace(Global.CalibrationPath, "").Replace("\\", "").Replace("/", "")
+                    .Replace(".json", ""));
 
-        //tab_Cal.s_AvailableCal = calibrations.ToArray();
-
+       _parent.CalibrationView.availableCalibrations = calibrations.ToArray();
         Config[SaVar.FreqStart] = 933.4e6;
         Config[SaVar.FreqStop] = 943.4e6;
         Config[SaVar.LeakageSleep] = 5;
@@ -168,7 +167,18 @@ new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.To
 
             foreach (var keyvaluepair in cfg)
                 Config[keyvaluepair.Key] = keyvaluepair.Value;
-
+            if (Config.ContainsKey(SaVar.selectedCalibration))
+            {
+                try
+                {
+                    _parent.CalibrationView.calibrationData = JsonConvert.DeserializeObject<List<Tuple<float, float>>>(File.ReadAllText((string)Config[SaVar.selectedCalibration]));
+                }
+                catch (Exception e)
+                {
+                    _logger.Error($"Failed to load Calibration --> {e.Message}");
+                }
+                
+            }
             UpdateAllConfigElements();
             //resuming fftmanager
             if (resume)
