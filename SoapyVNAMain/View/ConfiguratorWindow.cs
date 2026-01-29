@@ -72,7 +72,7 @@ public class ConfiguratorWindow
     private static int _selectedTxChannel, _selectedTxAnntenna = -1;
     public static string SCustomRxSampleRate = "0", SCustomTxSampleRate = "0";
     public static int SelectedRxSampleRate = -1, SelectedTxSampleRate = -1;
-    public static double RxSampleRate, TxSampleRate;
+    public static double RxSampleRate;
 
     private static void CreateWidget()
     {
@@ -178,7 +178,20 @@ public class ConfiguratorWindow
                             .ToArray(),
                         Convert.ToString);
                     if (Theme.GlowingCombo("selectRXWidget", ref SelectedRxSampleRate, combos, Theme.InputTheme))
+                    {
                         RxSampleRate = Convert.ToDouble(combos[SelectedRxSampleRate]);
+                    }
+
+                    Theme.Text("select Source TX Channel (optional)");
+                    Theme.GlowingCombo("select Source Channel", ref _selectedTxChannel,
+                        Array.ConvertAll(
+                            Enumerable.Range(0, (int)DeviceHelper.AvailableDevicesCom[_selectedSdr].AvailableTxChannels)
+                                .ToArray(), Convert.ToString)
+                        , Theme.InputTheme);
+                    Theme.Text("select Source Anntenna");
+                    Theme.GlowingCombo("select forward Anntenna", ref _selectedTxAnntenna,
+                        AvailableTxAnntenna[(uint)_selectedTxChannel].ToArray()
+                        , Theme.InputTheme);
                     isvalid &= _selectedRxAnntenna != -1;
                     break;
 
@@ -215,8 +228,7 @@ public class ConfiguratorWindow
                     if (Theme.GlowingCombo("selectRXWidget", ref SelectedRxSampleRate, combos, Theme.InputTheme))
                     {
                         RxSampleRate = Convert.ToDouble(combos[SelectedRxSampleRate]);
-                        TxSampleRate = Convert.ToDouble(combos[SelectedRxSampleRate]);
-                        ;
+                        
                     }
 
                     isvalid &= _selectedTxAnntenna != -1 && _selectedRxAnntenna != -1;
@@ -237,7 +249,7 @@ public class ConfiguratorWindow
             var definedSdrCom = new SdrDeviceCom(DeviceHelper.AvailableDevicesCom[_selectedSdr])
             {
                 RxSampleRate = RxSampleRate,
-                TxSampleRate = TxSampleRate,
+                TxSampleRate = RxSampleRate,
                 RxAntenna = _selectedRxAnntenna == -1
                     ? null
                     : new Tuple<uint, string>((uint)_selectedRxChannel,

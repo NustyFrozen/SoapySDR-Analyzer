@@ -22,6 +22,10 @@ public class Configuration(string widgetName, MainWindowView initiator, Vector2 
 new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.ToInt16(Screen.PrimaryScreen.Bounds.Height / 1.5));
 
     public Vector2 mainWindowPos = new Vector2(600, 0);
+
+    public readonly Vector2 SWidgetSize = windowSize;
+
+    public Vector2 MainWindowPos = pos;
 #else
 
     public static ImGuiWindowFlags MainWindowFlags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoTitleBar |
