@@ -12,7 +12,7 @@ namespace SoapySA.View.measurements
     internal class SourceView(MainWindowView initiator, SdrDeviceCom com)
     {
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
-        static readonly string[] availableSourceModes = new string[] { "CW","Tracking"};
+        static readonly string[] availableSourceModes = new string[] { "Disabled","CW","Tracking"};
         int selectedSourceMode = 0;
         public void RenderSourceViewSettings()
         {

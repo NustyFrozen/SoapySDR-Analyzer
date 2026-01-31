@@ -53,18 +53,31 @@ public struct SdrDeviceCom
     public Device SdrDevice;
     private string[] _deviceSensorData;
 
-    //channel,anntenna
+    /// <summary>
+    /// channel, anntennas
+    /// </summary>
     public Tuple<uint, string> RxAntenna = new(0, string.Empty), TxAntenna = new(0, string.Empty);
 
     public double RxSampleRate, TxSampleRate;
 
-    //channel, anntennas
+    /// <summary>
+    /// channel, anntennas
+    /// </summary>
     public Dictionary<uint, StringList> AvailableRxAntennas, AvailableTxAntennas;
 
     public uint AvailableRxChannels, AvailableTxChannels;
+    
     public Dictionary<int, RangeList> DeviceRxFrequencyRange = new(), DeviceTxFrequencyRange = new();
+    /// <summary>
+    /// channel, sample rates
+    /// </summary>
     public Dictionary<int, RangeList> DeviceRxSampleRates = new(), DeviceTxSampleRates = new();
+
+    /// <summary>
+    /// (channel, Antenna), (gain,value)
+    /// </summary>
     public Dictionary<Tuple<uint, string>, Tuple<Range, int>> RxGains = new(), TxGains = new();
+
     public List<double> RxGainValues = new(), TxGainValues = new();
     public string Descriptor;
     public string SensorData;

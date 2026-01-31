@@ -94,6 +94,10 @@ new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.To
 
         ChannelOcp,
 
+        //measurement source
+        SourceMode, // 0 = disabled,1 = Track, 2 = CW
+        sourceFreq,
+
         //others
         RefreshRate,
 
