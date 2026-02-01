@@ -51,6 +51,9 @@ public partial class MeasurementsView(MainWindowView initiator)
             case 4:
                 _parent.NoiseFigureMeasurementView.RenderNoiseFigureSettings();
                 break;
+            case 5:
+                _parent.SourceView.RenderSourceViewSettings();
+                break;
         }
     }
 }

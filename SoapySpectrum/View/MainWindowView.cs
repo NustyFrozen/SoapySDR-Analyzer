@@ -24,6 +24,7 @@ public partial class MainWindowView : IWidget
         TraceView = new TraceView(this);
         NormalMeasurementView = new NormalMeasurementView(this);
         ChannelPowerView = new ChannelPowerView(this);
+        SourceView = new SourceView(this,deviceCom);
         NoiseFigureMeasurementView = new NoiseFigureMeasurementView(this);
         FilterBandwithView = new FilterBandwithView(this);
     }
