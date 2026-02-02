@@ -292,8 +292,8 @@ public class PerformFft(MainWindowView initiator)
                          _parent.DeviceView.DeviceCom.TxAntenna.Item1, _parent.DeviceView.DeviceCom.SdrDevice.GetFrequency(Direction.Rx,
                           _parent.DeviceView.DeviceCom.RxAntenna.Item1));
 
-                        transmissionRate = (int)transmissionStream.MTU;
-                        _whiteNoise = GenerateWhiteNoise(transmissionRate);
+                        
+                        _whiteNoise = GenerateWhiteNoise((int)_parent.DeviceView.DeviceCom.RxSampleRate);
                         
                     }
                     isTxEnabled = sourceMode != 0;
