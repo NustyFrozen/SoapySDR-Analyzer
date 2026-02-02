@@ -14,7 +14,7 @@ namespace SoapySA.View.measurements
     public class SourceView(MainWindowView initiator, SdrDeviceCom com)
     {
         private readonly NLog.Logger _logger = LogManager.GetCurrentClassLogger();
-        static readonly string[] availableSourceModes = new string[] { "Disabled","CW","Tracking"};
+        static readonly string[] availableSourceModes = new string[] { "Disabled","Tracking", "CW"};
         string[] _gainValues = new string[com.TxGainValues.Count];
         public string transmissionFreq = string.Empty;
         public int selectedSourceMode = 0;// 0 = disabled,1 = Track, 2 = CW
@@ -42,7 +42,11 @@ namespace SoapySA.View.measurements
                 {
                     double freq = 0;
                     if (Global.TryFormatFreq(transmissionFreq, out freq))
+                    {
                         initiator.Configuration.Config[Configuration.SaVar.sourceFreq] = freq;
+                        com.SdrDevice.SetFrequency(Direction.Tx,
+                          com.TxAntenna.Item1, (double)freq);
+                    }
                 }
             }
             Theme.Text("Transmission Power");
@@ -65,11 +69,11 @@ namespace SoapySA.View.measurements
                     else
                     {
                         if (range.Step != 0)
-                            com.SdrDevice.SetGain(Direction.Rx, com.TxAntenna.Item1, gainElm.Key.Item2,
+                            com.SdrDevice.SetGain(Direction.Tx, com.TxAntenna.Item1, gainElm.Key.Item2,
                                 Math.Round(results / range.Step) * range.Step);
                         else
                             //free value
-                            com.SdrDevice.SetGain(Direction.Rx, com.TxAntenna.Item1, gainElm.Key.Item2,
+                            com.SdrDevice.SetGain(Direction.Tx, com.TxAntenna.Item1, gainElm.Key.Item2,
                                 results);
                     }
                 }
