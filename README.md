@@ -4,6 +4,11 @@
 ## showcase Videos
 
 
+
+
+https://github.com/user-attachments/assets/5ed95bb9-727f-49ad-a29b-f17a7710cad9
+
+
 ![Spectrum Image](https://github.com/NustyFrozen/Soapy-.NET-Spectrum-Analayzer/blob/main/Media/ui.png?raw=true)
 
 ## agenda
