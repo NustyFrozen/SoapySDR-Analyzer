@@ -1,7 +1,21 @@
-# SoapySDR Analyzer - A Vendor neutral SDR based unoffical RF Equipment testing suite
+# SoapySDR Analyzer - A Vendor neutral SDR based RF Signal Analyzer
+
+
+## showcase Videos
+
+
+
+https://github.com/user-attachments/assets/f6f64b46-d350-4405-b3f5-7899abffb9f7
+
+
+
+
+https://github.com/user-attachments/assets/5ed95bb9-727f-49ad-a29b-f17a7710cad9
+
+
 ![Spectrum Image](https://github.com/NustyFrozen/Soapy-.NET-Spectrum-Analayzer/blob/main/Media/ui.png?raw=true)
 
-## Motive and goal
+## agenda
 Make an industry-level SDR Based RF testing equipments
 that supports all software-defined radio vendors for free
 since known solutions in the market are quite expensive
@@ -10,16 +24,21 @@ since known solutions in the market are quite expensive
 RL - Return Loss / VSWR / Reflection Coefficent / Mismatch loss using a circulator and full duplex SDR board
 <br>
 Swept Spectrum Analyzer
-| Feature | Description | Return Loss | Spectrum Analyzer|
-| ----------- | ----------- | ----------- | ----------- |
-| Device | SDR selection, sample rate, gain, LO sleep, IQ correction, Read sensor data |✅|✅
-| Amplitude | offset, leveling, graph range settings |❌|✅|
-| Frequency | span, center, start, end |❌|✅|
-| marker | delta, peaksearch, band power, mk -> mk diff |✅|✅|
-| trace | Modes active view clear, Status normal MaxHold minHold Average |❌|✅|
-| Video | FFT-Window, FFT-length, FFT-segments, FFT-overlap, refresh rate, RBW, VBW  |❌|✅|
-| Calibration | calibrate sdr gain elements and the sdr itself using  external signal source |✅|✅|
 
+### Signal Analyzer Mode
+| Feature | Description 
+| ----------- | ----------- |
+| Device | SDR selection, sample rate, gain, LO sleep, IQ correction, Read sensor data 
+| Amplitude | offset, leveling, graph range settings 
+| Frequency | span, center, start, end 
+| marker | delta, peaksearch, band power, mk -> mk diff 
+| trace | Modes active view clear, Status normal MaxHold minHold Average
+| Video | FFT-Window, FFT-length, FFT-segments, FFT-overlap, refresh rate, RBW, VBW
+| Calibration | calibrate sdr gain elements and the sdr itself using  external signal source|
+| NF Measurement| Using a noise source and an enr table test Active DUT's NF
+|Source| given specified tx front-end on a full duplex sdr you can transmit either a CW or tracking signal
+|Filter Measurement| gives automatically Detected BW of a filter on the trace given peakvalue -3dB sidelobes
+|Channel Measurement| gives on a specified BW the channel characterization like BW power,OBW, PAPR,power density,etc..
 ### TODO features
 real-time SA & trigger to visualize and see bursts like signals
 <br>

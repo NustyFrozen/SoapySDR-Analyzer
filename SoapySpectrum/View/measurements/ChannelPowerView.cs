@@ -27,8 +27,13 @@ public partial class ChannelPowerView(MainWindowView initiator)
                 if (ocp < 100 && ocp > 0)
                     _parent.Configuration.Config[Configuration.SaVar.ChannelOcp] = ocp / 100.0;
         }
+        if(Theme.Button("Rest Channel Peak and Flatness values"))
+        {
+            peakValue = -99999;
+            minValue = 99999;
+        }
     }
-
+    float peakValue = -99999, minValue = 99999;
     public void RenderChannelPower()
     {
         #region Canvas_Data
@@ -45,7 +50,6 @@ public partial class ChannelPowerView(MainWindowView initiator)
         var textPos = new Vector2();
         uint traceColorUint = 0x7FFFFF00;
         int startBandPower = 0, endBandPower = 0;
-        float peakValue = -99999, minValue = 99999;
         var plotData = new Span<KeyValuePair<float, float>>();
 
         #endregion Canvas_Data

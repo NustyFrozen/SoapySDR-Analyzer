@@ -16,12 +16,16 @@ public class Configuration(string widgetName, MainWindowView initiator, Vector2 
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
     private readonly MainWindowView _parent = initiator;
 #if DEBUG
-    public static ImGuiWindowFlags mainWindowFlags = ImGuiWindowFlags.NoScrollbar;
+    public static ImGuiWindowFlags MainWindowFlags = ImGuiWindowFlags.NoScrollbar;
 
     private Vector2 screenSize =
 new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.ToInt16(Screen.PrimaryScreen.Bounds.Height / 1.5));
 
     public Vector2 mainWindowPos = new Vector2(600, 0);
+
+    public readonly Vector2 SWidgetSize = windowSize;
+
+    public Vector2 MainWindowPos = pos;
 #else
 
     public static ImGuiWindowFlags MainWindowFlags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoTitleBar |
@@ -90,6 +94,10 @@ new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.To
 
         ChannelOcp,
 
+        //measurement source
+        SourceMode, // 0 = disabled,1 = Track, 2 = CW
+        sourceFreq,
+
         //others
         RefreshRate,
 
@@ -128,6 +136,8 @@ new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.To
         Config[SaVar.ScalePerDivision] = 20;
         Config[SaVar.ChannelBw] = 5e6;
         Config[SaVar.ChannelOcp] = 0.9;
+        Config[SaVar.sourceFreq] = 100e6;
+        Config[SaVar.SourceMode] = 0;
         Config.CollectionChanged += updateUIElementsOnConfigChanged;
         UpdateAllConfigElements();
         if (File.Exists(PresetPath))
@@ -291,6 +301,13 @@ new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.To
 
             case SaVar.RefreshRate:
                 _parent.VideoView.DisplayRefreshRate = ((int)Config[SaVar.RefreshRate] * 1000).ToString();
+                break;
+
+            case SaVar.sourceFreq:
+                _parent.SourceView.transmissionFreq = ((double)Config[SaVar.sourceFreq]).ToString();
+                break;
+            case SaVar.SourceMode:
+                _parent.SourceView.selectedSourceMode = (int)Config[SaVar.SourceMode];
                 break;
         }
     }

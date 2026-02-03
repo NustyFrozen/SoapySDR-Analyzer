@@ -18,6 +18,7 @@ public partial class MainWindowView
     public AmplitudeView AmplitudeView;
     public NoiseFigureMeasurementView NoiseFigureMeasurementView;
     public ChannelPowerView ChannelPowerView;
+    public SourceView SourceView;
     public Configuration Configuration;
     public DeviceView DeviceView;
     public PerformFft FftManager;

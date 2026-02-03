@@ -1,13 +1,15 @@
-﻿using System.Collections.Concurrent;
+﻿using FFTW.NET;
+using MathNet.Numerics;
+using MathNet.Numerics.Random;
+using NLog;
+using Pothosware.SoapySDR;
+using SharpGen.Runtime;
+using SoapySA.View;
+using SoapyVNACommon.Extentions;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using FFTW.NET;
-using MathNet.Numerics;
-using NLog;
-using Pothosware.SoapySDR;
-using SoapySA.View;
-using SoapyVNACommon.Extentions;
 using Logger = NLog.Logger;
 
 namespace SoapySA;
@@ -35,6 +37,7 @@ public class PerformFft(MainWindowView initiator)
         _fftTasks.Clear();
         _fftTasks.Add(Task.Run(() => { FFT_POOL(); }));
         _fftTasks.Add(Task.Run(() => { IqSampler(); }));
+        _fftTasks.Add(Task.Run(() => { sourceWriter(); }));
     }
 
     public void StopFft()
@@ -44,7 +47,28 @@ public class PerformFft(MainWindowView initiator)
             if (!task.IsCompleted)
                 task.Wait();
     }
+    private static float[] GenerateWhiteNoise(int count)
+    {
+        var rng = new MersenneTwister(); // Fast, high-quality PRNG
+        var buffer = new Complex[count];
 
+        for (var i = 0; i < count; i++)
+        {
+            var phase = rng.NextDouble() * 360.0;
+            var iSample = Math.Cos(phase);
+            var qSample = Math.Sin(phase);
+            buffer[i] = new Complex(iSample, qSample);
+        }
+
+        var results = new float[2 * count];
+        for (var i = 0; i < count; i++)
+        {
+            results[i * 2] = (float)buffer[i].Real;
+            results[i * 2 + 1] = (float)buffer[i].Imaginary;
+        }
+
+        return results;
+    }
     //CalculateFrequency(i, next.Item3, fft_size, next.Item1);
     private float[][]? WelchPsd(Complex[] inputSignal, FftwArrayComplex bufferInput,
         FftwArrayComplex bufferOutput, FftwPlanC2C plan, int segmentLength, int overlap, float sampleRate,
@@ -177,6 +201,7 @@ public class PerformFft(MainWindowView initiator)
         var fftwArrayInput = new FftwArrayComplex(1024);
         var fftwArrayOuput = new FftwArrayComplex(1024);
         var fftwPlanContext = FftwPlanC2C.Create(fftwArrayInput, fftwArrayOuput, DftDirection.Forwards);
+
         while (IsRunning)
         {
             Tuple<double, Complex[], double>? next;
@@ -211,23 +236,101 @@ public class PerformFft(MainWindowView initiator)
                 _parent.GraphView.UpdateData(psd);
         }
     }
+    private static  int transmissionRate = 4096;
+    static  float[] _whiteNoise = GenerateWhiteNoise(transmissionRate);
+    private static TxStream? transmissionStream;
+    private unsafe void sourceWriter()
+    {
+        Task.Run(() =>
+        {
 
+            bool isTxEnabled = false;
+            bool isTracking = false;
+            var sourceMode = ((int)_parent.Configuration.Config[Configuration.SaVar.SourceMode]);
+            var results = new StreamResult();
+            while (IsRunning)
+            {
+                //the code here is very critical under sampling of tracking, therfore we put all in one big if statement to only enter this code
+                //in the case of a change in the sourceMode
+                if (sourceMode != ((int)_parent.Configuration.Config[Configuration.SaVar.SourceMode]))
+                {
+                    sourceMode = ((int)_parent.Configuration.Config[Configuration.SaVar.SourceMode]);
+                    
+                    if (sourceMode != 0 && !isTxEnabled) //changed to enabled
+                    {
+                        if (transmissionStream is null)
+                        {
+                            transmissionStream = _parent.DeviceView.DeviceCom.SdrDevice.SetupTxStream(StreamFormat.ComplexFloat32,
+                            new[] { _parent.DeviceView.DeviceCom.TxAntenna.Item1 }, "");
+                            _parent.DeviceView.DeviceCom.SdrDevice.SetSampleRate(Direction.Tx,
+                           _parent.DeviceView.DeviceCom.TxAntenna.Item1, _parent.DeviceView.DeviceCom.RxSampleRate);
+
+                        }
+                        transmissionStream.Activate();
+                        
+                        _logger.Info(
+                         $"Begining transmitting {{MTU: {transmissionStream?.MTU}");
+                    }
+                    else if (sourceMode == 0 && isTxEnabled) //changed to disabled
+                    {
+                        transmissionStream?.Deactivate();
+                        _logger.Info(
+                    $"stopped transmitting");
+                    }
+                    if (sourceMode == 2) //changed to CW
+                    {
+                        transmissionRate = 4096;
+                        _whiteNoise = Enumerable.Range(0, 4096 * 2).Select(x => x % 2 == 0 ? 1.0f : 0.0f).ToArray(); //I = 1, Q = 0 ==> DC constant CW
+                        _parent.DeviceView.DeviceCom.SdrDevice.SetFrequency(Direction.Tx,
+                         _parent.DeviceView.DeviceCom.TxAntenna.Item1, (double)_parent.Configuration.Config[Configuration.SaVar.sourceFreq]);
+                    }
+                    else //changed to tracking
+                    {
+                        //if it changed to tracking, but the BW is so low that there is no requirement for hopping, i must change lo here
+                        //as there is no hopping call
+                        _parent.DeviceView.DeviceCom.SdrDevice.SetFrequency(Direction.Tx,
+                         _parent.DeviceView.DeviceCom.TxAntenna.Item1, _parent.DeviceView.DeviceCom.SdrDevice.GetFrequency(Direction.Rx,
+                          _parent.DeviceView.DeviceCom.RxAntenna.Item1));
+
+                        
+                        _whiteNoise = GenerateWhiteNoise((int)_parent.DeviceView.DeviceCom.RxSampleRate);
+                        
+                    }
+                    isTxEnabled = sourceMode != 0;
+                    isTracking = sourceMode == 1;
+                }
+                if(isTxEnabled)
+                fixed (float* bufferPtr = _whiteNoise)
+                {
+                    
+                        var errorCode = transmissionStream?.Write((nint)bufferPtr, (uint)transmissionRate, StreamFlags.None, 0, 10_000_000,
+                            out results);
+                        if (errorCode is not ErrorCode.None || results is null)
+                        {
+#if DEBUG_VERBOSE
+                                    Logger.Error($"WriteStream Error Code {errorCode}");
+#endif
+                        }
+                    }
+                
+            }
+        });
+    }
     private unsafe void IqSampler()
     {
         var dcBlock = new IqdcBlocker();
         double sampleRate = 0.0, frequency = 0.0;
         _parent.DeviceView.DeviceCom.SdrDevice.SetAntenna(Direction.Rx, _parent.DeviceView.DeviceCom.RxAntenna.Item1,
             _parent.DeviceView.DeviceCom.RxAntenna.Item2);
-
-        var stream = _parent.DeviceView.DeviceCom.SdrDevice.SetupRxStream(StreamFormat.ComplexFloat32,
+        var rxstream = _parent.DeviceView.DeviceCom.SdrDevice.SetupRxStream(StreamFormat.ComplexFloat32,
             new[] { _parent.DeviceView.DeviceCom.RxAntenna.Item1 }, "");
-        stream.Activate();
-        var mtu = stream.MTU;
+        rxstream.Activate();
+        var mtu = rxstream.MTU;
         var results = new StreamResult();
         var floatBuffer = new float[mtu * 2];
         var bufferHandle = GCHandle.Alloc(floatBuffer, GCHandleType.Pinned);
         _logger.Info(
-            $"Begining Sampling {{MTU: {stream.MTU}, FFT length: {_fftSize}, SPS: {_parent.DeviceView.DeviceCom.RxSampleRate}}}");
+            $"Begining Sampling {{MTU: {rxstream.MTU}, FFT length: {_fftSize}, SPS: {_parent.DeviceView.DeviceCom.RxSampleRate}}}");
         var sw = new Stopwatch();
 
         while (IsRunning)
@@ -277,7 +380,12 @@ public class PerformFft(MainWindowView initiator)
                     frequency = fCenter;
                     _parent.DeviceView.DeviceCom.SdrDevice.SetFrequency(Direction.Rx,
                         _parent.DeviceView.DeviceCom.RxAntenna.Item1, frequency);
-                    sw.Restart();
+                    if(((int)_parent.Configuration.Config[Configuration.SaVar.SourceMode]) == 1)
+                    {
+                        _parent.DeviceView.DeviceCom.SdrDevice.SetFrequency(Direction.Tx,
+                        _parent.DeviceView.DeviceCom.TxAntenna.Item1, frequency);
+                    }
+                        sw.Restart();
                     while (sw.ElapsedMilliseconds <
                            (int)_parent.Configuration.Config[Configuration.SaVar.LeakageSleep] &&
                            IsRunning)
@@ -286,7 +394,7 @@ public class PerformFft(MainWindowView initiator)
                         fixed (float* bufferPtr = floatBuffer)
                         {
                             Array.Clear(floatBuffer, 0, floatBuffer.Length);
-                            var errorCode = stream.Read((nint)bufferPtr, (uint)mtu, 10_000_000, out results);
+                            var errorCode = rxstream.Read((nint)bufferPtr, (uint)mtu, 10_000_000, out results);
                             if (errorCode is not ErrorCode.None || results is null)
                             {
                                 _logger.Error($"Readstream Error Code {errorCode}");
@@ -307,7 +415,7 @@ public class PerformFft(MainWindowView initiator)
                 {
                     fixed (float* bufferPtr = floatBuffer)
                     {
-                        var errorCode = stream.Read((nint)bufferPtr, (uint)mtu, 10_000_000, out results);
+                        var errorCode = rxstream.Read((nint)bufferPtr, (uint)mtu, 10_000_000, out results);
 
                         if (errorCode is not ErrorCode.None || results is null)
                         {
@@ -353,7 +461,7 @@ public class PerformFft(MainWindowView initiator)
                 //reading while sleeping so no buffer overflow will happen
                 fixed (float* bufferPtr = floatBuffer)
                 {
-                    var errorCode = stream.Read((nint)bufferPtr, (uint)mtu, 10_000_000, out results);
+                    var errorCode = rxstream.Read((nint)bufferPtr, (uint)mtu, 10_000_000, out results);
                     if (errorCode is not ErrorCode.None || results is null)
                     {
 #if DEBUG_VERBOSE
@@ -374,7 +482,7 @@ public class PerformFft(MainWindowView initiator)
             }
         }
 
-        stream.Deactivate();
-        stream.Close();
+        rxstream.Deactivate();
+        rxstream.Close();
     }
 }
