@@ -199,7 +199,7 @@ public class Theme
 
         if (ImGui.IsMouseHoveringRect(startDrawBg, endDrawBg))
         {
-            if (ImGui.IsMouseClicked(ImGuiMouseButton.Left) && status == CircleState.Idle) return true;
+            if (ImGui.IsMouseClicked((int)ImGuiMouseButton.Left) && status == CircleState.Idle) return true;
             borderColorActive = cfg.Bgcolor.ToColor().Lerp(cfg.ColorHover.ToColor(), hoverStep).ToUint();
             if (hoverStep <= 1)
                 hoverStep += 0.001f;
@@ -223,7 +223,13 @@ public class Theme
         style.Colors[ImGuiCol.Text.ToInt()] = temp2;
         return results;
     }
-
+    public enum ImGuiMouseButton
+    {
+        Left = 0,
+        Right = 1,
+        Middle = 2,
+        COUNT = 5
+    }
     public static bool ButtonWait(string label, ButtonConfigurator cfg)
     {
         label = "##" + label;
@@ -314,7 +320,7 @@ public class Theme
 
         if (ImGui.IsMouseHoveringRect(startDrawBg, endDrawBg))
         {
-            if (ImGui.IsMouseClicked(ImGuiMouseButton.Left) && status == CircleState.Idle) status = CircleState.FadeIn;
+            if (ImGui.IsMouseClicked((int)ImGuiMouseButton.Left) && status == CircleState.Idle) status = CircleState.FadeIn;
             borderColorActive = cfg.Bgcolor.ToColor().Lerp(cfg.ColorHover.ToColor(), hoverStep).ToUint();
             if (hoverStep <= 1)
                 hoverStep += 0.001f;
@@ -363,7 +369,7 @@ public class Theme
 
         draw.AddRect(new Vector2(windowpos.X, windowpos.Y - 1), new Vector2(windowpos.X + windowsize.X + 1, windowpos.Y)
             , topColor.ToColor().ToUint(), style.WindowRounding,
-            ImDrawFlags.RoundCornersTopLeft | ImDrawFlags.RoundCornersTopRight, 1.5f);
+            ImDrawCornerFlags.TopLeft| ImDrawCornerFlags.TopRight, 1.5f);
     }
 
     public static void GradientRect(Vector2 pMin, Vector2 pMax, Vector4 topColor, Vector4 bottomColor,
@@ -392,11 +398,11 @@ public class Theme
         draw.AddRect(new Vector2(windowpos.X + pMin.X, windowpos.Y + pMin.Y - 1)
             , new Vector2(windowpos.X + windowsize.X + 1 + pMin.X, pMin.Y + windowpos.Y)
             , topColor.ToColor().ToUint(), cornerRadius,
-            ImDrawFlags.RoundCornersTopLeft | ImDrawFlags.RoundCornersTopRight, 1.5f);
+            ImDrawCornerFlags.TopLeft | ImDrawCornerFlags.TopRight, 1.5f);
         draw.AddRect(new Vector2(windowpos.X + pMin.X, windowpos.Y + pMin.Y - 1 + windowsize.Y)
             , new Vector2(windowpos.X + windowsize.X + 1 + pMin.X, pMin.Y + windowpos.Y + windowsize.Y)
             , bottomColor.ToColor().ToUint(), cornerRadius,
-            ImDrawFlags.RoundCornersTopLeft | ImDrawFlags.RoundCornersTopRight, 1.5f);
+            ImDrawCornerFlags.TopLeft | ImDrawCornerFlags.TopRight, 1.5f);
     }
 
     public static void GradientGlowingInput(string label, ref string text, GlowingInputConfigurator cfg,
@@ -496,7 +502,7 @@ public class Theme
         if (ImGui.IsMouseHoveringRect(start, end))
         {
             exitColorActive = exitColorActive.Lerp(clrHover, 0.025);
-            if (ImGui.IsMouseClicked(ImGuiMouseButton.Left)) results = true;
+            if (ImGui.IsMouseClicked((int)ImGuiMouseButton.Left)) results = true;
         }
         else
         {
@@ -529,7 +535,7 @@ public class Theme
         if (ImGui.IsMouseHoveringRect(start, end))
         {
             exitColorActive = exitColorActive.Lerp(clrHover, 0.1);
-            if (ImGui.IsMouseClicked(ImGuiMouseButton.Left)) return true;
+            if (ImGui.IsMouseClicked((int)ImGuiMouseButton.Left)) return true;
         }
         else
         {
@@ -558,7 +564,7 @@ public class Theme
         if (ImGui.IsMouseHoveringRect(start, end))
         {
             exitColorActive = exitColorActive.Lerp(clrHover, 0.1);
-            if (ImGui.IsMouseClicked(ImGuiMouseButton.Left)) Environment.Exit(0);
+            if (ImGui.IsMouseClicked((int)ImGuiMouseButton.Left)) Environment.Exit(0);
         }
         else
         {
@@ -623,11 +629,11 @@ public class Theme
             , sliderColorActive, cfg.RoundCorners);
         var windowbgColor = style.Colors[ImGuiCol.WindowBg.ToInt()].ToColor();
         style.FrameBorderSize = 0;
-        if (!ImGui.IsMouseDown(ImGuiMouseButton.Left) && status == Sliderstatus.Start) status = Sliderstatus.End;
+        if (!ImGui.IsMouseDown((int)ImGuiMouseButton.Left) && status == Sliderstatus.Start) status = Sliderstatus.End;
         ImGui.InvisibleButton(label, cfg.Size); //stop dragging
         if (ImGui.IsMouseHoveringRect(startDrawBg, endDrawBg) || status == Sliderstatus.Start)
         {
-            if (ImGui.IsMouseDown(ImGuiMouseButton.Left) || status == Sliderstatus.Start)
+            if (ImGui.IsMouseDown((int)ImGuiMouseButton.Left) || status == Sliderstatus.Start)
             {
                 status = Sliderstatus.Start;
                 var drawPos = mousePos.X - startDrawBg.X;

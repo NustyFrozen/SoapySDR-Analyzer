@@ -2,6 +2,7 @@
 using ImGuiNET;
 using SoapySA.Model;
 using SoapyVNACommon.Extentions;
+using static SoapyVNACommon.Theme;
 using TraceViewStatus = SoapySA.Model.TraceViewStatus;
 
 namespace SoapySA.View.measurements;
@@ -160,14 +161,14 @@ public partial class NormalMeasurementView(MainWindowView initiator)
 
                 if (_parent.MarkerView.SMarkers[_parent.MarkerView.SSelectedMarker].IsActive)
                 {
-                    if (ImGui.IsMouseDown(ImGuiMouseButton.Left) && ImGui.IsMouseHoveringRect(new Vector2(Left, Top),
+                    if (ImGui.IsMouseDown((int)ImGuiMouseButton.Left) && ImGui.IsMouseHoveringRect(new Vector2(Left, Top),
                                                                      new Vector2(Right, Bottom))
                                                                  && SWaitForMouseClick.ElapsedMilliseconds > 100)
                         _parent.MarkerView.SMarkers[_parent.MarkerView.SSelectedMarker].Position = _parent.TraceView
                             .GetClosestSampledFrequency(
                                 _parent.MarkerView.SMarkers[_parent.MarkerView.SSelectedMarker].Reference,
                                 mousePosFreq).Key;
-                    if (mouseRange.X != 0 && ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left))
+                    if (mouseRange.X != 0 && ImGui.IsMouseDoubleClicked((int)ImGuiMouseButton.Left))
                     {
                         _parent.MarkerView.SMarkers[_parent.MarkerView.SSelectedMarker].Position = _parent.TraceView
                             .FindMaxHoldRange(_parent.TraceView.STraces[x].Plot, mouseRange.X, mouseRange.Y).Key;

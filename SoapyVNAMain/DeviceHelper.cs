@@ -15,6 +15,7 @@ public class DeviceHelper
 
     public static void SetupSoapyEnvironment()
     {
+#if WINDOWS
         var currentPath = Path.GetDirectoryName(Application.ExecutablePath);
         var soapyPath = Path.Combine(currentPath, @"SoapySDR");
         var libsPath = Path.Combine(soapyPath, @"Libs");
@@ -23,6 +24,7 @@ public class DeviceHelper
         Environment.SetEnvironmentVariable("SOAPY_SDR_ROOT", Path.Combine(currentPath, @"SoapySDR\root\SoapySDR"));
         Environment.SetEnvironmentVariable("PATH",
             $"{Environment.GetEnvironmentVariable("PATH")};{soapyPath};{libsPath}");
+#endif
     }
 
     /// <summary>

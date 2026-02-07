@@ -1,6 +1,4 @@
-﻿using System.Numerics;
-using ClickableTransparentOverlay;
-using ImGuiNET;
+﻿using ImGuiNET;
 using NLog;
 using Pothosware.SoapySDR;
 using SoapyRL.View;
@@ -9,11 +7,14 @@ using SoapySA.View;
 using SoapyVNACommon;
 using SoapyVNACommon.Extentions;
 using SoapyVNACommon.Fonts;
+using System.Numerics;
+using System.Windows.Forms;
+using Veldrid;
 using Logger = NLog.Logger;
 
 namespace SoapyVNAMain.View;
 
-internal class WidgetsWindow : Overlay
+internal class WidgetsWindow(ImGuiRenderer renderer) : Overlay
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     public static Dictionary<string, DefinedWidget> Widgets = new();
@@ -26,40 +27,61 @@ internal class WidgetsWindow : Overlay
     public static bool EditMode;
     private DefinedWidget _selectedWidget = new() { IsComplete = false };
 
-    public WidgetsWindow() : base(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height)
-    {
-        VSync = true;
-    }
-
     public unsafe void LoadResources()
     {
         Logger.Debug("Loading Application Resources");
         var io = ImGui.GetIO();
 
-        ReplaceFont(config =>
+        // 1) Clear old fonts
+        io.Fonts.Clear();
+
+        // --- SMOOTHNESS FIX 1: Increase Font Size ---
+        // On a 1080p screen, 16.0f is often too small and gets aliased.
+        // 18.0f or 20.0f usually looks much crisper.
+        float baseFontSize = 16.0f;
+
+        // Base text font
+        ImFontPtr poppins = io.Fonts.AddFontFromFileTTF(
+            "Fonts/Poppins-Light.ttf",
+            baseFontSize,
+            null,
+            io.Fonts.GetGlyphRangesChineseSimplifiedCommon()
+        );
+
+        // 2) Merge icon font
+        var config = ImGuiNative.ImFontConfig_ImFontConfig();
+        config->MergeMode = 1;
+        config->PixelSnapH = 1;
+
+        // --- SMOOTHNESS FIX 2: Increase Oversampling ---
+        // Changing these from 1 to 3 makes the font atlas much smoother.
+        config->OversampleH = 3;
+        config->OversampleV = 1;
+
+        ushort[] iconRanges = { 0xF000, 0xF8FF, 0 };
+
+        fixed (ushort* pRanges = iconRanges)
         {
-            var io = ImGui.GetIO();
-            io.Fonts.AddFontFromFileTTF(@"Fonts\Poppins-Light.ttf", 16, config,
-                io.Fonts.GetGlyphRangesChineseSimplifiedCommon());
-            config->MergeMode = 1;
-            config->OversampleH = 1;
-            config->OversampleV = 1;
-            config->PixelSnapH = 1;
+            io.Fonts.AddFontFromFileTTF(
+                "Fonts/fa-solid-900.ttf",
+                baseFontSize, // Match base font size for alignment
+                config,
+                (IntPtr)pRanges
+            );
+        }
 
-            var custom2 = new ushort[] { 0xe005, 0xf8ff, 0x00 };
-            fixed (ushort* p = &custom2[0])
-            {
-                io.Fonts.AddFontFromFileTTF("Fonts\\fa-solid-900.ttf", 16, config, new IntPtr(p));
-            }
-        });
-        Logger.Debug("Replaced font");
+        // Set default font
+        ImGuiNative.igGetIO()->FontDefault = poppins.NativePtr;
 
-        _poppinsFont = io.Fonts.AddFontFromFileTTF(@"Fonts\Poppins-Light.ttf", 16);
-        //IconFont = io.Fonts.AddFontFromFileTTF(@"Fonts\fa-solid-900.ttf", 16,, new ushort[] { 0xe005,
-        //0xf8ff,0});
+        // 3) Rebuild + upload atlas texture
+        // Ensure your 'renderer' variable is the ImGuiRenderer instance
+        renderer.RecreateFontDeviceTexture();
+
+        // Clean up native config
+        ImGuiNative.ImFontConfig_destroy(config);
     }
 
-    private void LoadExistingWidgets()
+    public void LoadExistingWidgets()
     {
         if (!Directory.Exists(Global.ConfigPath))
             Directory.CreateDirectory(Global.ConfigPath);
@@ -88,19 +110,13 @@ internal class WidgetsWindow : Overlay
             }
     }
 
-    protected override void Render()
+     void Overlay.Render()
     {
         if (!_initializedResources)
         {
-            Theme.InitDefaultTheme();
-            ImGui.SetNextWindowPos(new Vector2(0, 0));
-            ImGui.SetNextWindowSize(Configuration.GetScreenSize());
-            _initializedResources = true;
-            LoadResources();
-            ImGui.GetIO().FontGlobalScale = 1.4f;
-            Theme.InitDefaultTheme();
             Theme.SetScaleSize(Configuration.GetDefaultScaleSize());
-            LoadExistingWidgets();
+            _initializedResources = true;
+            
         }
 
         double valuee = 0;
@@ -185,4 +201,6 @@ internal class WidgetsWindow : Overlay
         }
         ImGui.End();
     }
+
+
 }
