@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.Drawing;
+using System.Numerics;
 using ImGuiNET;
 using SoapySA.View.measurements;
 using SoapySA.View.tabs;
@@ -40,7 +41,6 @@ public partial class MainWindowView : IWidget
         Theme.InitDefaultTheme();
 
         NormalMeasurementView.SWaitForMouseClick.Start();
-        MarkerView.MarkerMoveKeys.Start();
         GraphView.InitializeGraphElements();
         ImGui.SetNextWindowPos(Configuration.MainWindowPos);
         ImGui.SetNextWindowSize(Configuration.SWidgetSize);

@@ -17,14 +17,7 @@ public partial class MarkerView(MainWindowView initiator)
             Theme.Text("Trace:", Theme.InputTheme);
             Theme.GlowingCombo("marker_reference", ref SMarkers[SSelectedMarker].Reference, SMarkerTraceCombo,
                 Theme.InputTheme);
-            if (MarkerMoveKeys.ElapsedMilliseconds > 25)
-            {
-                if (Imports.GetAsyncKeyState(Imports.Keys.A))
-                    MarkerMovePrevious(SMarkers[SSelectedMarker]);
-                if (Imports.GetAsyncKeyState(Imports.Keys.D))
-                    MarkerMoveNext(SMarkers[SSelectedMarker]);
-                MarkerMoveKeys.Restart();
-            }
+           
 
             Theme.NewLine();
             Theme.Text("Source:", Theme.InputTheme);
@@ -34,7 +27,7 @@ public partial class MarkerView(MainWindowView initiator)
             //In Case markers[selectedMarker] is enabled we show markers[selectedMarker] features
 
             Theme.ButtonTheme.Text = $"{FontAwesome5.ArrowUp} Peak Search";
-            if (Theme.Button("peakSearch", Theme.ButtonTheme) || Imports.GetAsyncKeyState(Imports.Keys.Enter))
+            if (Theme.Button("peakSearch", Theme.ButtonTheme))
                 PeakSearch(SMarkers[SSelectedMarker],
                     (float)(double)_parent.Configuration.Config[Configuration.SaVar.FreqStart],
                     (float)(double)_parent.Configuration.Config[Configuration.SaVar.FreqStop]);
@@ -51,7 +44,7 @@ public partial class MarkerView(MainWindowView initiator)
                     (float)SMarkers[SSelectedMarker].Position);
             Theme.NewLine();
             Theme.ButtonTheme.Text = $"{FontAwesome5.Mountain} Set Delta";
-            if (Theme.Button("markerDelta", Theme.ButtonTheme) || Imports.GetAsyncKeyState(Imports.Keys.Enter))
+            if (Theme.Button("markerDelta", Theme.ButtonTheme) )
             {
                 SMarkers[SSelectedMarker].Delta = true;
                 MarkerSetDelta(SSelectedMarker);
@@ -59,7 +52,7 @@ public partial class MarkerView(MainWindowView initiator)
 
             Theme.NewLine();
             Theme.ButtonTheme.Text = $"{FontAwesome5.Eraser} Clear Delta";
-            if (Theme.Button("markerDelta", Theme.ButtonTheme) || Imports.GetAsyncKeyState(Imports.Keys.Enter))
+            if (Theme.Button("markerDelta", Theme.ButtonTheme))
                 SMarkers[SSelectedMarker].Delta = false;
             Theme.NewLine();
             Theme.NewLine();

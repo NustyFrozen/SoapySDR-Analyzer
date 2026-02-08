@@ -1,4 +1,6 @@
-﻿using Pothosware.SoapySDR;
+﻿
+
+using Pothosware.SoapySDR;
 using Range = Pothosware.SoapySDR.Range;
 
 namespace SoapyVNACommon.Extentions;

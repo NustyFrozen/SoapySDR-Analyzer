@@ -2,6 +2,7 @@
 // see https://aka.ms/applicationconfiguration.
 
 using ImGuiNET;
+using SoapyRL;
 using SoapySA;
 using SoapyVNACommon;
 using SoapyVNACommon.Extentions;
@@ -12,9 +13,12 @@ using Veldrid;
 using Veldrid.Sdl2;
 using Veldrid.StartupUtilities;
 
-ApplicationConfiguration.Initialize();
+//ApplicationConfiguration.Initialize();
 DeviceHelper.SetupSoapyEnvironment();
-Imports.AllocConsole();
+if (OperatingSystem.IsWindows())
+{
+    SoapyVNACommon.Extentions.Imports.AllocConsole();
+}
 int screenWidth = 1920;
 int screenHeight = 1080;
 Veldrid.Rectangle rect;
@@ -27,8 +31,8 @@ unsafe
     if (Sdl2Native.SDL_GetDisplayBounds(0, &rect) != 0)
     {
         // Fallback if the driver fails (common in some Linux headless environments)
-        screenWidth = 1280;
-        screenHeight = 720;
+        screenWidth = 1920;
+        screenHeight = 1080;
     }
     else
     {
@@ -48,7 +52,8 @@ VeldridStartup.CreateWindowAndGraphicsDevice(
     out var window,
     out var gd
 );
-
+SoapySA.Configuration.screenSize = new Vector2(screenWidth, screenHeight);
+SoapyRL.Configuration.ScreenSize = new Vector2(screenWidth, screenHeight);
 // Make it borderless
 window.BorderVisible = false; // requires Veldrid 4.5.0+ :contentReference[oaicite:1]{index=1}
 
@@ -71,11 +76,8 @@ var cl = gd.ResourceFactory.CreateCommandList();
 var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 double last = stopwatch.Elapsed.TotalSeconds;
 WidgetsWindow widgetsWindow = new WidgetsWindow(imgui);
-Configuration.screenSize = new Vector2(screenWidth, screenHeight);
 widgetsWindow.LoadExistingWidgets();
 Theme.InitDefaultTheme();
-ImGui.SetNextWindowPos(new Vector2(0, 0));
-ImGui.SetNextWindowSize(new Vector2(screenWidth,screenHeight));
 widgetsWindow.LoadResources();
 ImGui.GetIO().FontGlobalScale = 1.4f;
 Theme.InitDefaultTheme();
@@ -96,6 +98,8 @@ while (window.Exists)
     // ---- ImGui UI ----
     try
     {
+        ImGui.SetNextWindowPos(new Vector2(0, 0));
+        ImGui.SetNextWindowSize(new Vector2(screenWidth, screenHeight));
         Overlay.Render();
     }catch (Exception ex){
         Console.WriteLine(ex.Message);

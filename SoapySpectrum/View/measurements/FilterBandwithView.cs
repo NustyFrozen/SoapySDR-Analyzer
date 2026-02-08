@@ -1,8 +1,8 @@
-﻿using System.Numerics;
+﻿using System.Drawing;
+using System.Numerics;
 using ImGuiNET;
 using SoapyVNACommon.Extentions;
 using Range = Pothosware.SoapySDR.Range;
-
 namespace SoapySA.View.measurements;
 
 public partial class FilterBandwithView(MainWindowView initiator)

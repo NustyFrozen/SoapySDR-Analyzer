@@ -50,19 +50,25 @@ support for external programmable gain & attenuators
 Additional implementation to swept SA, such as preset, modulation measurement, etc.
 
 ## implementation & support
-- Windows only, at the moment
 - SDR - SoapySDR based using offical swig .NET binding
-- Graphical Engine - DirectX back-end with ImGui through ClickableTransparentOverlay
+- Graphical Engine - Veldrid backend with ImGui
 
 Soapy pre-built modules drivers include uhd, limesdr, hackrf, airspy, rtl-sdr
 
 ## installation & usage
 requirements:
 - .NET 8.0
-- DirectX installed
+- OpenGL with veldrid installed
 - appropriate drivers for your sdr (example: USRP install uhd)
-- If the compiled binaries version don't include your SDR simply compile the soapySupport (for example, uhd: https://github.com/pothosware/SoapyUHD) and put the Main dll in SoapySDR\root\SoapySDR\lib\SoapySDR\modules0.8-3, any additional dlls can be added to SoapySDR\Libs
+- If the compiled binaries version don't include your SDR simply compile the
+#### For Windows:
+ soapySupport (for example, uhd: https://github.com/pothosware/SoapyUHD)
+for windows put the Main dll in SoapySDR\root\SoapySDR\lib\SoapySDR\modules0.8-3, any additional dlls can be added to SoapySDR\Libs
 download the compiled binaries from Release and run it, to minimize click insert
+
+#### for Linux:
+sudo apt install -y libsdl2-2.0-0
+sudo apt install -y soapysdr-tools libsoapysdr-dev
 ### how to calibrate spectrum analyzer
 You need an external rf CW signal generator, Select the range you want to calibrate for and step size and transmit the instructed frequency & power, it will iterate all over the required steps and click enter when you see the signal on the FFT-plot
 After calibration is done restart the program, and you'll be able to select the calibration.

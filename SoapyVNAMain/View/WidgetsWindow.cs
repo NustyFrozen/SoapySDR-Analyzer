@@ -7,8 +7,6 @@ using SoapySA.View;
 using SoapyVNACommon;
 using SoapyVNACommon.Extentions;
 using SoapyVNACommon.Fonts;
-using System.Numerics;
-using System.Windows.Forms;
 using Veldrid;
 using Logger = NLog.Logger;
 
@@ -116,15 +114,8 @@ internal class WidgetsWindow(ImGuiRenderer renderer) : Overlay
         {
             Theme.SetScaleSize(Configuration.GetDefaultScaleSize());
             _initializedResources = true;
-            
         }
-
-        double valuee = 0;
-        if (Imports.GetAsyncKeyState(Imports.Keys.Insert))
-        {
-            Thread.Sleep(200);
-            _visble = !_visble;
-        }
+        
 
         if (!_visble) return;
         ImGui.Begin("Widget Manager", Configuration.MainWindowFlags);

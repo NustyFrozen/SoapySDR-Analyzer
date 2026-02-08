@@ -2,22 +2,21 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net8.0-windows</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
-        <UseWindowsForms>true</UseWindowsForms>
         <ImplicitUsings>enable</ImplicitUsings>
         <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Google.Protobuf" Version="3.31.0"/>
-        <PackageReference Include="protobuf-net" Version="3.2.52"/>
+        <PackageReference Include="Google.Protobuf" Version="3.31.0" />
+        <PackageReference Include="protobuf-net" Version="3.2.52" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\SoapyRL\SoapyRL.csproj"/>
-        <ProjectReference Include="..\SoapySpectrum\SoapySA.csproj"/>
-        <ProjectReference Include="..\SoapyVNACommon\SoapyVNACommon.csproj"/>
+        <ProjectReference Include="..\SoapyRL\SoapyRL.csproj" />
+        <ProjectReference Include="..\SoapySpectrum\SoapySA.csproj" />
+        <ProjectReference Include="..\SoapyVNACommon\SoapyVNACommon.csproj" />
     </ItemGroup>
 
     <ItemGroup>

@@ -1,6 +1,7 @@
 using NLog;
 using SoapySA.Extentions;
 using SoapyVNACommon.Extentions;
+using System.Drawing;
 
 namespace SoapySA.View.measurements;
 

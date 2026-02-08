@@ -29,9 +29,9 @@
         <PackageReference Include="Veldrid.StartupUtilities" Version="4.9.0" />
     </ItemGroup>
     <ItemGroup>
-        <Reference Include="Pothosware.SoapySDR">
-            <HintPath>..\..\..\..\..\..\Program Files (x86)\SoapySDR\bin\Pothosware.SoapySDR.dll</HintPath>
-        </Reference>
+      <Reference Include="Pothosware.SoapySDR">
+        <HintPath>SoapySDR\Libs\Pothosware.SoapySDR.dll</HintPath>
+      </Reference>
     </ItemGroup>
     <ItemGroup>
         <None Update="Fonts\fa-solid-900.ttf">

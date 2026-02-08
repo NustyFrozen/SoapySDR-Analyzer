@@ -6,7 +6,6 @@ namespace SoapySA.View.tabs;
 
 public partial class MarkerView
 {
-    public static Stopwatch MarkerMoveKeys = new();
 
     private static readonly string[] MarkerCombo = new[]
         { "Marker 1", "Marker 2", "Marker 3", "Marker 4", "Marker 5", "Marker 6", "Marker 7", "Marker 8", "Marker 9" };

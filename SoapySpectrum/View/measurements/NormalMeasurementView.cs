@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.Drawing;
+using System.Numerics;
 using ImGuiNET;
 using SoapySA.Model;
 using SoapyVNACommon.Extentions;

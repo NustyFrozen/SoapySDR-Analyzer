@@ -31,7 +31,7 @@ new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.To
     public static ImGuiWindowFlags MainWindowFlags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoTitleBar |
                                                      ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoMove;
 
-    public static Vector2 screenSize;
+    public static Vector2 screenSize = new Vector2(1920,1080);
     public readonly Vector2 SWidgetSize = windowSize;
 
     public Vector2 MainWindowPos = pos;

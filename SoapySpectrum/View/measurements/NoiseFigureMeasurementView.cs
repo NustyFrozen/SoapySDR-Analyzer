@@ -1,4 +1,3 @@
-using System.DirectoryServices.ActiveDirectory;
 using ImGuiNET;
 using SoapyVNACommon;
 using SoapyVNACommon.Extentions;
