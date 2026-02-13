@@ -4,9 +4,9 @@ using SoapyVNACommon;
 
 namespace SoapySA.View.tabs;
 
-public partial class MeasurementsView(MainWindowView initiator)
+public partial class MeasurementsView(MainWindowView initiator) : TabViewModel
 {
-    public void RenderMeasurements()
+    public override void Render()
     {
         if (SSelectedPage != 0)
         {

@@ -1,6 +1,7 @@
 ﻿using System.Drawing;
 using System.Numerics;
 using ImGuiNET;
+using SoapySA.Extentions;
 using SoapySA.View.measurements;
 using SoapySA.View.tabs;
 using SoapyVNACommon;
@@ -12,22 +13,10 @@ public partial class MainWindowView : IWidget
 {
     public MainWindowView(string widgetName, Vector2 position, Vector2 windowSize, SdrDeviceCom deviceCom)
     {
-        Configuration = new Configuration(widgetName, this, windowSize, position);
-        GraphView = new GraphView(this);
+        Configuration = new Configuration(widgetName, this);
         FftManager = new PerformFft(this);
-        CalibrationView = new CalibrationView(this);
-        DeviceView = new DeviceView(this, deviceCom);
-        AmplitudeView = new AmplitudeView(this);
-        FrequencyView = new FrequencyView(this);
-        MarkerView = new MarkerView(this);
-        TabMeasurementView = new MeasurementsView(this);
-        VideoView = new VideoView(this);
-        TraceView = new TraceView(this);
-        NormalMeasurementView = new NormalMeasurementView(this);
-        ChannelPowerView = new ChannelPowerView(this);
-        SourceView = new SourceView(this,deviceCom);
-        NoiseFigureMeasurementView = new NoiseFigureMeasurementView(this);
-        FilterBandwithView = new FilterBandwithView(this);
+       
+        tabsService = FeaturesServiceFactory.createMainFeatures(this, deviceCom);
     }
 
     public void RenderWidget()
@@ -98,13 +87,13 @@ public partial class MainWindowView : IWidget
     private void RenderTabSelector()
     {
         ImGui.SetCursorPosY(Configuration.OptionSize.Y / 2.0f -
-                            (_availableTabs.Length - 1) * Theme.ButtonTheme.Size.Y / 2.0f);
+                            (tabsService.Count- 1) * Theme.ButtonTheme.Size.Y / 2.0f);
 
-        for (var i = 0; i < _availableTabs.Length; i++)
+        for (var i = 0; i < tabsService.Count; i++)
         {
-            Theme.ButtonTheme.Text = $"{_availableTabs[i]}";
-            if (Theme.Button(_availableTabs[i], Theme.ButtonTheme))
-                _tabId = i;
+            Theme.ButtonTheme.Text = $"{tabsService[i].}";
+            if (Theme.Button(tabsService[i].tabName, Theme.ButtonTheme))
+                _ActiveTab = tabsService[i];
             Theme.NewLine();
         }
     }
@@ -121,55 +110,19 @@ public partial class MainWindowView : IWidget
             Configuration.PositionOffset.Y + 30 * Configuration.ScaleSize.Y));
         ImGui.BeginChild("Spectrum Options", Configuration.OptionSize);
         Theme.InputTheme.Prefix = "RBW";
-        if (_tabId != -1)
+        if (_ActiveTab is { } tab)
         {
-            Theme.ButtonTheme.Text = $"{_availableTabs[_tabId]}";
-            if (Theme.Button(_availableTabs[_tabId], Theme.ButtonTheme))
-            {
-                _tabId = -1;
-                TabMeasurementView.SSelectedPage = 0;
-            }
-        }
+            tab.Render();
+            //Theme.ButtonTheme.Text = $"{_availableTabs[_tabId]}";
+            //if (Theme.Button(_availableTabs[_tabId], Theme.ButtonTheme))
+            //{
+            //    _tabId = -1;
+            //    TabMeasurementView.SSelectedPage = 0;
+            //}
+        } else RenderTabSelector();
 
         Theme.NewLine();
-        switch (_tabId)
-        {
-            case -1:
-                RenderTabSelector();
-                break;
-
-            case 0:
-                DeviceView.RenderDevice();
-                break;
-
-            case 1:
-                AmplitudeView.RenderAmplitude();
-                break;
-
-            case 2:
-                VideoView.RenderVideo();
-                break;
-
-            case 3:
-                FrequencyView.RenderFrequency();
-                break;
-
-            case 4:
-                MarkerView.RenderMarker();
-                break;
-
-            case 5:
-                TraceView.RenderTrace();
-                break;
-
-            case 6:
-                CalibrationView.renderCalibration();
-                break;
-
-            case 7:
-                TabMeasurementView.RenderMeasurements();
-                break;
-        }
+     //render tabs here
 
         ImGui.EndChild();
         DrawCursor();

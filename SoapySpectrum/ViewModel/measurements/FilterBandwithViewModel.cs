@@ -7,6 +7,7 @@ namespace SoapySA.View.measurements;
 
 public partial class FilterBandwithView
 {
+    public override string tabName => "Filter Bandwidth";
     private static readonly uint CColorPass = Color.FromArgb(0, 255, 0).ToUint();
     private static readonly uint CColorDeny = Color.Red.ToUint();
     private static readonly uint CColorTransition = Color.Yellow.ToUint();
@@ -26,7 +27,6 @@ public partial class FilterBandwithView
     public double GraphStartDb;
     public float GraphLabelIdx;
     public float Left;
-    private readonly MainWindowView _parent = initiator;
     public double RefLevel;
     public float Right;
     public float Top;
@@ -37,15 +37,15 @@ public partial class FilterBandwithView
 
         try
         {
-            DbOffset = (double)_parent.Configuration.Config[Configuration.SaVar.GraphOffsetDb];
-            RefLevel = (double)_parent.Configuration.Config[Configuration.SaVar.GraphRefLevel];
-            GraphLabelIdx = _parent.AmplitudeView.SScalePerDivision;
+            DbOffset = (double)Config[Configuration.SaVar.GraphOffsetDb];
+            RefLevel = (double)Config[Configuration.SaVar.GraphRefLevel];
+            GraphLabelIdx = (int)Config[Configuration.SaVar.ScalePerDivision];
 
-            FreqStart = (double)_parent.Configuration.Config[Configuration.SaVar.FreqStart];
-            FreqStop = (double)_parent.Configuration.Config[Configuration.SaVar.FreqStop];
+            FreqStart = (double)Config[Configuration.SaVar.FreqStart];
+            FreqStop = (double)Config[Configuration.SaVar.FreqStop];
 
-            GraphStartDb = (double)_parent.Configuration.Config[Configuration.SaVar.GraphStartDb] + RefLevel;
-            GraphEndDb = (double)_parent.Configuration.Config[Configuration.SaVar.GraphStopDb] + RefLevel;
+            GraphStartDb = (double)Config[Configuration.SaVar.GraphStartDb] + RefLevel;
+            GraphEndDb = (double)Config[Configuration.SaVar.GraphStopDb] + RefLevel;
         }
         catch (Exception ex)
         {

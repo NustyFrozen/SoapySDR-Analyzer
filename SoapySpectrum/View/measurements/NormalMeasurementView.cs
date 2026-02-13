@@ -1,16 +1,20 @@
 ﻿using System.Drawing;
 using System.Numerics;
 using ImGuiNET;
+using SoapySA.Extentions;
 using SoapySA.Model;
+using SoapySA.View.tabs;
 using SoapyVNACommon.Extentions;
+using static SoapySA.Configuration;
 using static SoapyVNACommon.Theme;
+using Trace = SoapySA.Model.Trace;
 using TraceViewStatus = SoapySA.Model.TraceViewStatus;
 
 namespace SoapySA.View.measurements;
 
-public partial class NormalMeasurementView(MainWindowView initiator)
+public partial class NormalMeasurementView(ObservableDictionary<SaVar, object> Config, Trace[] STraces, Marker[] SMarkers) : MeasurementTab
 {
-    public void RenderNormal()
+    public override void Render()
     {
         #region Canvas_Data
 
@@ -18,10 +22,10 @@ public partial class NormalMeasurementView(MainWindowView initiator)
         var draw = ImGui.GetForegroundDrawList();
         var mousePos = ImGui.GetMousePos();
         var graphStatus = new Vector2();
-        Left = windowPos.X + _parent.Configuration.PositionOffset.X;
-        Right = Left + _parent.Configuration.GraphSize.X;
-        Top = windowPos.Y + _parent.Configuration.PositionOffset.Y;
-        Bottom = Top + _parent.Configuration.GraphSize.Y;
+        Left = windowPos.X + UserScreenConfiguration.PositionOffset.X;
+        Right = Left + UserScreenConfiguration.GraphSize.X;
+        Top = windowPos.Y + UserScreenConfiguration.PositionOffset.Y;
+        Bottom = Top + UserScreenConfiguration.GraphSize.Y;
         var mouseRange = new Vector2();
         float mousePosFreq = 0, mousePosdB;
 
@@ -30,7 +34,7 @@ public partial class NormalMeasurementView(MainWindowView initiator)
         #region backgroundDraw
 
         draw.AddRectFilled(new Vector2(Left, Top), new Vector2(Right, Bottom), Color.FromArgb(16, 16, 16).ToUint());
-        if (new RectangleF(Left, Top, _parent.Configuration.GraphSize.X, _parent.Configuration.GraphSize.Y).Contains(
+        if (new RectangleF(Left, Top, UserScreenConfiguration.GraphSize.X, UserScreenConfiguration.GraphSize.Y).Contains(
                 mousePos.X,
                 mousePos.Y))
         {
@@ -40,7 +44,7 @@ public partial class NormalMeasurementView(MainWindowView initiator)
                 Color.FromArgb(100, 100, 100).ToUint());
 
             mousePosFreq =
-                (float)(FreqStart + (mousePos.X - Left) / _parent.Configuration.GraphSize.X * (FreqStop - FreqStart));
+                (float)(FreqStart + (mousePos.X - Left) / UserScreenConfiguration.GraphSize.X * (FreqStop - FreqStart));
             mousePosdB = (float)(GraphStartDb -
                 (Bottom - mousePos.Y + Top) / Bottom * (Math.Abs(GraphEndDb) - Math.Abs(GraphStartDb)) + DbOffset);
             mouseRange.X = (float)(mousePosFreq - (FreqStop - FreqStart) / GraphLabelIdx);
@@ -54,7 +58,7 @@ public partial class NormalMeasurementView(MainWindowView initiator)
             //draw X axis
             var text = $"{(FreqStart + i / GraphLabelIdx * (FreqStop - FreqStart)) / 1e6}".TruncateLongString(5);
             text += "M";
-            var posX = Left + i / GraphLabelIdx * _parent.Configuration.GraphSize.X - ImGui.CalcTextSize(text).X / 2;
+            var posX = Left + i / GraphLabelIdx * UserScreenConfiguration.GraphSize.X - ImGui.CalcTextSize(text).X / 2;
             draw.AddText(new Vector2(posX, Bottom), Color.LightGray.ToUint(), text);
 
             draw.AddLine(new Vector2(posX + ImGui.CalcTextSize(text).X / 2, Bottom),
@@ -64,7 +68,7 @@ public partial class NormalMeasurementView(MainWindowView initiator)
             text = Imports.Scale(i, 0, GraphLabelIdx, GraphEndDb + DbOffset, GraphStartDb + DbOffset).ToString()
                 .TruncateLongString(5);
             //((graph_startDB - (graphLabelIdx - i) / graphLabelIdx * (Math.Abs(graph_endDB) - Math.Abs(graph_startDB))) + dbOffset).ToString().TruncateLongString(5);
-            var posY = Top + i / GraphLabelIdx * _parent.Configuration.GraphSize.Y;
+            var posY = Top + i / GraphLabelIdx * UserScreenConfiguration.GraphSize.Y;
             draw.AddText(new Vector2(Left - ImGui.CalcTextSize(text).X, posY - ImGui.CalcTextSize(text).Y / 2),
                 Color.LightGray.ToUint(), text);
             draw.AddLine(new Vector2(Left, posY), new Vector2(Right, posY), Color.FromArgb(100, Color.Gray).ToUint());
@@ -74,11 +78,11 @@ public partial class NormalMeasurementView(MainWindowView initiator)
 
         try
         {
-            for (var x = 0; x < _parent.TraceView.STraces.Length; x++)
+            for (var x = 0; x < STraces.Length; x++)
             {
-                if (_parent.TraceView.STraces[x].ViewStatus == TraceViewStatus.Clear) continue;
+                if (STraces[x].ViewStatus == TraceViewStatus.Clear) continue;
                 var currentActiveMarkers =
-                    _parent.MarkerView.SMarkers.Where(d => d.Reference == x && d.IsActive).ToArray();
+                    SMarkers.Where(d => d.Reference == x && d.IsActive).ToArray();
                 var bandPowerDbList = new List<float>();
                 var traceColor = Color.Yellow;
                 switch (x)
@@ -104,9 +108,9 @@ public partial class NormalMeasurementView(MainWindowView initiator)
                         break;
                 }
 
-                if (_parent.TraceView.STraces[x].ViewStatus == TraceViewStatus.View)
+                if (STraces[x].ViewStatus == TraceViewStatus.View)
                     traceColor = Color.FromArgb(100, traceColor);
-                var plot = _parent.TraceView.STraces[x].Plot;
+                var plot = STraces[x].Plot;
                 var traceColorUint = traceColor.ToUint();
                 var plotData = plot.ToArray().AsSpan(); //asspan is fastest iteration
 
@@ -115,22 +119,22 @@ public partial class NormalMeasurementView(MainWindowView initiator)
                     var sampleA = plotData[i - 1];
                     var sampleB = plotData[i];
 
-                    var sampleAPos = _parent.GraphView.ScaleToGraph(Left, Top, Right, Bottom, sampleA.Key, sampleA.Value,
+                    var sampleAPos = GraphView.ScaleToGraph(Left, Top, Right, Bottom, sampleA.Key, sampleA.Value,
                         FreqStart,
                         FreqStop, GraphStartDb, GraphEndDb);
-                    var sampleBPos = _parent.GraphView.ScaleToGraph(Left, Top, Right, Bottom, sampleB.Key, sampleB.Value,
+                    var sampleBPos = GraphView.ScaleToGraph(Left, Top, Right, Bottom, sampleB.Key, sampleB.Value,
                         FreqStart,
                         FreqStop, GraphStartDb, GraphEndDb);
                     //bounds check
                     if (sampleBPos.X > Right || sampleAPos.X < Left) continue;
                     if (sampleAPos.Y < Top || sampleBPos.Y < Top || sampleAPos.Y > Bottom || sampleBPos.Y > Bottom)
                     {
-                        if (!(bool)_parent.Configuration.Config[Configuration.SaVar.AutomaticLevel]) continue;
+                        if (!(bool)Config[SaVar.AutomaticLevel]) continue;
                         if (sampleAPos.Y < Top || sampleBPos.Y < Top)
-                            _parent.Configuration.Config[Configuration.SaVar.GraphStartDb] =
+                            Config[SaVar.GraphStartDb] =
                                 (double)Math.Min(sampleA.Value, sampleB.Value);
                         else
-                            _parent.Configuration.Config[Configuration.SaVar.GraphStopDb] =
+                            Config[SaVar.GraphStopDb] =
                                 (double)Math.Max(sampleA.Value, sampleB.Value);
                     }
 
@@ -144,13 +148,13 @@ public partial class NormalMeasurementView(MainWindowView initiator)
                                            Math.Abs(marker.Position - sampleB.Key)
                                 ? sampleA.Value
                                 : sampleB.Value; //to which point is he closer
-                            _parent.MarkerView.SMarkers[marker.Id].Value = marker.Value;
+                            SMarkers[marker.Id].Value = marker.Value;
                         }
 
                         //apply bandPower List
                         if (marker.BandPower)
                             if (sampleA.Key >= (float)(marker.Position - marker.BandPowerSpan / 2) && sampleA.Key <=
-                                (float)(_parent.MarkerView.SMarkers[marker.Id].Position + marker.BandPowerSpan / 2))
+                                (float)(SMarkers[marker.Id].Position + marker.BandPowerSpan / 2))
                             {
                                 draw.AddLine(sampleAPos, sampleBPos, Color.White.ToUint(), 1.0f);
                                 bandPowerDbList.Add(sampleA.Value);
@@ -160,19 +164,18 @@ public partial class NormalMeasurementView(MainWindowView initiator)
                     }).ToArray();
                 }
 
-                if (_parent.MarkerView.SMarkers[_parent.MarkerView.SSelectedMarker].IsActive)
+                if (SMarkers[MarkerView.SSelectedMarker].IsActive)
                 {
                     if (ImGui.IsMouseDown((int)ImGuiMouseButton.Left) && ImGui.IsMouseHoveringRect(new Vector2(Left, Top),
                                                                      new Vector2(Right, Bottom))
                                                                  && SWaitForMouseClick.ElapsedMilliseconds > 100)
-                        _parent.MarkerView.SMarkers[_parent.MarkerView.SSelectedMarker].Position = _parent.TraceView
+                        SMarkers[MarkerView.SSelectedMarker].Position = TraceView
                             .GetClosestSampledFrequency(
-                                _parent.MarkerView.SMarkers[_parent.MarkerView.SSelectedMarker].Reference,
+                                MarkerView.SMarkers[MarkerView.SSelectedMarker].Reference,
                                 mousePosFreq).Key;
                     if (mouseRange.X != 0 && ImGui.IsMouseDoubleClicked((int)ImGuiMouseButton.Left))
                     {
-                        _parent.MarkerView.SMarkers[_parent.MarkerView.SSelectedMarker].Position = _parent.TraceView
-                            .FindMaxHoldRange(_parent.TraceView.STraces[x].Plot, mouseRange.X, mouseRange.Y).Key;
+                        SMarkers[MarkerView.SSelectedMarker].Position = STraces[x].FindMaxHoldRange(mouseRange.X, mouseRange.Y).Key;
                         SWaitForMouseClick.Restart();
                     }
                 }
@@ -181,7 +184,7 @@ public partial class NormalMeasurementView(MainWindowView initiator)
                 {
                     if (currentActiveMarkers[c].BandPower) CalculateBandPower(currentActiveMarkers[c], bandPowerDbList);
 
-                    var markerPosOnGraph = _parent.GraphView.ScaleToGraph(Left, Top, Right, Bottom,
+                    var markerPosOnGraph = GraphView.ScaleToGraph(Left, Top, Right, Bottom,
                         (float)currentActiveMarkers[c].Position, (float)currentActiveMarkers[c].Value, FreqStart,
                         FreqStop, GraphStartDb, GraphEndDb);
                     draw.AddCircleFilled(markerPosOnGraph, 6f, traceColorUint);
@@ -191,9 +194,9 @@ public partial class NormalMeasurementView(MainWindowView initiator)
                     if (currentActiveMarkers[c].DeltaReference != 0)
                     {
                         markerValue = currentActiveMarkers[c].Value -
-                                      _parent.MarkerView.SMarkers[currentActiveMarkers[c].DeltaReference - 1].Value;
+                                      SMarkers[currentActiveMarkers[c].DeltaReference - 1].Value;
                         markerPosition = currentActiveMarkers[c].Position -
-                                         _parent.MarkerView.SMarkers[currentActiveMarkers[c].DeltaReference - 1]
+                                         SMarkers[currentActiveMarkers[c].DeltaReference - 1]
                                              .Position;
                     }
 
@@ -201,7 +204,7 @@ public partial class NormalMeasurementView(MainWindowView initiator)
                         $"Marker {currentActiveMarkers[c].Id + 1} \n Freq {(markerPosition / 1e6).ToString().TruncateLongString(5)}M \n {(markerValue + DbOffset).ToString().TruncateLongString(5)} dB\n";
                     if (currentActiveMarkers[c].Delta)
                     {
-                        var deltaPosition = _parent.GraphView.ScaleToGraph(Left, Top, Right, Bottom,
+                        var deltaPosition = GraphView.ScaleToGraph(Left, Top, Right, Bottom,
                             (float)currentActiveMarkers[c].DeltaFreq, (float)currentActiveMarkers[c].DeltadB, FreqStart,
                             FreqStop, GraphStartDb, GraphEndDb);
                         var textSize = ImGui.CalcTextSize($"Delta Marker {c + 1}");
@@ -221,14 +224,14 @@ public partial class NormalMeasurementView(MainWindowView initiator)
 
                     if (currentActiveMarkers[c].BandPower)
                     {
-                        var powerBandLeft = _parent.TraceView.GetClosestSampledFrequency(x,
+                        var powerBandLeft = STraces[x].GetClosestSampledFrequency(
                             (float)(currentActiveMarkers[c].Position - currentActiveMarkers[c].BandPowerSpan / 2));
-                        var powerBandRight = _parent.TraceView.GetClosestSampledFrequency(x,
+                        var powerBandRight = STraces[x].GetClosestSampledFrequency(
                             (float)(currentActiveMarkers[c].Position + currentActiveMarkers[c].BandPowerSpan / 2));
-                        var scaledPowerBandLeft = _parent.GraphView.ScaleToGraph(Left, Top, Right, Bottom,
+                        var scaledPowerBandLeft = GraphView.ScaleToGraph(Left, Top, Right, Bottom,
                             powerBandLeft.Key,
                             powerBandLeft.Value, FreqStart, FreqStop, GraphStartDb, GraphEndDb);
-                        var scaledPowerBandRight = _parent.GraphView.ScaleToGraph(Left, Top, Right, Bottom,
+                        var scaledPowerBandRight = GraphView.ScaleToGraph(Left, Top, Right, Bottom,
                             powerBandRight.Key,
                             powerBandRight.Value, FreqStart, FreqStop, GraphStartDb, GraphEndDb);
                         draw.AddLine(new Vector2(scaledPowerBandLeft.X, Top),

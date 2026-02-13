@@ -1,9 +1,12 @@
 using NLog;
+using SoapySA.Model;
+using SoapyVNACommon.Fonts;
 
 namespace SoapySA.View.tabs;
 
 public partial class FrequencyView
 {
+    public override string tabName => $"{FontAwesome5.WaveSquare} Frequency";
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
     private readonly MainWindowView _parent = initiator;
     public string SDisplayFreqCenter = "945M";

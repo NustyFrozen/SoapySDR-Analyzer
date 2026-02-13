@@ -3,9 +3,6 @@ using NLog;
 using SoapySA.Model;
 using SoapySA.View.tabs;
 using SoapyVNACommon.Extentions;
-using Trace = SoapySA.Model.Trace;
-using TraceDataStatus = SoapySA.Model.TraceDataStatus;
-using TraceViewStatus = SoapySA.Model.TraceViewStatus;
 
 namespace SoapySA.View;
 
@@ -16,7 +13,7 @@ public partial class GraphView
 
     public void InitializeGraphElements()
     {
-        for (var i = 0; i < _parent.TraceView.STraces.Length; i++) _parent.TraceView.STraces[i] = new Trace();
+        for (var i = 0; i < TraceView.STraces.Length; i++) _parent.TraceView.STraces[i] = new Trace();
         for (var i = 0; i < _parent.MarkerView.SMarkers.Length; i++)
         {
             _parent.MarkerView.SMarkers[i] = new Marker();
@@ -102,7 +99,7 @@ public partial class GraphView
         }
     }
 
-    public Vector2 ScaleToGraph(float left, float top, float right, float bottom, float freq, float dB,
+    public static Vector2 ScaleToGraph(float left, float top, float right, float bottom, float freq, float dB,
         double freqStart, double freqStop, double graphStartDb, double graphEndDb)
     {
         var scaledX = Imports.Scale(freq, freqStart, freqStop, left, right);

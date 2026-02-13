@@ -11,52 +11,16 @@ using Trace = SoapySA.Model.Trace;
 
 namespace SoapySA;
 
-public class Configuration(string widgetName, MainWindowView initiator, Vector2 windowSize, Vector2 pos)
+public class Configuration(string widgetName, MainWindowView initiator)
 {
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
-    private readonly MainWindowView _parent = initiator;
-#if DEBUG
-    public static ImGuiWindowFlags MainWindowFlags = ImGuiWindowFlags.NoScrollbar;
 
-    private Vector2 screenSize =
-new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.ToInt16(Screen.PrimaryScreen.Bounds.Height / 1.5));
-
-    public Vector2 mainWindowPos = new Vector2(600, 0);
-
-    public readonly Vector2 SWidgetSize = windowSize;
-
-    public Vector2 MainWindowPos = pos;
-#else
-
-    public static ImGuiWindowFlags MainWindowFlags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoTitleBar |
-                                                     ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoMove;
-
-    public static Vector2 screenSize = new Vector2(1920,1080);
-    public readonly Vector2 SWidgetSize = windowSize;
-
-    public Vector2 MainWindowPos = pos;
-#endif
-    public static Vector2 GetScreenSize()
-    {
-        return screenSize;
-    }
-
-    public static Vector2 GetDefaultScaleSize()
-    {
-        return GetScreenSize() / new Vector2(1920.0f, 1080.0f);
-    }
-
-    public Vector2
-        ScaleSize = new(windowSize.X / 1920.0f, windowSize.Y / 1080.0f),
-        PositionOffset = new(50 * windowSize.X / 1920.0f, 10 * windowSize.Y / 1080.0f),
-        GraphSize = new(Convert.ToInt16(windowSize.X * .8), Convert.ToInt16(windowSize.Y * .9)),
-        OptionSize = new(Convert.ToInt16(windowSize.X * .2), Convert.ToInt16(windowSize.Y));
+   
 
     //Path.GetDirectoryName(Application.ExecutablePath)
-    public string PresetPath = Path.Combine(Global.ConfigPath, widgetName, "Preset.json");
-
-    public string TracesPath = Path.Combine(Global.ConfigPath, widgetName, "traces.json");
-    public string MarkersPath = Path.Combine(Global.ConfigPath, widgetName, "markers.json");
+    public readonly string PresetPath = Path.Combine(Global.ConfigPath, widgetName, "Preset.json")
+    ,TracesPath = Path.Combine(Global.ConfigPath, widgetName, "traces.json")
+    ,MarkersPath = Path.Combine(Global.ConfigPath, widgetName, "markers.json");
     
     public enum SaVar
     {

@@ -1,12 +1,13 @@
 ﻿using ImGuiNET;
+using SoapySA.Model;
 using SoapyVNACommon;
 using SoapyVNACommon.Fonts;
 
 namespace SoapySA.View.tabs;
 
-public partial class AmplitudeView(MainWindowView initiator)
+public partial class AmplitudeView(MainWindowView initiator): TabViewModel
 {
-    public void RenderAmplitude()
+    public override void Render()
     {
         Theme.Text("Min Range (dBm)", Theme.InputTheme);
         Theme.InputTheme.Prefix = "Min Range";

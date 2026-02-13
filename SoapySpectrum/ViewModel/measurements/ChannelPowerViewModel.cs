@@ -1,5 +1,6 @@
 using NLog;
 using SoapySA.Extentions;
+using SoapySA.Model;
 using SoapyVNACommon.Extentions;
 
 namespace SoapySA.View.measurements;
@@ -27,7 +28,7 @@ public partial class ChannelPowerView
     private static float _top;
     private static float _bottom;
     private static bool _calculatingBandPower;
-    private readonly MainWindowView _parent = initiator;
+    public override string tabName => "Channel Power";
 
     public static Task CalculateMeasurements(float[] data)
     {
@@ -79,23 +80,23 @@ public partial class ChannelPowerView
         return Task.CompletedTask;
     }
 
-    public void UpdateCanvasData(object? sender, KeyOfChangedValueEventArgs e)
+    public override void UpdateUIView(object? sender, KeyOfChangedValueEventArgs e)
     {
         #region Canvas_Data
 
         try
         {
-            _span = (double)_parent.Configuration.Config[Configuration.SaVar.FreqStop] -
-                    (double)_parent.Configuration.Config[Configuration.SaVar.FreqStart];
-            _center = (double)_parent.Configuration.Config[Configuration.SaVar.FreqStart] + _span / 2;
-            _refLevel = (double)_parent.Configuration.Config[Configuration.SaVar.GraphRefLevel];
-            _graphStartDb = (double)_parent.Configuration.Config[Configuration.SaVar.GraphStartDb] + _refLevel;
-            _graphEndDb = (double)_parent.Configuration.Config[Configuration.SaVar.GraphStopDb] + _refLevel;
-            _dbOffset = (double)_parent.Configuration.Config[Configuration.SaVar.GraphOffsetDb];
-            _graphLabelIdx = _parent.AmplitudeView.SScalePerDivision;
-            _fftRbw = (double)_parent.Configuration.Config[Configuration.SaVar.FftRbw];
-            _occupiedBwPrecentile = (double)_parent.Configuration.Config[Configuration.SaVar.ChannelOcp];
-            _channelBandwith = (double)_parent.Configuration.Config[Configuration.SaVar.ChannelBw];
+            _span = (double)Config[Configuration.SaVar.FreqStop] -
+                    (double)Config[Configuration.SaVar.FreqStart];
+            _center = (double)Config[Configuration.SaVar.FreqStart] + _span / 2;
+            _refLevel = (double)Config[Configuration.SaVar.GraphRefLevel];
+            _graphStartDb = (double)Config[Configuration.SaVar.GraphStartDb] + _refLevel;
+            _graphEndDb = (double)Config[Configuration.SaVar.GraphStopDb] + _refLevel;
+            _dbOffset = (double)Config[Configuration.SaVar.GraphOffsetDb];
+            _graphLabelIdx = (int)Config[Configuration.SaVar.ScalePerDivision];
+            _fftRbw = (double)Config[Configuration.SaVar.FftRbw];
+            _occupiedBwPrecentile = (double)Config[Configuration.SaVar.ChannelOcp];
+            _channelBandwith = (double)Config[Configuration.SaVar.ChannelBw];
         }
         catch (Exception ex)
         {

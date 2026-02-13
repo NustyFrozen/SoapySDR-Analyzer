@@ -1,12 +1,15 @@
-﻿using System.Drawing;
-using System.Numerics;
-using ImGuiNET;
+﻿using ImGuiNET;
+using SoapySA.Extentions;
+using SoapySA.Model;
 using SoapyVNACommon;
 using SoapyVNACommon.Extentions;
+using System.Drawing;
+using System.Numerics;
+using static SoapySA.Configuration;
 
 namespace SoapySA.View.measurements;
 
-public partial class ChannelPowerView(MainWindowView initiator)
+public partial class ChannelPowerView(ObservableDictionary<SaVar, object> Config, Model.Trace[] STraces, Marker[] SMarkers) : MeasurementTab
 {
     public void RenderChannelPowerSettings()
     {
@@ -16,7 +19,7 @@ public partial class ChannelPowerView(MainWindowView initiator)
         {
             double bw = 0;
             if (Global.TryFormatFreq(_sDisplayBw, out bw))
-                _parent.Configuration.Config[Configuration.SaVar.ChannelBw] = bw;
+                Config[Configuration.SaVar.ChannelBw] = bw;
         }
 
         Theme.NewLine();
@@ -26,7 +29,7 @@ public partial class ChannelPowerView(MainWindowView initiator)
             double ocp = 0;
             if (double.TryParse(_sDisplayObw.Replace("%", ""), out ocp))
                 if (ocp < 100 && ocp > 0)
-                    _parent.Configuration.Config[Configuration.SaVar.ChannelOcp] = ocp / 100.0;
+                    Config[Configuration.SaVar.ChannelOcp] = ocp / 100.0;
         }
         if(Theme.Button("Rest Channel Peak and Flatness values"))
         {
@@ -35,17 +38,17 @@ public partial class ChannelPowerView(MainWindowView initiator)
         }
     }
     float peakValue = -99999, minValue = 99999;
-    public void RenderChannelPower()
+    public override void Render()
     {
         #region Canvas_Data
 
         var windowPos = ImGui.GetWindowPos();
         var draw = ImGui.GetForegroundDrawList();
         var graphStatus = new Vector2();
-        _left = windowPos.X + _parent.Configuration.PositionOffset.X;
-        _right = _left + _parent.Configuration.GraphSize.X;
-        _top = windowPos.Y + _parent.Configuration.PositionOffset.Y;
-        _bottom = _top + _parent.Configuration.GraphSize.Y * .75f - _parent.Configuration.PositionOffset.Y;
+        _left = windowPos.X + UserScreenConfiguration.PositionOffset.X;
+        _right = _left + UserScreenConfiguration.GraphSize.X;
+        _top = windowPos.Y + UserScreenConfiguration.PositionOffset.Y;
+        _bottom = _top + UserScreenConfiguration.GraphSize.Y * .75f - UserScreenConfiguration.PositionOffset.Y;
         var text = string.Empty;
         var textSize = new Vector2();
         var textPos = new Vector2();
@@ -66,14 +69,14 @@ public partial class ChannelPowerView(MainWindowView initiator)
                 text = Imports.Scale(i, 0, _graphLabelIdx, _graphEndDb + _dbOffset, _graphStartDb + _dbOffset).ToString()
                     .TruncateLongString(5);
                 textSize = ImGui.CalcTextSize(text);
-                var posY = _top + i / _graphLabelIdx * _parent.Configuration.GraphSize.Y * .75f;
+                var posY = _top + i / _graphLabelIdx * UserScreenConfiguration.GraphSize.Y * .75f;
                 draw.AddText(new Vector2(_left - textSize.X, posY - textSize.Y / 2),
                     Color.LightGray.ToUint(), text);
                 draw.AddLine(new Vector2(_left, posY), new Vector2(_right, posY),
                     Color.FromArgb(100, Color.Gray).ToUint());
             }
 
-            var plot = _parent.TraceView.STraces[0].Plot;
+            var plot = STraces[0].Plot;
 
             plotData = plot.ToArray().AsSpan(); //asspan is fastest iteration
             //x = left, y = right
@@ -85,10 +88,10 @@ public partial class ChannelPowerView(MainWindowView initiator)
                 var sampleA = plotData[i - 1];
                 var sampleB = plotData[i];
 
-                var sampleAPos = _parent.GraphView.ScaleToGraph(_left, _top, _right, _bottom, sampleA.Key, sampleA.Value,
+                var sampleAPos = GraphView.ScaleToGraph(_left, _top, _right, _bottom, sampleA.Key, sampleA.Value,
                     _center - _span / 2,
                     _center + _span / 2, _graphStartDb, _graphEndDb);
-                var sampleBPos = _parent.GraphView.ScaleToGraph(_left, _top, _right, _bottom, sampleB.Key, sampleB.Value,
+                var sampleBPos = GraphView.ScaleToGraph(_left, _top, _right, _bottom, sampleB.Key, sampleB.Value,
                     _center - _span / 2,
                     _center + _span / 2, _graphStartDb, _graphEndDb);
                 //draw two lines of bandwith on the graph
@@ -117,12 +120,12 @@ public partial class ChannelPowerView(MainWindowView initiator)
                 if (sampleBPos.X > _right || sampleAPos.X < _left) continue;
                 if (sampleAPos.Y < _top || sampleBPos.Y < _top || sampleAPos.Y > _bottom || sampleBPos.Y > _bottom)
                 {
-                    if (!(bool)_parent.Configuration.Config[Configuration.SaVar.AutomaticLevel]) continue;
+                    if (!(bool)Config[Configuration.SaVar.AutomaticLevel]) continue;
                     if (sampleAPos.Y < _top || sampleBPos.Y < _top)
-                        _parent.Configuration.Config[Configuration.SaVar.GraphStartDb] =
+                        Config[Configuration.SaVar.GraphStartDb] =
                             (double)Math.Min(sampleA.Value, sampleB.Value);
                     else
-                        _parent.Configuration.Config[Configuration.SaVar.GraphStopDb] =
+                        Config[Configuration.SaVar.GraphStopDb] =
                             (double)Math.Max(sampleA.Value, sampleB.Value);
                 }
 
@@ -140,10 +143,10 @@ public partial class ChannelPowerView(MainWindowView initiator)
         }
 
         //draw OccupiedBW
-        var occupiedStart = _parent.GraphView.ScaleToGraph(_left, _top, _right, _bottom,
+        var occupiedStart = GraphView.ScaleToGraph(_left, _top, _right, _bottom,
             (float)(_center - _calculatedoccupiedBw / 2.0f), peakValue, _center - _span / 2,
             _center + _span / 2, _graphStartDb, _graphEndDb);
-        var occupiedStop = _parent.GraphView.ScaleToGraph(_left, _top, _right, _bottom,
+        var occupiedStop = GraphView.ScaleToGraph(_left, _top, _right, _bottom,
             (float)(_center + _calculatedoccupiedBw / 2.0f), peakValue, _center - _span / 2,
             _center + _span / 2, _graphStartDb, _graphEndDb);
         draw.AddLine(occupiedStart, occupiedStop, 0XFF00FF00);
@@ -161,7 +164,7 @@ public partial class ChannelPowerView(MainWindowView initiator)
         textSize = ImGui.CalcTextSize(text);
         draw.AddText(new Vector2(_left, _bottom - textSize.Y), 0xFFFFFFFF, text);
         _top = _bottom;
-        _bottom += _parent.Configuration.GraphSize.Y * .25f;
+        _bottom += UserScreenConfiguration.GraphSize.Y * .25f;
         draw.AddRectFilled(new Vector2(_left, _top), new Vector2(_right, _bottom), Color.FromArgb(16, 16, 16).ToUint());
         draw.AddRect(new Vector2(_left, _top), new Vector2(_right, _bottom), Color.FromArgb(91, 36, 221).ToUint());
         var shrink = (_right - _left) * .25f;
@@ -179,7 +182,7 @@ public partial class ChannelPowerView(MainWindowView initiator)
         {
             textSize = ImGui.CalcTextSize(measurement);
             draw.AddText(textPos, 0xFFFFFFFF, measurement);
-            textPos.Y += textSize.Y + 5 * _parent.Configuration.ScaleSize.Y;
+            textPos.Y += textSize.Y + 5 * UserScreenConfiguration.ScaleSize.Y;
         }
     }
 }

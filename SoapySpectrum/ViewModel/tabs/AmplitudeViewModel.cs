@@ -5,6 +5,7 @@ namespace SoapySA.View.tabs;
 public partial class AmplitudeView
 {
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
+    public override string tabName => "\ue473 Amplitude";
     private readonly MainWindowView _parent = initiator;
     public bool SAutomaticLevelingEnabled;
     public string SDisplayOffset = "0";

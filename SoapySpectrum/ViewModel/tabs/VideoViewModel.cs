@@ -4,6 +4,7 @@ namespace SoapySA.View.tabs;
 
 public partial class VideoView
 {
+    public override string tabName => "\uf1fe BW";
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     public string DisplayRefreshRate = "1000";
     public string FftRbw = "0.01M";

@@ -1,13 +1,18 @@
-﻿using System.Drawing;
-using System.Numerics;
-using ImGuiNET;
+﻿using ImGuiNET;
+using SoapySA.Extentions;
+using SoapySA.Model;
 using SoapyVNACommon.Extentions;
+using System.Drawing;
+using System.Numerics;
+using static SoapySA.Configuration;
 using Range = Pothosware.SoapySDR.Range;
 namespace SoapySA.View.measurements;
 
-public partial class FilterBandwithView(MainWindowView initiator)
+public partial class FilterBandwithView(ObservableDictionary<SaVar, object> Config, Trace[] STraces, Marker[] SMarkers) : MeasurementTab
 {
-    public void RenderFilterBandwith()
+    
+
+    public override void Render()
     {
         #region Canvas_Data
 
@@ -15,10 +20,10 @@ public partial class FilterBandwithView(MainWindowView initiator)
         var draw = ImGui.GetForegroundDrawList();
         var mousePos = ImGui.GetMousePos();
         var graphStatus = new Vector2();
-        Left = windowPos.X + _parent.Configuration.PositionOffset.X;
-        Right = Left + _parent.Configuration.GraphSize.X;
-        Top = windowPos.Y + _parent.Configuration.PositionOffset.Y;
-        Bottom = Top + _parent.Configuration.GraphSize.Y;
+        Left = windowPos.X + UserScreenConfiguration.PositionOffset.X;
+        Right = Left + UserScreenConfiguration.GraphSize.X;
+        Top = windowPos.Y + UserScreenConfiguration.PositionOffset.Y;
+        Bottom = Top + UserScreenConfiguration.GraphSize.Y;
         var mouseRange = new Vector2();
         float mousePosFreq = 0, mousePosdB;
 
@@ -27,7 +32,7 @@ public partial class FilterBandwithView(MainWindowView initiator)
         #region backgroundDraw
 
         draw.AddRectFilled(new Vector2(Left, Top), new Vector2(Right, Bottom), Color.FromArgb(16, 16, 16).ToUint());
-        if (new RectangleF(Left, Top, _parent.Configuration.GraphSize.X, _parent.Configuration.GraphSize.Y).Contains(
+        if (new RectangleF(Left, Top, UserScreenConfiguration.GraphSize.X, UserScreenConfiguration.GraphSize.Y).Contains(
                 mousePos.X,
                 mousePos.Y))
         {
@@ -37,7 +42,7 @@ public partial class FilterBandwithView(MainWindowView initiator)
                 Color.FromArgb(100, 100, 100).ToUint());
 
             mousePosFreq =
-                (float)(FreqStart + (mousePos.X - Left) / _parent.Configuration.GraphSize.X * (FreqStop - FreqStart));
+                (float)(FreqStart + (mousePos.X - Left) / UserScreenConfiguration.GraphSize.X * (FreqStop - FreqStart));
             mousePosdB = (float)(GraphStartDb -
                 (Bottom - mousePos.Y + Top) / Bottom * (Math.Abs(GraphEndDb) - Math.Abs(GraphStartDb)) + DbOffset);
             mouseRange.X = (float)(mousePosFreq - (FreqStop - FreqStart) / GraphLabelIdx);
@@ -51,7 +56,7 @@ public partial class FilterBandwithView(MainWindowView initiator)
             //draw X axis
             var text = $"{(FreqStart + i / GraphLabelIdx * (FreqStop - FreqStart)) / 1e6}".TruncateLongString(5);
             text += "M";
-            var posX = Left + i / GraphLabelIdx * _parent.Configuration.GraphSize.X - ImGui.CalcTextSize(text).X / 2;
+            var posX = Left + i / GraphLabelIdx * UserScreenConfiguration.GraphSize.X - ImGui.CalcTextSize(text).X / 2;
             draw.AddText(new Vector2(posX, Bottom), Color.LightGray.ToUint(), text);
 
             draw.AddLine(new Vector2(posX + ImGui.CalcTextSize(text).X / 2, Bottom),
@@ -61,7 +66,7 @@ public partial class FilterBandwithView(MainWindowView initiator)
             text = Imports.Scale(i, 0, GraphLabelIdx, GraphEndDb + DbOffset, GraphStartDb + DbOffset).ToString()
                 .TruncateLongString(5);
             //((graph_startDB - (graphLabelIdx - i) / graphLabelIdx * (Math.Abs(graph_endDB) - Math.Abs(graph_startDB))) + dbOffset).ToString().TruncateLongString(5);
-            var posY = Top + i / GraphLabelIdx * _parent.Configuration.GraphSize.Y;
+            var posY = Top + i / GraphLabelIdx * UserScreenConfiguration.GraphSize.Y;
             draw.AddText(new Vector2(Left - ImGui.CalcTextSize(text).X, posY - ImGui.CalcTextSize(text).Y / 2),
                 Color.LightGray.ToUint(), text);
             draw.AddLine(new Vector2(Left, posY), new Vector2(Right, posY), Color.FromArgb(100, Color.Gray).ToUint());
@@ -71,7 +76,7 @@ public partial class FilterBandwithView(MainWindowView initiator)
 
         try
         {
-            var plot = _parent.TraceView.STraces[0].Plot;
+            var plot = STraces[0].Plot;
             var plotData = plot.ToArray().AsSpan(); //asspan is fastest iteration
             if (!_calculatingFilterBw)
                 CalculateMeasurements(plot);
@@ -92,22 +97,22 @@ public partial class FilterBandwithView(MainWindowView initiator)
                 if (passRange.Minimum <= sampleA.Key && passRange.Maximum >= sampleB.Key)
                     traceColor = CColorPass;
 
-                var sampleAPos = _parent.GraphView.ScaleToGraph(Left, Top, Right, Bottom, sampleA.Key, sampleA.Value,
+                var sampleAPos = GraphView.ScaleToGraph(Left, Top, Right, Bottom, sampleA.Key, sampleA.Value,
                     FreqStart,
                     FreqStop, GraphStartDb, GraphEndDb);
-                var sampleBPos = _parent.GraphView.ScaleToGraph(Left, Top, Right, Bottom, sampleB.Key, sampleB.Value,
+                var sampleBPos = GraphView.ScaleToGraph(Left, Top, Right, Bottom, sampleB.Key, sampleB.Value,
                     FreqStart,
                     FreqStop, GraphStartDb, GraphEndDb);
                 //bounds check
                 if (sampleBPos.X > Right || sampleAPos.X < Left) continue;
                 if (sampleAPos.Y < Top || sampleBPos.Y < Top || sampleAPos.Y > Bottom || sampleBPos.Y > Bottom)
                 {
-                    if (!(bool)_parent.Configuration.Config[Configuration.SaVar.AutomaticLevel]) continue;
+                    if (!(bool)Config[Configuration.SaVar.AutomaticLevel]) continue;
                     if (sampleAPos.Y < Top || sampleBPos.Y < Top)
-                        _parent.Configuration.Config[Configuration.SaVar.GraphStartDb] =
+                        Config[Configuration.SaVar.GraphStartDb] =
                             (double)Math.Min(sampleA.Value, sampleB.Value);
                     else
-                        _parent.Configuration.Config[Configuration.SaVar.GraphStopDb] =
+                        Config[Configuration.SaVar.GraphStopDb] =
                             (double)Math.Max(sampleA.Value, sampleB.Value);
                 }
 
@@ -124,5 +129,10 @@ public partial class FilterBandwithView(MainWindowView initiator)
         {
             _logger.Trace($"FilterBandwith Render Error -> {ex.Message}");
         }
+    }
+
+    public override void UpdateUIView(object? sender, KeyOfChangedValueEventArgs e)
+    {
+        throw new NotImplementedException();
     }
 }

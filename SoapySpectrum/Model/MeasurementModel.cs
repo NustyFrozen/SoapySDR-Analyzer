@@ -1,11 +1,8 @@
+using SoapySA.Extentions;
+
 namespace SoapySA.Model;
 
-public enum MeasurementMode
+public abstract class MeasurementTab : TabViewModel
 {
-    None,
-    ChannelPower,
-    FilterBw,
-    Acp,
-    NoiseFigure,
-    Source
+
 }

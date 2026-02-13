@@ -5,9 +5,9 @@ using SoapyVNACommon.Fonts;
 
 namespace SoapySA.View.tabs;
 
-public partial class TraceView(MainWindowView initiator)
+public partial class TraceView(MainWindowView initiator) : TabViewModel
 {
-    public void RenderTrace()
+    public override void Render()
     {
         Theme.InputTheme.Prefix = "RBW";
         Theme.GlowingCombo("InputSelectortext3", ref SSelectedTrace, SComboTraces, Theme.InputTheme);

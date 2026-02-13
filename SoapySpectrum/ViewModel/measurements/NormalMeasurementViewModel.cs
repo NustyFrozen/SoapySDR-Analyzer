@@ -3,6 +3,9 @@ using NLog;
 using SoapySA.Extentions;
 using SoapySA.Model;
 using SoapyVNACommon.Extentions;
+using static SoapySA.Configuration;
+using SaVar = SoapySA.Configuration.SaVar;
+
 
 namespace SoapySA.View.measurements;
 
@@ -19,10 +22,11 @@ public partial class NormalMeasurementView
     public double GraphStartDb;
     public float GraphLabelIdx;
     public float Left;
-    private readonly MainWindowView _parent = initiator;
     public double RefLevel;
     public float Right;
     public float Top;
+
+    public override string tabName => "Normal Measurement";
 
     public void UpdateCanvasData(object? sender, KeyOfChangedValueEventArgs e)
     {
@@ -30,15 +34,15 @@ public partial class NormalMeasurementView
 
         try
         {
-            DbOffset = (double)_parent.Configuration.Config[Configuration.SaVar.GraphOffsetDb];
-            RefLevel = (double)_parent.Configuration.Config[Configuration.SaVar.GraphRefLevel];
-            GraphLabelIdx = _parent.AmplitudeView.SScalePerDivision;
+            DbOffset = (double)Config[SaVar.GraphOffsetDb];
+            RefLevel = (double)Config[SaVar.GraphRefLevel];
+            GraphLabelIdx = (int)Config[Configuration.SaVar.ScalePerDivision];
 
-            FreqStart = (double)_parent.Configuration.Config[Configuration.SaVar.FreqStart];
-            FreqStop = (double)_parent.Configuration.Config[Configuration.SaVar.FreqStop];
+            FreqStart = (double)Config[Configuration.SaVar.FreqStart];
+            FreqStop = (double)Config[Configuration.SaVar.FreqStop];
 
-            GraphStartDb = (double)_parent.Configuration.Config[Configuration.SaVar.GraphStartDb] + RefLevel;
-            GraphEndDb = (double)_parent.Configuration.Config[Configuration.SaVar.GraphStopDb] + RefLevel;
+            GraphStartDb = (double)Config[Configuration.SaVar.GraphStartDb] + RefLevel;
+            GraphEndDb = (double)Config[Configuration.SaVar.GraphStopDb] + RefLevel;
         }
         catch (Exception ex)
         {
@@ -58,9 +62,14 @@ public partial class NormalMeasurementView
                 double tempMarkerBandPowerDecimal = 0;
                 foreach (var b in dBArray) tempMarkerBandPowerDecimal += ((double)b).ToMw();
                 if (tempMarkerBandPowerDecimal != 0) //not enough values in dbArray --> log(0) --> overflow -inf
-                    _parent.MarkerView.SMarkers[marker.Id].BandPowerValue = tempMarkerBandPowerDecimal.ToDBm();
+                    SMarkers[marker.Id].BandPowerValue = tempMarkerBandPowerDecimal.ToDBm();
             })
             { Priority = ThreadPriority.Lowest };
         _calculateBandPowerThread.Start();
+    }
+
+    public override void UpdateUIView(object? sender, KeyOfChangedValueEventArgs e)
+    {
+        //nop
     }
 }

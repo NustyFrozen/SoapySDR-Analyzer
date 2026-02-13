@@ -1,11 +1,12 @@
 using Newtonsoft.Json;
 using NLog;
+using SoapySA.Model;
 using SoapyVNACommon;
 using SoapyVNACommon.Extentions;
 
 namespace SoapySA.View.tabs;
 
-public partial class CalibrationView(MainWindowView initiator)
+public partial class CalibrationView(MainWindowView initiator): TabViewModel
 {
     MainWindowView _parent = initiator;
     public List<Tuple<float, float>>? calibrationData;
@@ -29,7 +30,7 @@ public partial class CalibrationView(MainWindowView initiator)
         }
     }
 
-    public void renderCalibration()
+    public void Render()
     {
         Theme.Text("Calibration", Theme.InputTheme);
         if (Theme.GlowingCombo("calibrationSelector", 
@@ -39,5 +40,10 @@ public partial class CalibrationView(MainWindowView initiator)
             loadCalibration();
         }
         
+    }
+
+    public string getTabName()
+    {
+        throw new NotImplementedException();
     }
 }

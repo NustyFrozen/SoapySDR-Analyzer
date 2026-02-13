@@ -1,15 +1,16 @@
 ﻿using ImGuiNET;
+using SoapySA.Model;
 using SoapyVNACommon;
 using SoapyVNACommon.Extentions;
 using SoapyVNACommon.Fonts;
 
 namespace SoapySA.View.tabs;
 
-public partial class FrequencyView(MainWindowView initiator)
+public partial class FrequencyView(MainWindowView initiator) : TabViewModel
 {
     //input start and stop OR center and span
 
-    public void RenderFrequency()
+    public override void Render()
     {
         var childSize = _parent.Configuration.OptionSize;
 

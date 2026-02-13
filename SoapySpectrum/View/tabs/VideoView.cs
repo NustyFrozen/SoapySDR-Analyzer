@@ -1,11 +1,13 @@
-﻿using SoapyVNACommon;
+﻿using SoapySA.Model;
+using SoapyVNACommon;
 using SoapyVNACommon.Extentions;
 
 namespace SoapySA.View.tabs;
 
-public partial class VideoView(MainWindowView initiator)
+public partial class VideoView(MainWindowView initiator) : TabViewModel
 {
-    public void RenderVideo()
+
+    public override void Render()
     {
         Theme.Text("\uf1fb RBW", Theme.InputTheme);
         Theme.InputTheme.Prefix = "RBW";

@@ -1,17 +1,20 @@
 ﻿using ImGuiNET;
 using Pothosware.SoapySDR;
+using SoapySA.Model;
 using SoapyVNACommon;
 using SoapyVNACommon.Extentions;
 using SoapyVNACommon.Fonts;
 
 namespace SoapySA.View.tabs;
 
-public partial class DeviceView(MainWindowView initiator, SdrDeviceCom com)
+public partial class DeviceView(MainWindowView initiator, SdrDeviceCom com): TabViewModel
 {
+   
+
     /// <summary>
     ///     enumrates over the available devices and updates the UI accordingly
     /// </summary>
-    public void RenderDeviceData()
+    public override void Render()
     {
         if (!_initialized)
         {

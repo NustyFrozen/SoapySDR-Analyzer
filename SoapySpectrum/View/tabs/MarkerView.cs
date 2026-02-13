@@ -1,13 +1,14 @@
 ﻿using ImGuiNET;
+using SoapySA.Model;
 using SoapyVNACommon;
 using SoapyVNACommon.Extentions;
 using SoapyVNACommon.Fonts;
 
 namespace SoapySA.View.tabs;
 
-public partial class MarkerView(MainWindowView initiator)
+public partial class MarkerView(MainWindowView initiator) : TabViewModel
 {
-    public void RenderMarker()
+    public override void Render()
     {
         Theme.InputTheme.Prefix = "Marker";
         Theme.GlowingCombo("marker_combo", ref SSelectedMarker, MarkerCombo, Theme.InputTheme);
