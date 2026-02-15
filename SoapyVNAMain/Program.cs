@@ -4,6 +4,7 @@
 using ImGuiNET;
 using SoapyRL;
 using SoapySA;
+using SoapySA.Extentions;
 using SoapyVNACommon;
 using SoapyVNACommon.Extentions;
 using SoapyVNAMain;
@@ -40,6 +41,7 @@ unsafe
         screenHeight = rect.Height;
     }
 }
+UserScreenConfiguration.UpdateWindowSize(new Vector2(screenWidth, screenHeight));
 // Create window + graphics device (SDL2 window under the hood)
 VeldridStartup.CreateWindowAndGraphicsDevice(
     new WindowCreateInfo(
@@ -52,7 +54,6 @@ VeldridStartup.CreateWindowAndGraphicsDevice(
     out var window,
     out var gd
 );
-SoapySA.Configuration.screenSize = new Vector2(screenWidth, screenHeight);
 SoapyRL.Configuration.ScreenSize = new Vector2(screenWidth, screenHeight);
 // Make it borderless
 window.BorderVisible = false; // requires Veldrid 4.5.0+ :contentReference[oaicite:1]{index=1}

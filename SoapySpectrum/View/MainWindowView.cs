@@ -11,35 +11,29 @@ namespace SoapySA.View;
 
 public partial class MainWindowView : IWidget
 {
+    private MeasurementsView GraphManager;
+
+    public event EventHandler? OnWidgetExit;
+    public event EventHandler? OnWidgetEnter;
+
     public MainWindowView(string widgetName, Vector2 position, Vector2 windowSize, SdrDeviceCom deviceCom)
     {
-        Configuration = new Configuration(widgetName, this);
-        FftManager = new PerformFft(this);
-       
-        tabsService = FeaturesServiceFactory.createMainFeatures(this, deviceCom);
+        tabsService = FeaturesServiceFactory.createMainFeatures(widgetName,this, deviceCom);
+        GraphManager = tabsService.First(x=>x.GetType() == typeof(MeasurementsView)) as MeasurementsView;
     }
-
+    
     public void RenderWidget()
     {
         Render();
     }
-
+    
     public void InitWidget()
     {
-        Configuration.InitConfiguration();
+        
         Theme.InitDefaultTheme();
 
-        NormalMeasurementView.SWaitForMouseClick.Start();
-        GraphView.InitializeGraphElements();
-        ImGui.SetNextWindowPos(Configuration.MainWindowPos);
-        ImGui.SetNextWindowSize(Configuration.SWidgetSize);
-        Configuration.Config.CollectionChanged += NormalMeasurementView.UpdateCanvasData;
-        Configuration.Config.CollectionChanged += ChannelPowerView.UpdateCanvasData;
-        Configuration.Config.CollectionChanged += FilterBandwithView.UpdateCanvasData;
-        Theme.SetScaleSize(Configuration.ScaleSize);
-        NormalMeasurementView.UpdateCanvasData(null, null);
-        ChannelPowerView.UpdateCanvasData(null, null);
-        FilterBandwithView.UpdateCanvasData(null, null);
+        NormalMeasurementView.SWaitForMouseClick.Restart();
+        Theme.SetScaleSize(UserScreenConfiguration.ScaleSize);
         ImGui.GetIO().FontGlobalScale = 1.4f;
     }
 
@@ -53,45 +47,16 @@ public partial class MainWindowView : IWidget
             new Vector2(cursorpos.X, cursorpos.Y + 5), Color.White.ToUint());
     }
 
-    public void DrawToolTip()
-    {
-        var draw = ImGui.GetForegroundDrawList();
-        var start = ImGui.GetWindowPos();
-        start.X = Configuration.PositionOffset.X;
-        var end = start;
-        end.X += Configuration.GraphSize.X;
-        draw.AddRectFilled(start, end, Color.FromArgb(12, 12, 12).ToUint());
-        ImGui.Text("Selected Marker");
-        var currentMarker = MarkerView.SMarkers[MarkerView.SSelectedMarker];
-        foreach (var marker in MarkerView.SMarkers)
-        {
-            ImGui.SameLine();
-            if (ImGui.RadioButton($"{marker.Id + 1}", currentMarker.Id == marker.Id))
-            {
-                if (currentMarker.Id == marker.Id)
-                    MarkerView.SMarkers[marker.Id].IsActive = !MarkerView.SMarkers[marker.Id].IsActive;
-                else
-                    MarkerView.SMarkers[marker.Id].IsActive = true;
-                MarkerView.SSelectedMarker = marker.Id;
-            }
-        }
-
-        ImGui.SameLine();
-        if (Theme.DrawTextButton("Save User Preset"))
-            Configuration.SaveConfig();
-        ImGui.SameLine();
-        if (Theme.DrawTextButton("Load User Preset"))
-            Configuration.LoadConfig();
-    }
+   
 
     private void RenderTabSelector()
     {
-        ImGui.SetCursorPosY(Configuration.OptionSize.Y / 2.0f -
+        ImGui.SetCursorPosY(UserScreenConfiguration.OptionSize.Y / 2.0f -
                             (tabsService.Count- 1) * Theme.ButtonTheme.Size.Y / 2.0f);
 
         for (var i = 0; i < tabsService.Count; i++)
         {
-            Theme.ButtonTheme.Text = $"{tabsService[i].}";
+            Theme.ButtonTheme.Text = $"{tabsService[i].tabName}";
             if (Theme.Button(tabsService[i].tabName, Theme.ButtonTheme))
                 _ActiveTab = tabsService[i];
             Theme.NewLine();
@@ -100,31 +65,34 @@ public partial class MainWindowView : IWidget
 
     public void Render()
     {
-        DrawToolTip();
-        ImGui.BeginChild("Spectrum Graph", Configuration.GraphSize);
+        GraphManager.DrawToolTip();
 
-        GraphView.DrawGraph();
+        ImGui.BeginChild("Spectrum Graph", UserScreenConfiguration.GraphSize);
+
+        GraphManager.drawGraph();
         ImGui.EndChild();
 
-        ImGui.SetCursorPos(new Vector2(Configuration.GraphSize.X + 60 * Configuration.ScaleSize.X,
-            Configuration.PositionOffset.Y + 30 * Configuration.ScaleSize.Y));
-        ImGui.BeginChild("Spectrum Options", Configuration.OptionSize);
+        ImGui.SetCursorPos(new Vector2(UserScreenConfiguration.GraphSize.X + 60 * UserScreenConfiguration.ScaleSize.X,
+            UserScreenConfiguration.PositionOffset.Y + 30 * UserScreenConfiguration.ScaleSize.Y));
+        ImGui.BeginChild("Spectrum Options", UserScreenConfiguration.OptionSize);
         Theme.InputTheme.Prefix = "RBW";
         if (_ActiveTab is { } tab)
         {
-            tab.Render();
-            //Theme.ButtonTheme.Text = $"{_availableTabs[_tabId]}";
-            //if (Theme.Button(_availableTabs[_tabId], Theme.ButtonTheme))
-            //{
-            //    _tabId = -1;
-            //    TabMeasurementView.SSelectedPage = 0;
-            //}
+            Theme.ButtonTheme.Text = $"Return";
+            if (Theme.Button("Return Button", Theme.ButtonTheme))
+                _ActiveTab = null;
+            else
+            {
+                Theme.NewLine();
+                Theme.NewLine();
+                tab.Render();
+            }
         } else RenderTabSelector();
-
-        Theme.NewLine();
-     //render tabs here
-
         ImGui.EndChild();
         DrawCursor();
     }
+
+    public void WidgetEnter() => OnWidgetEnter?.Invoke(this, EventArgs.Empty);
+
+    public void WidgetExit() => OnWidgetExit?.Invoke(this, EventArgs.Empty);
 }

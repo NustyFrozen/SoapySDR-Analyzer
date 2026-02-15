@@ -6,6 +6,7 @@ using Pothosware.SoapySDR;
 using ProtoBuf;
 using SoapyRL.View;
 using SoapySA;
+using SoapySA.Extentions;
 using SoapySA.View;
 using SoapyVNACommon;
 using SoapyVNACommon.Extentions;
@@ -265,12 +266,12 @@ public class ConfiguratorWindow
             switch (_selectedWidgetType)
             {
                 case 0:
-                    widget = new MainWindowView(_widgetName, new Vector2(), Configuration.GetScreenSize(),
+                    widget = new MainWindowView(_widgetName, new Vector2(), UserScreenConfiguration.windowSize,
                         definedSdrCom);
                     break;
 
                 case 1:
-                    widget = new MainWindow(_widgetName, new Vector2(), Configuration.GetScreenSize(), definedSdrCom);
+                    widget = new MainWindow(_widgetName, new Vector2(), UserScreenConfiguration.windowSize, definedSdrCom);
                     break;
             }
 

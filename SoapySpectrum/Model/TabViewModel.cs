@@ -11,6 +11,5 @@ namespace SoapySA.Model
     {
         public abstract string tabName { get; }
         public abstract void Render();
-        public abstract void UpdateUIView(object? sender, KeyOfChangedValueEventArgs e);
     }
 }

@@ -1,6 +1,7 @@
 ﻿using ImGuiNET;
 using NLog;
 using Pothosware.SoapySDR;
+using SoapySA.Model;
 using SoapyVNACommon;
 using SoapyVNACommon.Extentions;
 using System;
@@ -11,20 +12,35 @@ using System.Threading.Tasks;
 
 namespace SoapySA.View.measurements
 {
-    public class SourceView(MainWindowView initiator, SdrDeviceCom com)
+    public class SourceView : MeasurementFeature
     {
         private readonly NLog.Logger _logger = LogManager.GetCurrentClassLogger();
         static readonly string[] availableSourceModes = new string[] { "Disabled","Tracking", "CW"};
-        string[] _gainValues = new string[com.TxGainValues.Count];
+        Configuration config;
+        SdrDeviceCom com;
+        string[] _gainValues;
         public string transmissionFreq = string.Empty;
         public int selectedSourceMode = 0;// 0 = disabled,1 = Track, 2 = CW
-        public void RenderSourceViewSettings()
+        public SourceView(Configuration config, SdrDeviceCom com)
+        {
+            this.config = config;
+            this.com = com;
+            _gainValues = new string[com.TxGainValues.Count];
+            config.OnConfigLoadBegin += (object? s, EventArgs e) =>
+            {
+                transmissionFreq = config.SourceFreq.ToString();
+                selectedSourceMode = config.SourceMode;
+            };
+        }
+        
+        public override string Name => "Source";
+        public override bool renderSettings()
         {
             for (var i = 0; i < _gainValues.Length; i++) _gainValues[i] = com.TxGainValues[i].ToString();
             if (com.TxAntenna is null)
             {
                 Theme.Text("This Widget was defined with no Tx Source!");
-                return;
+                return true;
             }
             Theme.Text("Tx Source");
             Theme.Text("Source Mode");
@@ -32,7 +48,7 @@ namespace SoapySA.View.measurements
                ref selectedSourceMode, availableSourceModes,
                Theme.InputTheme))
             {
-                initiator.Configuration.Config[Configuration.SaVar.SourceMode] = selectedSourceMode;
+                config.SourceMode = selectedSourceMode;
             }
             if(selectedSourceMode == 2)
             {
@@ -43,7 +59,7 @@ namespace SoapySA.View.measurements
                     double freq = 0;
                     if (Global.TryFormatFreq(transmissionFreq, out freq))
                     {
-                        initiator.Configuration.Config[Configuration.SaVar.sourceFreq] = freq;
+                        config.SourceFreq = freq;
                         com.SdrDevice.SetFrequency(Direction.Tx,
                           com.TxAntenna.Item1, (double)freq);
                     }
@@ -78,6 +94,11 @@ namespace SoapySA.View.measurements
                     }
                 }
             }
+            return true;
+        }
+        public override bool renderGraph()
+        {
+            return false;//Source view has no graph data to render,Expecting Default Mode
         }
     }
 }

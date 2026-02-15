@@ -13,16 +13,4 @@ public partial class MainWindowView
 
     public List<TabViewModel> tabsService;
     private TabViewModel? _ActiveTab;
-    private Configuration Configuration;
-    public PerformFft FftManager;
-
-    public void ReleaseSdr()
-    {
-        FftManager.StopFft();
-    }
-
-    public void HandleSdr()
-    {
-        FftManager.BeginFft();
-    }
 }

@@ -3,6 +3,7 @@ using NLog;
 using Pothosware.SoapySDR;
 using SoapyRL.View;
 using SoapySA;
+using SoapySA.Extentions;
 using SoapySA.View;
 using SoapyVNACommon;
 using SoapyVNACommon.Extentions;
@@ -112,13 +113,13 @@ internal class WidgetsWindow(ImGuiRenderer renderer) : Overlay
     {
         if (!_initializedResources)
         {
-            Theme.SetScaleSize(Configuration.GetDefaultScaleSize());
+            Theme.SetScaleSize(UserScreenConfiguration.GetDefaultScaleSize());
             _initializedResources = true;
         }
         
 
         if (!_visble) return;
-        ImGui.Begin("Widget Manager", Configuration.MainWindowFlags);
+        ImGui.Begin("Widget Manager", UserScreenConfiguration.MainWindowFlags);
 
         if (!EditMode)
             foreach (var widget in Widgets)
@@ -128,10 +129,10 @@ internal class WidgetsWindow(ImGuiRenderer renderer) : Overlay
                 {
                     //can be default null which doesn't have a window handle
                     if (_selectedWidget.IsComplete)
-                        _selectedWidget.Window.ReleaseSdr();
+                        _selectedWidget.Window.WidgetExit();
 
                     _selectedWidget = widget.Value;
-                    _selectedWidget.Window.HandleSdr();
+                    _selectedWidget.Window.WidgetEnter();
                 }
             }
 
@@ -170,12 +171,12 @@ internal class WidgetsWindow(ImGuiRenderer renderer) : Overlay
                 {
                     case 0:
                         value.Window = new MainWindowView(key, ImGui.GetCursorPos(),
-                            Configuration.GetScreenSize() - ImGui.GetCursorPos(), value.Device);
+                            UserScreenConfiguration.windowSize - ImGui.GetCursorPos(), value.Device);
                         break;
 
                     case 1:
                         value.Window = new MainWindow(key, ImGui.GetCursorPos(),
-                            Configuration.GetScreenSize() - ImGui.GetCursorPos(), value.Device);
+                            UserScreenConfiguration.windowSize - ImGui.GetCursorPos(), value.Device);
                         break;
                 }
 

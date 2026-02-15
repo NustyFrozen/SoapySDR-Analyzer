@@ -4,7 +4,6 @@ using SoapySA.Extentions;
 using SoapySA.Model;
 using SoapyVNACommon.Extentions;
 using static SoapySA.Configuration;
-using SaVar = SoapySA.Configuration.SaVar;
 
 
 namespace SoapySA.View.measurements;
@@ -13,7 +12,9 @@ public partial class NormalMeasurementView
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     public static Stopwatch SWaitForMouseClick = new();
+
     private Thread? _calculateBandPowerThread;
+
     public float Bottom;
     public double DbOffset;
     public double FreqStart;
@@ -26,50 +27,44 @@ public partial class NormalMeasurementView
     public float Right;
     public float Top;
 
-    public override string tabName => "Normal Measurement";
-
-    public void UpdateCanvasData(object? sender, KeyOfChangedValueEventArgs e)
+    // Kept signature for compatibility with existing callers,
+    // but now it simply refreshes from strongly-typed config.
+    public void UpdateCanvasData(object? sender, EventArgs e)
+        => UpdateCanvasDataFromConfig();
+    private void UpdateCanvasDataFromConfig()
     {
-        #region Canvas_Data
-
         try
         {
-            DbOffset = (double)Config[SaVar.GraphOffsetDb];
-            RefLevel = (double)Config[SaVar.GraphRefLevel];
-            GraphLabelIdx = (int)Config[Configuration.SaVar.ScalePerDivision];
+            DbOffset = _config.GraphOffsetDb;
+            RefLevel = _config.GraphRefLevel;
+            GraphLabelIdx = _config.ScalePerDivision;
 
-            FreqStart = (double)Config[Configuration.SaVar.FreqStart];
-            FreqStop = (double)Config[Configuration.SaVar.FreqStop];
+            FreqStart = _config.FreqStart;
+            FreqStop = _config.FreqStop;
 
-            GraphStartDb = (double)Config[Configuration.SaVar.GraphStartDb] + RefLevel;
-            GraphEndDb = (double)Config[Configuration.SaVar.GraphStopDb] + RefLevel;
+            GraphStartDb = _config.GraphStartDb + RefLevel;
+            GraphEndDb = _config.GraphStopDb + RefLevel;
         }
         catch (Exception ex)
         {
             Logger.Error($"error on updateCanvasData -> {ex.Message}");
         }
-
-        #endregion Canvas_Data
     }
-
+    public override bool renderSettings() => false;
     public void CalculateBandPower(Marker marker, List<float> dBArray)
     {
-        if (_calculateBandPowerThread is not null)
-            if (_calculateBandPowerThread.IsAlive)
-                return; //Already in calculations return
-        _calculateBandPowerThread = new Thread(() =>
-            {
-                double tempMarkerBandPowerDecimal = 0;
-                foreach (var b in dBArray) tempMarkerBandPowerDecimal += ((double)b).ToMw();
-                if (tempMarkerBandPowerDecimal != 0) //not enough values in dbArray --> log(0) --> overflow -inf
-                    SMarkers[marker.Id].BandPowerValue = tempMarkerBandPowerDecimal.ToDBm();
-            })
-            { Priority = ThreadPriority.Lowest };
-        _calculateBandPowerThread.Start();
-    }
+        if (_calculateBandPowerThread is not null && _calculateBandPowerThread.IsAlive)
+            return;
 
-    public override void UpdateUIView(object? sender, KeyOfChangedValueEventArgs e)
-    {
-        //nop
+        _calculateBandPowerThread = new Thread(() =>
+        {
+            double tempMarkerBandPowerDecimal = 0;
+            foreach (var b in dBArray) tempMarkerBandPowerDecimal += ((double)b).ToMw();
+            if (tempMarkerBandPowerDecimal != 0)
+                _graphData.Markers[marker.Id].BandPowerValue = tempMarkerBandPowerDecimal.ToDBm();
+        })
+        { Priority = ThreadPriority.Lowest };
+
+        _calculateBandPowerThread.Start();
     }
 }

@@ -1,6 +1,7 @@
 ﻿using ImGuiNET;
 using SoapySA.Extentions;
 using SoapySA.Model;
+using SoapySA.View.tabs;
 using SoapyVNACommon;
 using SoapyVNACommon.Extentions;
 using System.Drawing;
@@ -9,36 +10,51 @@ using static SoapySA.Configuration;
 
 namespace SoapySA.View.measurements;
 
-public partial class ChannelPowerView(ObservableDictionary<SaVar, object> Config, Model.Trace[] STraces, Marker[] SMarkers) : MeasurementTab
+public partial class ChannelPowerView : MeasurementFeature
 {
-    public void RenderChannelPowerSettings()
+    public override string Name => "Channel Power";
+    private readonly Configuration _config;
+    private readonly GraphPlotManager graphHandle;
+
+    public ChannelPowerView(Configuration config, GraphPlotManager GraphHandle)
+    {
+        _config = config;
+        this.graphHandle = GraphHandle;
+        HookConfig();
+        UpdateFromConfig(); // initial
+    }
+
+    public override bool renderSettings()
     {
         Theme.Text("Channel BW");
-        if (Theme.GlowingInput("channelPowerBandwith", ref _sDisplayBw,
-                Theme.InputTheme)) //frequencyChangedByCenterSpan
+        if (Theme.GlowingInput("channelPowerBandwith", ref _sDisplayBw, Theme.InputTheme))
         {
-            double bw = 0;
-            if (Global.TryFormatFreq(_sDisplayBw, out bw))
-                Config[Configuration.SaVar.ChannelBw] = bw;
+            if (Global.TryFormatFreq(_sDisplayBw, out var bw))
+                _config.ChannelBw = bw;
         }
 
         Theme.NewLine();
         Theme.Text("Channel Occupied Bandwidth (0-99%)");
-        if (Theme.GlowingInput("channelPowerOCP", ref _sDisplayObw, Theme.InputTheme)) //frequencyChangedByCenterSpan
+        if (Theme.GlowingInput("channelPowerOCP", ref _sDisplayObw, Theme.InputTheme))
         {
-            double ocp = 0;
-            if (double.TryParse(_sDisplayObw.Replace("%", ""), out ocp))
+            if (double.TryParse(_sDisplayObw.Replace("%", ""), out var ocp))
+            {
                 if (ocp < 100 && ocp > 0)
-                    Config[Configuration.SaVar.ChannelOcp] = ocp / 100.0;
+                    _config.ChannelOcp = ocp / 100.0;
+            }
         }
-        if(Theme.Button("Rest Channel Peak and Flatness values"))
+
+        if (Theme.Button("Rest Channel Peak and Flatness values"))
         {
             peakValue = -99999;
             minValue = 99999;
         }
+        return true;
     }
+
     float peakValue = -99999, minValue = 99999;
-    public override void Render()
+
+    public override bool renderGraph()
     {
         #region Canvas_Data
 
@@ -76,7 +92,7 @@ public partial class ChannelPowerView(ObservableDictionary<SaVar, object> Config
                     Color.FromArgb(100, Color.Gray).ToUint());
             }
 
-            var plot = STraces[0].Plot;
+            var plot = graphHandle.STraces[0].Plot;
 
             plotData = plot.ToArray().AsSpan(); //asspan is fastest iteration
             //x = left, y = right
@@ -88,13 +104,14 @@ public partial class ChannelPowerView(ObservableDictionary<SaVar, object> Config
                 var sampleA = plotData[i - 1];
                 var sampleB = plotData[i];
 
-                var sampleAPos = GraphView.ScaleToGraph(_left, _top, _right, _bottom, sampleA.Key, sampleA.Value,
+                var sampleAPos = GraphPlotManager.ScaleToGraph(_left, _top, _right, _bottom, sampleA.Key, sampleA.Value,
                     _center - _span / 2,
                     _center + _span / 2, _graphStartDb, _graphEndDb);
-                var sampleBPos = GraphView.ScaleToGraph(_left, _top, _right, _bottom, sampleB.Key, sampleB.Value,
+                var sampleBPos = GraphPlotManager.ScaleToGraph(_left, _top, _right, _bottom, sampleB.Key, sampleB.Value,
                     _center - _span / 2,
                     _center + _span / 2, _graphStartDb, _graphEndDb);
-                //draw two lines of bandwith on the graph
+
+                //draw two lines of bandwidth on the graph
                 if (sampleA.Key <= channelBandwithFreq.X && sampleB.Key >= channelBandwithFreq.X)
                 {
                     startBandPower = i;
@@ -118,23 +135,28 @@ public partial class ChannelPowerView(ObservableDictionary<SaVar, object> Config
 
                 //bounds check
                 if (sampleBPos.X > _right || sampleAPos.X < _left) continue;
+
                 if (sampleAPos.Y < _top || sampleBPos.Y < _top || sampleAPos.Y > _bottom || sampleBPos.Y > _bottom)
                 {
-                    if (!(bool)Config[Configuration.SaVar.AutomaticLevel]) continue;
+                    if (!_config.AutomaticLevel) continue;
+
                     if (sampleAPos.Y < _top || sampleBPos.Y < _top)
-                        Config[Configuration.SaVar.GraphStartDb] =
-                            (double)Math.Min(sampleA.Value, sampleB.Value);
+                        _config.GraphStartDb = Math.Min(sampleA.Value, sampleB.Value);
                     else
-                        Config[Configuration.SaVar.GraphStopDb] =
-                            (double)Math.Max(sampleA.Value, sampleB.Value);
+                        _config.GraphStopDb = Math.Max(sampleA.Value, sampleB.Value);
                 }
 
                 draw.AddLine(sampleAPos, sampleBPos, traceColorUint, 1.0f);
             }
 
             if (!_calculatingBandPower)
-                CalculateMeasurements(plotData.Slice(startBandPower, endBandPower - startBandPower).ToArray()
-                    .Select(x => x.Value).ToArray());
+            {
+                _ = CalculateMeasurements(
+                    plotData.Slice(startBandPower, endBandPower - startBandPower)
+                        .ToArray()
+                        .Select(x => x.Value)
+                        .ToArray());
+            }
         }
         catch (Exception ex)
         {
@@ -143,46 +165,51 @@ public partial class ChannelPowerView(ObservableDictionary<SaVar, object> Config
         }
 
         //draw OccupiedBW
-        var occupiedStart = GraphView.ScaleToGraph(_left, _top, _right, _bottom,
+        var occupiedStart = GraphPlotManager.ScaleToGraph(_left, _top, _right, _bottom,
             (float)(_center - _calculatedoccupiedBw / 2.0f), peakValue, _center - _span / 2,
             _center + _span / 2, _graphStartDb, _graphEndDb);
-        var occupiedStop = GraphView.ScaleToGraph(_left, _top, _right, _bottom,
+        var occupiedStop = GraphPlotManager.ScaleToGraph(_left, _top, _right, _bottom,
             (float)(_center + _calculatedoccupiedBw / 2.0f), peakValue, _center - _span / 2,
             _center + _span / 2, _graphStartDb, _graphEndDb);
+
         draw.AddLine(occupiedStart, occupiedStop, 0XFF00FF00);
         draw.AddLine(new Vector2(occupiedStart.X, _top), new Vector2(occupiedStart.X, _bottom), 0XFF00FF00);
         draw.AddLine(new Vector2(occupiedStop.X, _top), new Vector2(occupiedStop.X, _bottom), 0XFF00FF00);
+
         text = $"OBW {_calculatedoccupiedBw}hz";
         textSize = ImGui.CalcTextSize(text);
-        draw.AddText(occupiedStart + new Vector2(0, -2 - textSize.Y),
-            0XFF00FF00,
-            text);
+        draw.AddText(occupiedStart + new Vector2(0, -2 - textSize.Y), 0XFF00FF00, text);
 
         #endregion graphDraw
 
         text = $"Center {_center} Span {_span} Channel BW {_channelBandwith} RBW {_fftRbw}";
         textSize = ImGui.CalcTextSize(text);
         draw.AddText(new Vector2(_left, _bottom - textSize.Y), 0xFFFFFFFF, text);
+
         _top = _bottom;
         _bottom += UserScreenConfiguration.GraphSize.Y * .25f;
+
         draw.AddRectFilled(new Vector2(_left, _top), new Vector2(_right, _bottom), Color.FromArgb(16, 16, 16).ToUint());
         draw.AddRect(new Vector2(_left, _top), new Vector2(_right, _bottom), Color.FromArgb(91, 36, 221).ToUint());
+
         var shrink = (_right - _left) * .25f;
         _left += shrink;
         _right -= shrink;
 
-        text = $"Channel Power: {_calculatedbandPower.ToString().TruncateLongString(5)} dB\n" +
-               $"Channel Flatness {(peakValue - minValue).ToString().TruncateLongString(5)} Pk->Pk\n" +
-               $"Spectral Density: {(_calculatedbandPower - _channelBandwith.ToDBm()).ToString().TruncateLongString(5)} dBm/hz\n" +
-               $"PAPR: {(peakValue - _calculatedbandAveragePower).ToString().TruncateLongString(5)} dBm\n" +
-               $"{(_occupiedBwPrecentile * 100).ToString().TruncateLongString(5)}% Occupied Bandwith {(_calculatedoccupiedBw / 1e6).ToString().TruncateLongString(5)}Mhz";
+        text =
+            $"Channel Power: {_calculatedbandPower.ToString().TruncateLongString(5)} dB\n" +
+            $"Channel Flatness {(peakValue - minValue).ToString().TruncateLongString(5)} Pk->Pk\n" +
+            $"Spectral Density: {(_calculatedbandPower - _channelBandwith.ToDBm()).ToString().TruncateLongString(5)} dBm/hz\n" +
+            $"PAPR: {(peakValue - _calculatedbandAveragePower).ToString().TruncateLongString(5)} dBm\n" +
+            $"{(_occupiedBwPrecentile * 100).ToString().TruncateLongString(5)}% Occupied Bandwith {(_calculatedoccupiedBw / 1e6).ToString().TruncateLongString(5)}Mhz";
+
         textPos = new Vector2(_left, _top);
-        var measurements = text.Split('\n');
-        foreach (var measurement in measurements)
+        foreach (var measurement in text.Split('\n'))
         {
             textSize = ImGui.CalcTextSize(measurement);
             draw.AddText(textPos, 0xFFFFFFFF, measurement);
             textPos.Y += textSize.Y + 5 * UserScreenConfiguration.ScaleSize.Y;
         }
+        return true;
     }
 }
