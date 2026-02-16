@@ -19,7 +19,10 @@ public partial class MeasurementsView(PerformFft fftManager,GraphPlotManager _gr
             Theme.NewLine();
             //clicked return or
             //does not have special settings for this mode returning page state to 0
-            if (Theme.Button("MeasurementReturn", Theme.ButtonTheme) || !SSelectedMeasurementMode.renderSettings()) pageState = 0;
+            Theme.ButtonTheme.Text = $"Return to Measurement options";
+            bool returnClicked = Theme.Button("Return to Measurement options", Theme.ButtonTheme);
+            Theme.NewLine();
+            if ( returnClicked || !SSelectedMeasurementMode.renderSettings()) pageState = 0;
         }
         else
         {

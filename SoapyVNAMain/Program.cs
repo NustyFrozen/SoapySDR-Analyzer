@@ -50,7 +50,7 @@ VeldridStartup.CreateWindowAndGraphicsDevice(
         WindowState.Normal,
         windowTitle: "SoapySDR Analyzer"
     ),
-    new GraphicsDeviceOptions(debug: false),
+    new GraphicsDeviceOptions(debug: true),
     out var window,
     out var gd
 );
@@ -82,6 +82,7 @@ Theme.InitDefaultTheme();
 widgetsWindow.LoadResources();
 ImGui.GetIO().FontGlobalScale = 1.4f;
 Theme.InitDefaultTheme();
+
 var Overlay = widgetsWindow as Overlay;
 while (window.Exists)
 {

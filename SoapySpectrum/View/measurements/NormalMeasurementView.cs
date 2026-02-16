@@ -185,7 +185,6 @@ public partial class NormalMeasurementView : MeasurementFeature
                     }).ToArray();
                 }
 
-                // marker interaction (unchanged logic, just using _graphData.Markers/_graphData.STraces)
                 if (_graphData.Markers[_graphData.SSelectedMarker].IsActive)
                 {
                     if (ImGui.IsMouseDown((int)ImGuiMouseButton.Left) &&
@@ -206,32 +205,70 @@ public partial class NormalMeasurementView : MeasurementFeature
 
                 for (var c = 0; c < currentActiveMarkers.Length; c++)
                 {
-                    if (currentActiveMarkers[c].BandPower)
-                        CalculateBandPower(currentActiveMarkers[c], bandPowerDbList);
+                    if (currentActiveMarkers[c].BandPower) CalculateBandPower(currentActiveMarkers[c], bandPowerDbList);
 
                     var markerPosOnGraph = GraphPlotManager.ScaleToGraph(Left, Top, Right, Bottom,
                         (float)currentActiveMarkers[c].Position, (float)currentActiveMarkers[c].Value, FreqStart,
                         FreqStop, GraphStartDb, GraphEndDb);
-
                     draw.AddCircleFilled(markerPosOnGraph, 6f, traceColorUint);
-                    draw.AddCircle(markerPosOnGraph, 6.1f, Color.White.ToUint());
-
+                    draw.AddCircle(markerPosOnGraph, 6.1f, Color.White.ToUint()); //outline
                     var markerValue = currentActiveMarkers[c].Value;
                     var markerPosition = currentActiveMarkers[c].Position;
-
                     if (currentActiveMarkers[c].DeltaReference != 0)
                     {
                         markerValue = currentActiveMarkers[c].Value -
                                       _graphData.Markers[currentActiveMarkers[c].DeltaReference - 1].Value;
                         markerPosition = currentActiveMarkers[c].Position -
-                                         _graphData.Markers[currentActiveMarkers[c].DeltaReference - 1].Position;
+                                         _graphData.Markers[currentActiveMarkers[c].DeltaReference - 1]
+                                             .Position;
                     }
 
                     currentActiveMarkers[c].TxtStatus +=
                         $"Marker {currentActiveMarkers[c].Id + 1} \n Freq {(markerPosition / 1e6).ToString().TruncateLongString(5)}M \n {(markerValue + DbOffset).ToString().TruncateLongString(5)} dB\n";
+                    if (currentActiveMarkers[c].Delta)
+                    {
+                        var deltaPosition = GraphPlotManager.ScaleToGraph(Left, Top, Right, Bottom,
+                            (float)currentActiveMarkers[c].DeltaFreq, (float)currentActiveMarkers[c].DeltadB, FreqStart,
+                            FreqStop, GraphStartDb, GraphEndDb);
+                        var textSize = ImGui.CalcTextSize($"Delta Marker {c + 1}");
 
-                    // ... rest of your rendering code stays unchanged below ...
-                    // (no config dictionary usage further down)
+                        draw.AddLine(new Vector2(deltaPosition.X + 5, deltaPosition.Y),
+                            new Vector2(deltaPosition.X - 5, deltaPosition.Y), traceColorUint);
+                        draw.AddLine(new Vector2(deltaPosition.X, deltaPosition.Y + 5),
+                            new Vector2(deltaPosition.X, deltaPosition.Y - 5), traceColorUint);
+                        draw.AddText(new Vector2(deltaPosition.X - textSize.X / 2, deltaPosition.Y - textSize.Y - 2),
+                            Color.White.ToUint(), $"Delta Marker {c + 1}");
+
+                        var deltaDb = (currentActiveMarkers[c].Value - currentActiveMarkers[c].DeltadB).ToString()
+                            .TruncateLongString(5);
+                        currentActiveMarkers[c].TxtStatus +=
+                            $"Delta \n Freq {((currentActiveMarkers[c].Position - currentActiveMarkers[c].DeltaFreq) / 1e6).ToString().TruncateLongString(5)} Mhz \n {deltaDb} dB\n";
+                    }
+
+                    if (currentActiveMarkers[c].BandPower)
+                    {
+                        var powerBandLeft = _graphData.STraces[x].GetClosestSampledFrequency((float)(currentActiveMarkers[c].Position - currentActiveMarkers[c].BandPowerSpan / 2));
+                        var powerBandRight = _graphData.STraces[x].GetClosestSampledFrequency((float)(currentActiveMarkers[c].Position + currentActiveMarkers[c].BandPowerSpan / 2));
+                        var scaledPowerBandLeft = GraphPlotManager.ScaleToGraph(Left, Top, Right, Bottom,
+                            powerBandLeft.Key,
+                            powerBandLeft.Value, FreqStart, FreqStop, GraphStartDb, GraphEndDb);
+                        var scaledPowerBandRight = GraphPlotManager.ScaleToGraph(Left, Top, Right, Bottom,
+                            powerBandRight.Key,
+                            powerBandRight.Value, FreqStart, FreqStop, GraphStartDb, GraphEndDb);
+                        draw.AddLine(new Vector2(scaledPowerBandLeft.X, Top),
+                            new Vector2(scaledPowerBandLeft.X, Bottom), traceColorUint);
+                        draw.AddLine(new Vector2(scaledPowerBandRight.X, Top),
+                            new Vector2(scaledPowerBandRight.X, Bottom), traceColorUint);
+                        currentActiveMarkers[c].TxtStatus +=
+                            $"Band Power \n {(currentActiveMarkers[c].BandPowerValue + DbOffset).ToString().TruncateLongString(5)} dB\n";
+                    }
+
+                    var markerstatusText = currentActiveMarkers[c].TxtStatus;
+                    var textStatusSize = ImGui.CalcTextSize(markerstatusText);
+                    draw.AddText(new Vector2(Right + graphStatus.X - textStatusSize.X, Top + graphStatus.Y),
+                        traceColorUint, markerstatusText);
+                    graphStatus.X -= textStatusSize.X + 5;
+                    currentActiveMarkers[c].TxtStatus = string.Empty; //clear
                 }
             }
         }
