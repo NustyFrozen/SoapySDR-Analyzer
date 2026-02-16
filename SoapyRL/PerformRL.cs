@@ -7,7 +7,6 @@ using MathNet.Numerics;
 using MathNet.Numerics.Random;
 using NLog;
 using Pothosware.SoapySDR;
-using SoapyRL.Extentions;
 using SoapyRL.View;
 using SoapyRL.View.tabs;
 using Logger = NLog.Logger;
@@ -316,7 +315,7 @@ public class PerformRl(MainWindow initiator)
         {
             for (var fCenter = (double)Parent.Configuration.Config[Configuration.SaVar.FreqStart] + sampleRate / 2;
                  fCenter - sampleRate / 2 < (double)Parent.Configuration.Config[Configuration.SaVar.FreqStop]
-                 && !Imports.GetAsyncKeyState(Keys.End) && IsRunning;
+                 && IsRunning;
                  fCenter += sampleRate)
             {
                 //some parent.tab_Device.deviceCOM.sdrDevices are slow with hopping so it is preferable if we sample without hopping (just the span of the sample rate) we wont call setFrequency as it will slow the algorithm

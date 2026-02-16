@@ -1,4 +1,5 @@
 using NLog;
+using SoapySA.Model;
 using SoapySA.View.measurements;
 using SoapySA.View.tabs;
 using SoapyVNACommon.Fonts;
@@ -9,37 +10,7 @@ public partial class MainWindowView
 {
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
-    private readonly string[] _availableTabs = new[]
-    {
-        "\uf2db Device", "\ue473 Amplitude", "\uf1fe BW", $"{FontAwesome5.WaveSquare} Frequency",
-        $"{FontAwesome5.Marker} Markers", "\uf3c5 Trace", "\uf085 Calibration", $"{FontAwesome5.Calculator} Measurement"
-    };
 
-    public AmplitudeView AmplitudeView;
-    public NoiseFigureMeasurementView NoiseFigureMeasurementView;
-    public ChannelPowerView ChannelPowerView;
-    public SourceView SourceView;
-    public Configuration Configuration;
-    public DeviceView DeviceView;
-    public PerformFft FftManager;
-    public FilterBandwithView FilterBandwithView;
-    public FrequencyView FrequencyView;
-    public CalibrationView CalibrationView;
-    public GraphView GraphView;
-    public MarkerView MarkerView;
-    public NormalMeasurementView NormalMeasurementView;
-    private int _tabId;
-    public MeasurementsView TabMeasurementView;
-    public TraceView TraceView;
-    public VideoView VideoView;
-
-    public void ReleaseSdr()
-    {
-        FftManager.StopFft();
-    }
-
-    public void HandleSdr()
-    {
-        FftManager.BeginFft();
-    }
+    public List<TabViewModel> tabsService;
+    private TabViewModel? _ActiveTab;
 }

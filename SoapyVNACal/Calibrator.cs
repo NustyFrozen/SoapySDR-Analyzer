@@ -346,14 +346,7 @@ public class Calibrator
                 Console.WriteLine($"Tuned Frequency {x.frequency} Detected Peak at {x.peakFreq} Hz {x.peakdB} dBm");
 
 
-                if (Imports.GetAsyncKeyState(Imports.Keys.F1))
-                {
-                    Thread.Sleep(1000);
-                    results.Add(new Tuple<float, float>((float)x.frequency, (float)(expectedValue - x.peakdB)));
-                    x.frequency += hop;
-                    Console.Clear();
-                    Console.WriteLine($"Steps: Transmit CW from a signal generator {expectedValue} dBM at {x.frequency} Hz");
-                }
+               
             }
 
             char[] removeCharacters = Path.GetInvalidFileNameChars();

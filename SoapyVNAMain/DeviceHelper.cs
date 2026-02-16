@@ -1,6 +1,7 @@
 ﻿using NLog;
 using Pothosware.SoapySDR;
 using SoapyVNACommon.Extentions;
+using System.Runtime.InteropServices;
 using Logger = NLog.Logger;
 
 namespace SoapyVNAMain;
@@ -15,14 +16,20 @@ public class DeviceHelper
 
     public static void SetupSoapyEnvironment()
     {
-        var currentPath = Path.GetDirectoryName(Application.ExecutablePath);
-        var soapyPath = Path.Combine(currentPath, @"SoapySDR");
-        var libsPath = Path.Combine(soapyPath, @"Libs");
-        Environment.SetEnvironmentVariable("SOAPY_SDR_PLUGIN_PATH",
-            Path.Combine(currentPath, @"SoapySDR\root\SoapySDR\lib\SoapySDR\modules0.8-3\"));
-        Environment.SetEnvironmentVariable("SOAPY_SDR_ROOT", Path.Combine(currentPath, @"SoapySDR\root\SoapySDR"));
-        Environment.SetEnvironmentVariable("PATH",
-            $"{Environment.GetEnvironmentVariable("PATH")};{soapyPath};{libsPath}");
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            var currentPath = Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory);
+            Console.WriteLine(AppDomain.CurrentDomain.BaseDirectory);
+            var soapyPath = Path.Combine(currentPath, @"SoapySDR");
+            var libsPath = Path.Combine(soapyPath, @"Libs");
+            Environment.SetEnvironmentVariable("SOAPY_SDR_PLUGIN_PATH",
+                Path.Combine(currentPath, @"SoapySDR\root\SoapySDR\lib\SoapySDR\modules0.8-3\"));
+            Environment.SetEnvironmentVariable("SOAPY_SDR_ROOT", Path.Combine(currentPath, @"SoapySDR\root\SoapySDR"));
+            Environment.SetEnvironmentVariable("PATH",
+                $"{Environment.GetEnvironmentVariable("PATH")};{soapyPath};{libsPath}");
+           
+        }
+        Device.Enumerate();
     }
 
     /// <summary>

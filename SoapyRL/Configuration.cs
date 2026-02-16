@@ -24,11 +24,10 @@ new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.To
 
     public ImGuiWindowFlags MainWindowFlags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoTitleBar |
                                               ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoMove;
-
+    public static Vector2 ScreenSize = new Vector2(1920,1080);
     public Vector2 GetScreenSize()
     {
-        return new Vector2(Screen.PrimaryScreen.Bounds.Width,
-            Screen.PrimaryScreen.Bounds.Height);
+        return ScreenSize;
     }
 
     public Vector2 GetDefaultScaleSize()
@@ -54,7 +53,7 @@ new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.To
     public string MarkersPath = Path.Combine(Global.ConfigPath, widgetName, "markers.json");
 
     public string CalibrationPath =
-        Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "config", widgetName, "Cal.json");
+        Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "config", widgetName, "Cal.json");
 
     public enum SaVar
     {

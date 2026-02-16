@@ -1,25 +1,9 @@
-﻿using Pothosware.SoapySDR;
+﻿
+
+using Pothosware.SoapySDR;
 using Range = Pothosware.SoapySDR.Range;
 
 namespace SoapyVNACommon.Extentions;
-
-public enum SaVar
-{
-    LeakageSleep,
-    DeviecOptions,
-    IqCorrection,
-    GraphStartDb,
-    GraphStopDb,
-    GraphOffsetDb,
-    GraphRefLevel,
-    FftWindow,
-    FftSize,
-    FftSegment,
-    FftOverlap,
-    RefreshRate,
-    AutomaticLevel,
-    ScalePerDivision
-}
 
 public static class Global
 {
@@ -144,51 +128,4 @@ public struct SdrDeviceCom
         var sensors = SdrDevice.ListSensors();
         foreach (var sensor in sensors) SensorData += $"{sensor}: {SdrDevice.ReadSensor(sensor)}\n";
     }
-}
-
-public enum TraceViewStatus
-{
-    Active,
-    Clear,
-    View
-}
-
-public enum TraceDataStatus
-{
-    Normal,
-    Average,
-    MaxHold,
-    MinHold
-}
-
-public struct Trace
-{
-    public int Average;
-
-    private TraceDataStatus _datastatus;
-
-    //channel,anntena
-    public Tuple<int, int> Source;
-
-    public Trace()
-    {
-        Plot = new SortedDictionary<float, float>();
-        DataStatus = TraceDataStatus.Normal;
-        Average = 1;
-        ViewStatus = TraceViewStatus.Clear;
-    }
-
-    public TraceDataStatus DataStatus // property
-    {
-        get => _datastatus; // get method
-        set
-        {
-            Average = 1;
-            _datastatus = value;
-            Plot.Clear();
-        } // set method
-    }
-
-    public TraceViewStatus ViewStatus;
-    public SortedDictionary<float, float> Plot;
 }

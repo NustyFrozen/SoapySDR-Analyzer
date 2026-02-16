@@ -1,9 +1,11 @@
 ﻿using System.Diagnostics;
+using System.Drawing;
 using System.Numerics;
 using ImGuiNET;
 using NLog;
 using SoapyRL.Extentions;
 using SoapyRL.View.tabs;
+using static SoapyVNACommon.Theme;
 
 namespace SoapyRL.View;
 
@@ -260,13 +262,13 @@ public class Graph(MainWindow initiator)
                 }
             }
 
-            if (ImGui.IsMouseDown(ImGuiMouseButton.Left) && ImGui.IsMouseHoveringRect(new Vector2(left, top),
+            if (ImGui.IsMouseDown((int)ImGuiMouseButton.Left) && ImGui.IsMouseHoveringRect(new Vector2(left, top),
                                                              new Vector2(right, bottom))
                                                          && SWaitForMouseClick.ElapsedMilliseconds > 100)
                 Parent.TabMarker.SMarker.Position =
                     Parent.TabTrace.GetClosestSampeledFrequency(Parent.TabMarker.SMarker.Reference, mousePosFreq)
                         .Key;
-            if (mouseRange.X != 0 && ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left))
+            if (mouseRange.X != 0 && ImGui.IsMouseDoubleClicked((int)ImGuiMouseButton.Left))
             {
                 Parent.TabMarker.SMarker.Position =
                     Parent.TabTrace.FindMaxHoldRange(Parent.TabTrace.STraces[1].Plot, mouseRange.X, mouseRange.Y)

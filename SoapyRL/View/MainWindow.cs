@@ -17,6 +17,9 @@ public class MainWindow : IWidget
     public TabMarker TabMarker;
     public TabTrace TabTrace;
 
+    public event EventHandler? OnWidgetExit;
+    public event EventHandler? OnWidgetEnter;
+
     public MainWindow(string widgetName, Vector2 position, Vector2 windowSize, SdrDeviceCom deviceCom)
     {
         Configuration = new Configuration(widgetName, this, windowSize, position);
@@ -30,16 +33,6 @@ public class MainWindow : IWidget
     public void RenderWidget()
     {
         Render();
-    }
-
-    public void ReleaseSdr()
-    {
-        RlManager.StopRl();
-    }
-
-    public void HandleSdr()
-    {
-        /* user will enable RL on his own */
     }
 
     public void InitWidget()
@@ -64,4 +57,8 @@ public class MainWindow : IWidget
         ImGui.EndChild();
         ;
     }
+
+    public void WidgetEnter() => OnWidgetEnter?.Invoke(this, EventArgs.Empty);
+
+    public void WidgetExit() => OnWidgetExit?.Invoke(this, EventArgs.Empty);
 }

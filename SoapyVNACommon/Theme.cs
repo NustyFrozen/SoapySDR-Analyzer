@@ -199,7 +199,7 @@ public class Theme
 
         if (ImGui.IsMouseHoveringRect(startDrawBg, endDrawBg))
         {
-            if (ImGui.IsMouseClicked(ImGuiMouseButton.Left) && status == CircleState.Idle) return true;
+            if (ImGui.IsMouseClicked((int)ImGuiMouseButton.Left) && status == CircleState.Idle) return true;
             borderColorActive = cfg.Bgcolor.ToColor().Lerp(cfg.ColorHover.ToColor(), hoverStep).ToUint();
             if (hoverStep <= 1)
                 hoverStep += 0.001f;
@@ -223,7 +223,6 @@ public class Theme
         style.Colors[ImGuiCol.Text.ToInt()] = temp2;
         return results;
     }
-
     public static bool ButtonWait(string label, ButtonConfigurator cfg)
     {
         label = "##" + label;
@@ -314,7 +313,7 @@ public class Theme
 
         if (ImGui.IsMouseHoveringRect(startDrawBg, endDrawBg))
         {
-            if (ImGui.IsMouseClicked(ImGuiMouseButton.Left) && status == CircleState.Idle) status = CircleState.FadeIn;
+            if (ImGui.IsMouseClicked((int)ImGuiMouseButton.Left) && status == CircleState.Idle) status = CircleState.FadeIn;
             borderColorActive = cfg.Bgcolor.ToColor().Lerp(cfg.ColorHover.ToColor(), hoverStep).ToUint();
             if (hoverStep <= 1)
                 hoverStep += 0.001f;
@@ -496,7 +495,7 @@ public class Theme
         if (ImGui.IsMouseHoveringRect(start, end))
         {
             exitColorActive = exitColorActive.Lerp(clrHover, 0.025);
-            if (ImGui.IsMouseClicked(ImGuiMouseButton.Left)) results = true;
+            if (ImGui.IsMouseClicked((int)ImGuiMouseButton.Left)) results = true;
         }
         else
         {
@@ -529,7 +528,7 @@ public class Theme
         if (ImGui.IsMouseHoveringRect(start, end))
         {
             exitColorActive = exitColorActive.Lerp(clrHover, 0.1);
-            if (ImGui.IsMouseClicked(ImGuiMouseButton.Left)) return true;
+            if (ImGui.IsMouseClicked((int)ImGuiMouseButton.Left)) return true;
         }
         else
         {
@@ -558,7 +557,7 @@ public class Theme
         if (ImGui.IsMouseHoveringRect(start, end))
         {
             exitColorActive = exitColorActive.Lerp(clrHover, 0.1);
-            if (ImGui.IsMouseClicked(ImGuiMouseButton.Left)) Environment.Exit(0);
+            if (ImGui.IsMouseClicked((int)ImGuiMouseButton.Left)) Environment.Exit(0);
         }
         else
         {
@@ -623,11 +622,11 @@ public class Theme
             , sliderColorActive, cfg.RoundCorners);
         var windowbgColor = style.Colors[ImGuiCol.WindowBg.ToInt()].ToColor();
         style.FrameBorderSize = 0;
-        if (!ImGui.IsMouseDown(ImGuiMouseButton.Left) && status == Sliderstatus.Start) status = Sliderstatus.End;
+        if (!ImGui.IsMouseDown((int)ImGuiMouseButton.Left) && status == Sliderstatus.Start) status = Sliderstatus.End;
         ImGui.InvisibleButton(label, cfg.Size); //stop dragging
         if (ImGui.IsMouseHoveringRect(startDrawBg, endDrawBg) || status == Sliderstatus.Start)
         {
-            if (ImGui.IsMouseDown(ImGuiMouseButton.Left) || status == Sliderstatus.Start)
+            if (ImGui.IsMouseDown((int)ImGuiMouseButton.Left) || status == Sliderstatus.Start)
             {
                 status = Sliderstatus.Start;
                 var drawPos = mousePos.X - startDrawBg.X;

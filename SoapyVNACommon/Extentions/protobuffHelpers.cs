@@ -1,7 +1,6 @@
 ﻿using Pothosware.SoapySDR;
 using ProtoBuf;
 using Range = Pothosware.SoapySDR.Range;
-
 namespace SoapyVNACommon.Extentions;
 
 [ProtoContract]
