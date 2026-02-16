@@ -4,6 +4,7 @@ using SoapySA.Model;
 using SoapySA.View.tabs;
 using SoapyVNACommon;
 using SoapyVNACommon.Extentions;
+using SoapyVNACommon.Fonts;
 using System.Drawing;
 using System.Numerics;
 using static SoapySA.Configuration;
@@ -12,7 +13,7 @@ namespace SoapySA.View.measurements;
 
 public partial class ChannelPowerView : MeasurementFeature
 {
-    public override string Name => "Channel Power";
+    public override string Name => $"{FontAwesome5.Bolt} Channel Power";
     private readonly Configuration _config;
     private readonly GraphPlotManager graphHandle;
 

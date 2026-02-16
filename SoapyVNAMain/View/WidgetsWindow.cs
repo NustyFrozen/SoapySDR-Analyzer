@@ -1,6 +1,7 @@
 ﻿using ImGuiNET;
 using NLog;
 using Pothosware.SoapySDR;
+using Silk.NET.OpenGL.Extensions.ImGui;
 using SoapyRL.View;
 using SoapySA;
 using SoapySA.Extentions;
@@ -8,12 +9,11 @@ using SoapySA.View;
 using SoapyVNACommon;
 using SoapyVNACommon.Extentions;
 using SoapyVNACommon.Fonts;
-using Veldrid;
 using Logger = NLog.Logger;
 
 namespace SoapyVNAMain.View;
 
-internal class WidgetsWindow(ImGuiRenderer renderer) : Overlay
+internal class WidgetsWindow() : Overlay
 {
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     public static Dictionary<string, DefinedWidget> Widgets = new();
@@ -26,7 +26,7 @@ internal class WidgetsWindow(ImGuiRenderer renderer) : Overlay
     public static bool EditMode;
     private DefinedWidget _selectedWidget = new() { IsComplete = false };
 
-    public unsafe void LoadResources()
+    public static unsafe void LoadResources()
     {
         Logger.Debug("Loading Application Resources");
         var io = ImGui.GetIO();
@@ -74,7 +74,7 @@ internal class WidgetsWindow(ImGuiRenderer renderer) : Overlay
 
         // 3) Rebuild + upload atlas texture
         // Ensure your 'renderer' variable is the ImGuiRenderer instance
-        renderer.RecreateFontDeviceTexture();
+        
 
         // Clean up native config
         ImGuiNative.ImFontConfig_destroy(config);

@@ -4,6 +4,7 @@ using Pothosware.SoapySDR;
 using SoapySA.Model;
 using SoapyVNACommon;
 using SoapyVNACommon.Extentions;
+using SoapyVNACommon.Fonts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,7 +34,7 @@ namespace SoapySA.View.measurements
             };
         }
         
-        public override string Name => "Source";
+        public override string Name => $"{FontAwesome5.TowerBroadcast} Source";
         public override bool renderSettings()
         {
             for (var i = 0; i < _gainValues.Length; i++) _gainValues[i] = com.TxGainValues[i].ToString();

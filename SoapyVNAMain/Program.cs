@@ -2,6 +2,10 @@
 // see https://aka.ms/applicationconfiguration.
 
 using ImGuiNET;
+using Silk.NET.Input;
+using Silk.NET.OpenGL;
+using Silk.NET.OpenGL.Extensions.ImGui;
+using Silk.NET.Windowing;
 using SoapyRL;
 using SoapySA;
 using SoapySA.Extentions;
@@ -9,10 +13,8 @@ using SoapyVNACommon;
 using SoapyVNACommon.Extentions;
 using SoapyVNAMain;
 using SoapyVNAMain.View;
+using System.Drawing;
 using System.Numerics;
-using Veldrid;
-using Veldrid.Sdl2;
-using Veldrid.StartupUtilities;
 
 //ApplicationConfiguration.Initialize();
 DeviceHelper.SetupSoapyEnvironment();
@@ -22,100 +24,78 @@ if (OperatingSystem.IsWindows())
 }
 int screenWidth = 1920;
 int screenHeight = 1080;
-Veldrid.Rectangle rect;
-unsafe
-{
-    // 1. Force SDL to talk to the OS video drivers
-    Sdl2Native.SDL_Init(SDLInitFlags.Video);
+using var window = Window.Create(WindowOptions.Default);
+// Declare some variables
+ImGuiController controller = null;
+GL gl = null;
+IInputContext inputContext = null;
 
-    // 2. Now query the primary monitor (Index 0)
-    if (Sdl2Native.SDL_GetDisplayBounds(0, &rect) != 0)
+// Our loading function
+window.Load += () =>
+{
+    controller = new ImGuiController(
+        gl = window.CreateOpenGL(), // load OpenGL
+        window, // pass in our window
+        inputContext = window.CreateInput() // create an input context
+    , onConfigureIO: () =>
     {
-        // Fallback if the driver fails (common in some Linux headless environments)
-        screenWidth = 1920;
-        screenHeight = 1080;
-    }
-    else
-    {
-        screenWidth = rect.Width;
-        screenHeight = rect.Height;
-    }
-}
-UserScreenConfiguration.UpdateWindowSize(new Vector2(screenWidth, screenHeight));
-// Create window + graphics device (SDL2 window under the hood)
-VeldridStartup.CreateWindowAndGraphicsDevice(
-    new WindowCreateInfo(
-        x: 0, y: 0,
-        windowWidth: screenWidth, windowHeight: screenHeight,
-        WindowState.Normal,
-        windowTitle: "SoapySDR Analyzer"
-    ),
-    new GraphicsDeviceOptions(debug: true),
-    out var window,
-    out var gd
-);
+        //adding fonts
+        WidgetsWindow.LoadResources();
+        Theme.InitDefaultTheme();
+        ImGui.GetIO().FontGlobalScale = 1.4f;
+        Theme.InitDefaultTheme();
+    });
+    var monitor = window.Monitor;
+    var videoMode = monitor.VideoMode;
+
+    var resolution = videoMode.Resolution;
+    screenWidth = resolution.Value[0];
+    screenHeight = resolution.Value[1];
+    window.Size = new Silk.NET.Maths.Vector2D<int>(screenWidth, screenHeight);
+    window.Position = new Silk.NET.Maths.Vector2D<int>(0, 0);
+    UserScreenConfiguration.UpdateWindowSize(new Vector2(screenWidth, screenHeight));
+
+};
+
+// Handle resizes
+window.FramebufferResize += s =>
+{
+    // Adjust the viewport to the new window size
+    gl.Viewport(s);
+};
+
+// The closing function
+window.Closing += () =>
+{
+    controller?.Dispose();
+    inputContext?.Dispose();
+    gl?.Dispose();
+};
+
 SoapyRL.Configuration.ScreenSize = new Vector2(screenWidth, screenHeight);
-// Make it borderless
-window.BorderVisible = false; // requires Veldrid 4.5.0+ :contentReference[oaicite:1]{index=1}
 
-// ImGui renderer
-var imgui = new ImGuiRenderer(
-    gd,
-    gd.MainSwapchain.Framebuffer.OutputDescription,
-    window.Width,
-    window.Height
-);
-window.Resized += Window_Resized;
-
-void Window_Resized()
-{
-    gd.MainSwapchain.Resize((uint)window.Width, (uint)window.Height);
-    imgui.WindowResized(window.Width, window.Height);
-}
-
-var cl = gd.ResourceFactory.CreateCommandList();
-var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-double last = stopwatch.Elapsed.TotalSeconds;
-WidgetsWindow widgetsWindow = new WidgetsWindow(imgui);
+WidgetsWindow widgetsWindow = new WidgetsWindow();
 widgetsWindow.LoadExistingWidgets();
-Theme.InitDefaultTheme();
-widgetsWindow.LoadResources();
-ImGui.GetIO().FontGlobalScale = 1.4f;
-Theme.InitDefaultTheme();
 
 var Overlay = widgetsWindow as Overlay;
-while (window.Exists)
+// The render function
+window.Render += delta =>
 {
-    var input = window.PumpEvents();
-    if (!window.Exists) break;
 
-    double now = stopwatch.Elapsed.TotalSeconds;
-    float dt = (float)(now - last);
-    last = now;
+    controller.Update((float)delta);
 
-   
 
-    imgui.Update(dt, input);
-
-    // ---- ImGui UI ----
     try
     {
         ImGui.SetNextWindowPos(new Vector2(0, 0));
         ImGui.SetNextWindowSize(new Vector2(screenWidth, screenHeight));
         Overlay.Render();
-    }catch (Exception ex){
+    }
+    catch (Exception ex)
+    {
         Console.WriteLine(ex.Message);
     }
-    // -------------------
-
-    cl.Begin();
-    cl.SetFramebuffer(gd.MainSwapchain.Framebuffer);
-    cl.ClearColorTarget(0, RgbaFloat.Black);
-    imgui.Render(gd, cl);
-    cl.End();
-
-    gd.SubmitCommands(cl);
-    gd.SwapBuffers(gd.MainSwapchain);
-}
-
-gd.Dispose();
+    controller.Render();
+};
+window.Run();
+window.Dispose();

@@ -16,17 +16,17 @@
     <ItemGroup>
         <PackageReference Include="FFTW.NET" Version="1.0.1" />
         <PackageReference Include="Google.Protobuf" Version="3.31.0" />
-        <PackageReference Include="ImGui.NET" Version="1.72.0" />
+        <PackageReference Include="ImGui.NET" Version="1.91.6.1" />
         <PackageReference Include="ManagedCuda-CUFFT" Version="12.8.60" />
         <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
         <PackageReference Include="MathNet.Numerics.MKL.Win-x64" Version="3.0.0" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
         <PackageReference Include="NLog.Extensions.Logging" Version="5.3.12" />
         <PackageReference Include="protobuf-net" Version="3.2.52" />
+        <PackageReference Include="Silk.NET" Version="2.23.0" />
+        <PackageReference Include="Silk.NET.OpenGL" Version="2.23.0" />
+        <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.23.0" />
         <PackageReference Include="System.Management" Version="8.0.0" />
-        <PackageReference Include="Veldrid" Version="4.9.0" />
-        <PackageReference Include="Veldrid.ImGui" Version="5.72.0" />
-        <PackageReference Include="Veldrid.StartupUtilities" Version="4.9.0" />
     </ItemGroup>
     <ItemGroup>
       <Reference Include="Pothosware.SoapySDR">

@@ -187,7 +187,7 @@ public partial class NormalMeasurementView : MeasurementFeature
 
                 if (_graphData.Markers[_graphData.SSelectedMarker].IsActive)
                 {
-                    if (ImGui.IsMouseDown((int)ImGuiMouseButton.Left) &&
+                    if (ImGui.IsMouseDown(ImGuiMouseButton.Left) &&
                         ImGui.IsMouseHoveringRect(new Vector2(Left, Top), new Vector2(Right, Bottom)) &&
                         SWaitForMouseClick.ElapsedMilliseconds > 100)
                     {
@@ -195,7 +195,7 @@ public partial class NormalMeasurementView : MeasurementFeature
                             .GetClosestSampledFrequency(mousePosFreq).Key;
                     }
 
-                    if (mouseRange.X != 0 && ImGui.IsMouseDoubleClicked((int)ImGuiMouseButton.Left))
+                    if (mouseRange.X != 0 && ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left))
                     {
                         _graphData.Markers[_graphData.SSelectedMarker].Position =
                             _graphData.STraces[x].FindMaxHoldRange(mouseRange.X, mouseRange.Y).Key;

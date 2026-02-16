@@ -3,7 +3,6 @@ using MathNet.Numerics;
 using MathNet.Numerics.Random;
 using NLog;
 using Pothosware.SoapySDR;
-using SharpGen.Runtime;
 using SoapySA.View;
 using SoapyVNACommon;
 using SoapyVNACommon.Extentions;

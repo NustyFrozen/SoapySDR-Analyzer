@@ -2,6 +2,7 @@ using ImGuiNET;
 using SoapySA.Model;
 using SoapyVNACommon;
 using SoapyVNACommon.Extentions;
+using SoapyVNACommon.Fonts;
 using TraceDataStatus = SoapySA.Model.TraceDataStatus;
 using TraceViewStatus = SoapySA.Model.TraceViewStatus;
 
@@ -11,7 +12,7 @@ public class NoiseFigureMeasurementView(Configuration _config, GraphPlotManager 
 {
     private string _displayFreq = "100M", _displayENR = "15.0";
     private bool _isCalculating;
-    public override string Name => "Noise Figure (Y method) Measurement";
+    public override string Name => $"{FontAwesome5.TemperatureEmpty} Noise Figure (Y method) Measurement";
 
     private readonly Dictionary<double, double> _enrTable = new();
 

@@ -1,6 +1,7 @@
 using NLog;
 using SoapySA.Extentions;
 using SoapyVNACommon.Extentions;
+using SoapyVNACommon.Fonts;
 using System.ComponentModel;
 using System.Drawing;
 
@@ -8,7 +9,7 @@ namespace SoapySA.View.measurements;
 
 public partial class FilterBandwithView
 {
-    public override string Name => "Filter Bandwidth";
+    public override string Name => $"{FontAwesome5.Filter} Filter Bandwidth";
     private static readonly uint CColorPass = Color.FromArgb(0, 255, 0).ToUint();
     private static readonly uint CColorDeny = Color.Red.ToUint();
     private static readonly uint CColorTransition = Color.Yellow.ToUint();

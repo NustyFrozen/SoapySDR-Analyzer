@@ -1,4 +1,5 @@
 using NLog;
+using SoapyVNACommon.Fonts;
 using System.ComponentModel;
 
 namespace SoapySA.View.tabs;
@@ -6,7 +7,7 @@ namespace SoapySA.View.tabs;
 public partial class AmplitudeView
 {
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
-    public override string tabName => "\ue473 Amplitude";
+    public override string tabName => $"{FontAwesome5.Industry} Amplitude";
 
     private readonly PerformFft _fftManager;
     private readonly Configuration _config;

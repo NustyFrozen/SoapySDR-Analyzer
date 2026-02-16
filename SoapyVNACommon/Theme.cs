@@ -223,13 +223,6 @@ public class Theme
         style.Colors[ImGuiCol.Text.ToInt()] = temp2;
         return results;
     }
-    public enum ImGuiMouseButton
-    {
-        Left = 0,
-        Right = 1,
-        Middle = 2,
-        COUNT = 5
-    }
     public static bool ButtonWait(string label, ButtonConfigurator cfg)
     {
         label = "##" + label;
@@ -369,7 +362,7 @@ public class Theme
 
         draw.AddRect(new Vector2(windowpos.X, windowpos.Y - 1), new Vector2(windowpos.X + windowsize.X + 1, windowpos.Y)
             , topColor.ToColor().ToUint(), style.WindowRounding,
-            ImDrawCornerFlags.TopLeft| ImDrawCornerFlags.TopRight, 1.5f);
+            ImDrawFlags.RoundCornersTopLeft | ImDrawFlags.RoundCornersTopRight, 1.5f);
     }
 
     public static void GradientRect(Vector2 pMin, Vector2 pMax, Vector4 topColor, Vector4 bottomColor,
@@ -398,11 +391,11 @@ public class Theme
         draw.AddRect(new Vector2(windowpos.X + pMin.X, windowpos.Y + pMin.Y - 1)
             , new Vector2(windowpos.X + windowsize.X + 1 + pMin.X, pMin.Y + windowpos.Y)
             , topColor.ToColor().ToUint(), cornerRadius,
-            ImDrawCornerFlags.TopLeft | ImDrawCornerFlags.TopRight, 1.5f);
+            ImDrawFlags.RoundCornersTopLeft | ImDrawFlags.RoundCornersTopRight, 1.5f);
         draw.AddRect(new Vector2(windowpos.X + pMin.X, windowpos.Y + pMin.Y - 1 + windowsize.Y)
             , new Vector2(windowpos.X + windowsize.X + 1 + pMin.X, pMin.Y + windowpos.Y + windowsize.Y)
             , bottomColor.ToColor().ToUint(), cornerRadius,
-            ImDrawCornerFlags.TopLeft | ImDrawCornerFlags.TopRight, 1.5f);
+            ImDrawFlags.RoundCornersTopLeft | ImDrawFlags.RoundCornersTopRight, 1.5f);
     }
 
     public static void GradientGlowingInput(string label, ref string text, GlowingInputConfigurator cfg,
