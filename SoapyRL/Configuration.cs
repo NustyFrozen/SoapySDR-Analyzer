@@ -16,15 +16,20 @@ public class Configuration(string widgetName, MainWindow initiator, Vector2 wind
 #if DEBUG
     public ImGuiWindowFlags mainWindowFlags = ImGuiWindowFlags.NoScrollbar;
 
-    private Vector2 screenSize =
-new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.ToInt16(Screen.PrimaryScreen.Bounds.Height / 1.5));
-
+    private Vector2 screenSize = new Vector2(
+        Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5),
+        Convert.ToInt16(Screen.PrimaryScreen.Bounds.Height / 1.5)
+    );
     public Vector2 mainWindowPos = new Vector2(600, 0);
 #else
 
-    public ImGuiWindowFlags MainWindowFlags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoTitleBar |
-                                              ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoMove;
-    public static Vector2 ScreenSize = new Vector2(1920,1080);
+    public ImGuiWindowFlags MainWindowFlags =
+        ImGuiWindowFlags.NoScrollbar
+        | ImGuiWindowFlags.NoTitleBar
+        | ImGuiWindowFlags.NoScrollWithMouse
+        | ImGuiWindowFlags.NoMove;
+    public static Vector2 ScreenSize = new Vector2(1920, 1080);
+
     public Vector2 GetScreenSize()
     {
         return ScreenSize;
@@ -40,8 +45,7 @@ new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.To
     public Vector2 MainWindowPos = pos;
 #endif
 
-    public Vector2
-        ScaleSize = new(windowSize.X / 1920.0f, windowSize.Y / 1080.0f),
+    public Vector2 ScaleSize = new(windowSize.X / 1920.0f, windowSize.Y / 1080.0f),
         PositionOffset = new(50 * windowSize.X / 1920.0f, 10 * windowSize.Y / 1080.0f),
         GraphSize = new(Convert.ToInt16(windowSize.X * .8), Convert.ToInt16(windowSize.Y * .9)),
         OptionSize = new(Convert.ToInt16(windowSize.X * .2), Convert.ToInt16(windowSize.Y));
@@ -52,8 +56,12 @@ new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.To
     public string TracesPath = Path.Combine(Global.ConfigPath, widgetName, "traces.json");
     public string MarkersPath = Path.Combine(Global.ConfigPath, widgetName, "markers.json");
 
-    public string CalibrationPath =
-        Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "config", widgetName, "Cal.json");
+    public string CalibrationPath = Path.Combine(
+        System.AppDomain.CurrentDomain.BaseDirectory,
+        "config",
+        widgetName,
+        "Cal.json"
+    );
 
     public enum SaVar
     {
@@ -65,7 +73,7 @@ new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.To
         FftSegment,
         FftOverlap,
         ScalePerDivision,
-        ValidImpedanceTol
+        ValidImpedanceTol,
     }
 
     public ObservableDictionary<SaVar, object> Config = new();
@@ -100,24 +108,30 @@ new Vector2(Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5), Convert.To
                 _parent.RlManager.StopRl();
             }
 
-            var cfg = JsonConvert.DeserializeObject<ObservableDictionary<SaVar, object>>(File.ReadAllText(PresetPath),
+            var cfg = JsonConvert.DeserializeObject<ObservableDictionary<SaVar, object>>(
+                File.ReadAllText(PresetPath),
                 new JsonSerializerSettings
                 {
                     TypeNameHandling = TypeNameHandling.Auto,
-                    Converters = new List<JsonConverter> { new ForceIntConverter() }
-                });
-            _parent.TabMarker.SMarker = JsonConvert.DeserializeObject<TabMarker.Marker>(File.ReadAllText(MarkersPath),
+                    Converters = new List<JsonConverter> { new ForceIntConverter() },
+                }
+            );
+            _parent.TabMarker.SMarker = JsonConvert.DeserializeObject<TabMarker.Marker>(
+                File.ReadAllText(MarkersPath),
                 new JsonSerializerSettings
                 {
                     TypeNameHandling = TypeNameHandling.Auto,
-                    Converters = new List<JsonConverter> { new ForceIntConverter() }
-                });
-            _parent.TabTrace.STraces = JsonConvert.DeserializeObject<TabTrace.Trace[]>(File.ReadAllText(TracesPath),
+                    Converters = new List<JsonConverter> { new ForceIntConverter() },
+                }
+            );
+            _parent.TabTrace.STraces = JsonConvert.DeserializeObject<TabTrace.Trace[]>(
+                File.ReadAllText(TracesPath),
                 new JsonSerializerSettings
                 {
                     TypeNameHandling = TypeNameHandling.Auto,
-                    Converters = new List<JsonConverter> { new ForceIntConverter() }
-                });
+                    Converters = new List<JsonConverter> { new ForceIntConverter() },
+                }
+            );
 
             foreach (var keyvaluepair in cfg)
                 Config[keyvaluepair.Key] = keyvaluepair.Value;

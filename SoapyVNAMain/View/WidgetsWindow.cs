@@ -142,6 +142,7 @@ internal class WidgetsWindow() : Overlay
         if (EditMode)
         {
             ConfiguratorWindow.Render();
+            ImGui.End();
             return;
         }
 

@@ -127,6 +127,12 @@
         <None Update="SoapySDR\Libs\libiio.dll">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
+        <None Update="SoapySDR\Libs\libSoapySDR.so.0.8-3">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="SoapySDR\Libs\libSoapySDRCSharpSWIG.so">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
         <None Update="SoapySDR\Libs\libusb-1.0.dll">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
@@ -135,6 +141,9 @@
         </None>
         <None Update="SoapySDR\Libs\Pothosware.SoapySDR.dll">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="SoapySDR\Libs\Pothosware.SoapySDRLinux.dll">
+          <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
         <None Update="SoapySDR\Libs\pthreadVC2.dll">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
