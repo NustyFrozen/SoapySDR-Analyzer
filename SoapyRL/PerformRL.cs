@@ -1,14 +1,15 @@
-﻿using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.Numerics;
-using System.Runtime.InteropServices;
-using FFTW.NET;
+﻿using FFTW.NET;
 using MathNet.Numerics;
 using MathNet.Numerics.Random;
 using NLog;
 using Pothosware.SoapySDR;
 using SoapyRL.View;
 using SoapyRL.View.tabs;
+using SoapyVNACommon.Extentions;
+using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.Numerics;
+using System.Runtime.InteropServices;
 using Logger = NLog.Logger;
 
 namespace SoapyRL;
@@ -88,8 +89,8 @@ public class PerformRl(MainWindow initiator)
         return (index - n) * fs / n + fCenter;
     }
 
-    private float[][] WelchPsd(Complex[] inputSignal, FftwArrayComplex bufferInput,
-        FftwArrayComplex bufferOutput, FftwPlanC2C plan, int segmentLength, int overlap, float sampleRate,
+    private float[][]? WelchPsd(Complex[] inputSignal, Complex[] bufferInput,
+        Complex[] bufferOutput, FftProvider fftbackend, int segmentLength, int overlap, float sampleRate,
         float center)
     {
         var signal = inputSignal.AsSpan();
@@ -190,9 +191,9 @@ public class PerformRl(MainWindow initiator)
         var overlap = (int)(segmentLength * (double)Parent.Configuration.Config[Configuration.SaVar.FftOverlap]);
         var stepSize = segmentLength - overlap; // Step size
         var numSegments = (_fftSize - overlap) / stepSize; // Number of segments
-        var fftwArrayInput = new FftwArrayComplex(segmentLength);
-        var fftwArrayOuput = new FftwArrayComplex(segmentLength);
-        var fftwPlanContext = FftwPlanC2C.Create(fftwArrayInput, fftwArrayOuput, DftDirection.Forwards);
+        var fftprovider = new FftProvider(segmentLength);
+        var inputBuffer = new Complex[segmentLength];
+        var outBuffer = new Complex[segmentLength];
         while (IsRunning || !_fftQueue.IsEmpty)
         {
             Tuple<double, Complex[], double> next;
@@ -204,7 +205,7 @@ public class PerformRl(MainWindow initiator)
 
             var fftSamples = next.Item2;
 
-            var psd = WelchPsd(fftSamples, fftwArrayInput, fftwArrayOuput, fftwPlanContext, segmentLength,
+            var psd = WelchPsd(fftSamples, inputBuffer, inputBuffer, fftprovider, segmentLength,
                 overlap, (float)next.Item3, (float)next.Item1);
 
             if (ResetData) continue;
@@ -212,9 +213,7 @@ public class PerformRl(MainWindow initiator)
             Parent.Graph.UpdateData(psd);
         }
 
-        fftwPlanContext.Dispose();
-        fftwArrayInput.Dispose();
-        fftwArrayOuput.Dispose();
+        fftprovider.Dispose();
     }
 
     //i used to know what is going on in here, now i dont, but it works so dont touch or try to optimize

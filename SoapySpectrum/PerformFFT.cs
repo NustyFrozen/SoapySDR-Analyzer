@@ -86,8 +86,8 @@ public class PerformFft
         return results;
     }
 
-    private float[][]? WelchPsd(Complex[] inputSignal, FftwArrayComplex bufferInput,
-        FftwArrayComplex bufferOutput, FftwPlanC2C plan, int segmentLength, int overlap, float sampleRate,
+    private float[][]? WelchPsd(Complex[] inputSignal, Complex[] bufferInput,
+        Complex[] bufferOutput, FftProvider fftbackend, int segmentLength, int overlap, float sampleRate,
         float center)
     {
         try
@@ -112,7 +112,7 @@ public class PerformFft
                 for (var i = 0; i < segmentLength; i++)
                     bufferInput[i] = segment[i] * window[i];
 
-                plan.Execute();
+                fftbackend.ExecuteFft(bufferInput,bufferOutput);
 
                 for (var k = 0; k < segment.Length; k++)
                     psd[0][k] += (float)(bufferOutput[k].MagnitudeSquared() / scale);
@@ -198,9 +198,9 @@ public class PerformFft
 
     private void FFT_POOL()
     {
-        var fftwArrayInput = new FftwArrayComplex(1024);
-        var fftwArrayOuput = new FftwArrayComplex(1024);
-        var fftwPlanContext = FftwPlanC2C.Create(fftwArrayInput, fftwArrayOuput, DftDirection.Forwards);
+        var fftprovider = new FftProvider(1024);
+        var inputBuffer = new Complex[1024];
+        var outBuffer = new Complex[1024];
 
         while (IsRunning)
         {
@@ -214,19 +214,17 @@ public class PerformFft
             var fftSize = next.Item2.Length;
             var segmentLength = Math.Max(1, fftSize / Config.FftSegment);
 
-            if (fftwArrayInput.Length != segmentLength || ResetData)
+            if (fftprovider.size != segmentLength || ResetData)
             {
-                fftwPlanContext.Dispose();
-                fftwArrayInput.Dispose();
-                fftwArrayOuput.Dispose();
-                fftwArrayInput = new FftwArrayComplex(segmentLength);
-                fftwArrayOuput = new FftwArrayComplex(segmentLength);
-                fftwPlanContext = FftwPlanC2C.Create(fftwArrayInput, fftwArrayOuput, DftDirection.Forwards);
+                fftprovider.Dispose();
+                fftprovider = new FftProvider(segmentLength);
+                inputBuffer = new Complex[segmentLength];
+                outBuffer = new Complex[segmentLength];
                 continue;
             }
 
             var overlap = (int)(segmentLength * Config.FftOverlap);
-            var psd = WelchPsd(fftSamples, fftwArrayInput, fftwArrayOuput, fftwPlanContext, segmentLength, overlap,
+            var psd = WelchPsd(fftSamples, inputBuffer, outBuffer, fftprovider, segmentLength, overlap,
                 (float)next.Item3, (float)next.Item1);
 
             // Still uses _parent for the Graph View update
@@ -309,7 +307,9 @@ public class PerformFft
 
         while (IsRunning)
         {
-            if (sampleRate != Com.RxSampleRate)
+            fixed (float* bufferPtr = floatBuffer)
+            {
+                if (sampleRate != Com.RxSampleRate)
             {
                 sampleRate = Com.RxSampleRate;
                 Com.SdrDevice.SetSampleRate(Direction.Rx, Com.RxAntenna.Item1, sampleRate);
@@ -348,10 +348,9 @@ public class PerformFft
                     sw.Restart();
                     while (sw.ElapsedMilliseconds < Config.LeakageSleep && IsRunning)
                     {
-                        fixed (float* bufferPtr = floatBuffer)
-                        {
-                            rxstream.Read((nint)bufferPtr, (uint)mtu, 10_000_000, out results);
-                        }
+
+                        rxstream.Read((nint)bufferPtr, (uint)mtu, 10_000_000, out results);
+
                         Thread.Sleep(0);
                     }
                 }
@@ -362,11 +361,10 @@ public class PerformFft
 
                 while (totalSamples < fftsize && IsRunning)
                 {
-                    fixed (float* bufferPtr = floatBuffer)
-                    {
-                        var errorCode = rxstream.Read((nint)bufferPtr, (uint)mtu, 10_000_000, out results);
-                        if (errorCode is not ErrorCode.None || results is null) continue;
-                    }
+
+                    var errorCode = rxstream.Read((nint)bufferPtr, (uint)mtu, 10_000_000, out results);
+                    if (errorCode is not ErrorCode.None || results is null) continue;
+
 
                     var length = (int)Math.Min(mtu, results.NumSamples);
                     for (var i = 0; i < length * 2 && totalSamples < fftsize; i += 2)
@@ -383,17 +381,16 @@ public class PerformFft
                     CorrectIq(samples);
                     dcBlock.ProcessSignal(samples);
                 }
-
+                
                 _fftQueue.Enqueue(new Tuple<double, Complex[], double>(frequency, samples, sampleRate));
             }
 
             sw.Restart();
             while ((sw.ElapsedMilliseconds < Config.RefreshRate || ResetData) && IsRunning)
             {
-                fixed (float* bufferPtr = floatBuffer)
-                {
-                    rxstream.Read((nint)bufferPtr, (uint)mtu, 10_000_000, out results);
-                }
+
+                rxstream.Read((nint)bufferPtr, (uint)mtu, 10_000_000, out results);
+
                 if (ResetData && _fftQueue.Count == 0)
                 {
                     graphHandle.ClearPlotData();
@@ -402,6 +399,7 @@ public class PerformFft
                 }
                 Thread.Sleep(0);
             }
+        }
         }
         rxstream.Deactivate();
         rxstream.Close();

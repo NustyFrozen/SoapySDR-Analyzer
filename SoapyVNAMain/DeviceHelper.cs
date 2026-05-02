@@ -22,28 +22,27 @@ public class DeviceHelper
         var soapyPath = Path.Combine(currentPath, @"SoapySDR");
         var libsPath = Path.Combine(soapyPath, @"Libs");
 
-
-
-        NativeLibrary.SetDllImportResolver(Assembly.GetExecutingAssembly(), (libraryName, assembly, searchPath) =>
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
         {
-            if (libraryName.Equals("Pothosware.SoapySDR.dll", StringComparison.OrdinalIgnoreCase))
+           
+            NativeLibrary.SetDllImportResolver(Assembly.GetExecutingAssembly(), (libraryName, assembly, searchPath) =>
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                if (libraryName.Equals("Pothosware.SoapySDR.dll", StringComparison.OrdinalIgnoreCase))
                 {
+
                     // Force it to load the Linux version instead
                     // This prevents the runtime from ever looking for the Windows .dll
                     return NativeLibrary.Load("Pothosware.SoapySDRLinux.dll", assembly, searchPath);
-                }
-            }
 
-            return IntPtr.Zero;
-        });
-        NativeLibrary.SetDllImportResolver(typeof(Pothosware.SoapySDR.Device).Assembly, (libraryName, assembly, searchPath) =>
-        {
-            if (libraryName == "SoapySDRCSharpSWIG")
+                }
+
+                return IntPtr.Zero;
+            });
+            NativeLibrary.SetDllImportResolver(typeof(Pothosware.SoapySDR.Device).Assembly, (libraryName, assembly, searchPath) =>
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                if (libraryName == "SoapySDRCSharpSWIG")
                 {
+
 
                     string coreLibPath = Path.Combine(libsPath, "libSoapySDR.so.0.8-3");
                     if (File.Exists(coreLibPath))
@@ -56,10 +55,12 @@ public class DeviceHelper
                     {
                         return NativeLibrary.Load(swigLibPath);
                     }
+
                 }
-            }
-            return IntPtr.Zero;
-        });
+                return IntPtr.Zero;
+            });
+
+        } else
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         { 
             Environment.SetEnvironmentVariable("SOAPY_SDR_PLUGIN_PATH",
