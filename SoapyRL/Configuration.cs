@@ -14,13 +14,22 @@ public class Configuration(string widgetName, MainWindow initiator, Vector2 wind
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
     private readonly MainWindow _parent = initiator;
 #if DEBUG
-    public ImGuiWindowFlags mainWindowFlags = ImGuiWindowFlags.NoScrollbar;
+    public static Vector2 ScreenSize = new Vector2(1920, 1080);
 
-    private Vector2 screenSize = new Vector2(
-        Convert.ToInt16(Screen.PrimaryScreen.Bounds.Width / 1.5),
-        Convert.ToInt16(Screen.PrimaryScreen.Bounds.Height / 1.5)
-    );
-    public Vector2 mainWindowPos = new Vector2(600, 0);
+    public Vector2 GetScreenSize()
+    {
+        return ScreenSize;
+    }
+
+    public Vector2 GetDefaultScaleSize()
+    {
+        return GetScreenSize() / new Vector2(1920.0f, 1080.0f);
+    }
+
+    public readonly Vector2 SWidgetSize = windowSize;
+
+    public Vector2 MainWindowPos = pos;
+    public ImGuiWindowFlags mainWindowFlags = ImGuiWindowFlags.NoScrollbar;
 #else
 
     public ImGuiWindowFlags MainWindowFlags =

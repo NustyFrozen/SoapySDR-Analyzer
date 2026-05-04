@@ -51,13 +51,13 @@ window.Load += () =>
     );
     var monitor = window.Monitor;
     var videoMode = monitor.VideoMode;
-
     var resolution = videoMode.Resolution;
     screenWidth = resolution.Value[0];
     screenHeight = resolution.Value[1];
     window.Size = new Silk.NET.Maths.Vector2D<int>(screenWidth, screenHeight);
     window.Position = new Silk.NET.Maths.Vector2D<int>(0, 0);
-    UserScreenConfiguration.UpdateWindowSize(new Vector2(screenWidth, screenHeight));
+    window.Resize+= (x) =>
+    UserScreenConfiguration.UpdateWindowSize(new Vector2(x.X, x.Y));
 };
 
 // Handle resizes
@@ -74,9 +74,6 @@ window.Closing += () =>
     inputContext?.Dispose();
     gl?.Dispose();
 };
-
-SoapyRL.Configuration.ScreenSize = new Vector2(screenWidth, screenHeight);
-
 WidgetsWindow widgetsWindow = new WidgetsWindow();
 widgetsWindow.LoadExistingWidgets();
 

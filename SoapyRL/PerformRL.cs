@@ -111,7 +111,7 @@ public class PerformRl(MainWindow initiator)
             for (var i = 0; i < segmentLength; i++)
                 bufferInput[i] = segment[i] * window[i];
             // Perform FFT
-            plan.Execute();
+            fftbackend.ExecuteFft(bufferInput,bufferOutput);
             // Compute periodogram (magnitude squared)
             for (var k = 0; k < segmentLength; k++)
                 psd[0][k] +=
