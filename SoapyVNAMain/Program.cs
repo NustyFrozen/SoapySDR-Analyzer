@@ -1,15 +1,12 @@
 // To customize application configuration such as set high DPI settings or default font,
 // see https://aka.ms/applicationconfiguration.
 
-using System.Drawing;
 using System.Numerics;
 using ImGuiNET;
 using Silk.NET.Input;
 using Silk.NET.OpenGL;
 using Silk.NET.OpenGL.Extensions.ImGui;
 using Silk.NET.Windowing;
-using SoapyRL;
-using SoapySA;
 using SoapySA.Extentions;
 using SoapyVNACommon;
 using SoapyVNACommon.Extentions;
@@ -50,21 +47,28 @@ window.Load += () =>
         }
     );
     var monitor = window.Monitor;
-    var videoMode = monitor.VideoMode;
-    var resolution = videoMode.Resolution;
-    screenWidth = resolution.Value[0];
-    screenHeight = resolution.Value[1];
+    if (monitor is not null)
+    {
+        var videoMode = monitor.VideoMode;
+        var resolution = videoMode.Resolution;
+        if (resolution is not null)
+        {
+            screenWidth = resolution.Value[0];
+            screenHeight = resolution.Value[1];
+        }
+    }
+    { }
     window.Size = new Silk.NET.Maths.Vector2D<int>(screenWidth, screenHeight);
     window.Position = new Silk.NET.Maths.Vector2D<int>(0, 0);
-    window.Resize+= (x) =>
-    UserScreenConfiguration.UpdateWindowSize(new Vector2(x.X, x.Y));
+    window.Resize += (x) => UserScreenConfiguration.UpdateWindowSize(new Vector2(x.X, x.Y));
 };
 
 // Handle resizes
 window.FramebufferResize += s =>
 {
     // Adjust the viewport to the new window size
-    gl.Viewport(s);
+    if (gl is not null)
+        gl.Viewport(s);
 };
 
 // The closing function
