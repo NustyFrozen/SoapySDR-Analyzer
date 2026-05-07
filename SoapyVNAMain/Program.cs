@@ -4,6 +4,7 @@
 using System.Drawing;
 using System.Numerics;
 using ImGuiNET;
+using NLog;
 using Silk.NET.Input;
 using Silk.NET.OpenGL;
 using Silk.NET.OpenGL.Extensions.ImGui;
@@ -42,10 +43,11 @@ window.Load += () =>
         ,
         onConfigureIO: () =>
         {
+            
             //adding fonts
             WidgetsWindow.LoadResources();
             Theme.InitDefaultTheme();
-            ImGui.GetIO().FontGlobalScale = 1.4f;
+            ImGui.GetIO().FontGlobalScale = 1.4f * UserScreenConfiguration.GetDefaultScaleSize().X;
             Theme.InitDefaultTheme();
         }
     );
@@ -56,10 +58,15 @@ window.Load += () =>
     screenHeight = resolution.Value[1];
     window.Size = new Silk.NET.Maths.Vector2D<int>(screenWidth, screenHeight);
     window.Position = new Silk.NET.Maths.Vector2D<int>(0, 0);
-    window.Resize+= (x) =>
-    UserScreenConfiguration.UpdateWindowSize(new Vector2(x.X, x.Y));
+        Logger Logger = LogManager.GetCurrentClassLogger();
+Logger.Info($"Window Size -> ({screenWidth},{screenHeight})");
+    UserScreenConfiguration.UpdateWindowSize(new Vector2(screenWidth,screenHeight));
+     ImGui.GetIO().FontGlobalScale = 1.4f * UserScreenConfiguration.GetDefaultScaleSize().X;
+            
 };
 
+    window.Resize+= (x) =>
+      UserScreenConfiguration.UpdateWindowSize(new Vector2(screenWidth,screenHeight));
 // Handle resizes
 window.FramebufferResize += s =>
 {
