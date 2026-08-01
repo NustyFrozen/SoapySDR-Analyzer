@@ -15,6 +15,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\SoapyRL\SoapyRL.csproj" />
+        <ProjectReference Include="..\SoapyRTSA\SoapyRTSA.csproj" />
         <ProjectReference Include="..\SoapySpectrum\SoapySA.csproj" />
         <ProjectReference Include="..\SoapyVNACommon\SoapyVNACommon.csproj" />
     </ItemGroup>

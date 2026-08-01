@@ -66,10 +66,34 @@ public struct SdrDeviceCom
     public string Descriptor;
     public string SensorData;
 
+    /// <summary>
+    ///     Extra driver arguments the device was opened with - UHD transport buffer sizing and the like.
+    ///     Kept apart from <see cref="Descriptor" /> so the label stays readable, and carried in the widget
+    ///     file so a restart reopens the device exactly the same way. Only ever applied at open time:
+    ///     transports are built when the driver constructs, long before a stream is set up.
+    /// </summary>
+    public string DeviceArgs = string.Empty;
+
     public SdrDeviceCom(string sdrKwargs)
+        : this(sdrKwargs, string.Empty)
+    {
+    }
+
+    public SdrDeviceCom(string sdrKwargs, string? deviceArgs)
     {
         Descriptor = sdrKwargs;
-        SdrDevice = new Device(sdrKwargs);
+        DeviceArgs = deviceArgs?.Trim() ?? string.Empty;
+        SdrDevice = new Device(OpenArguments(sdrKwargs, DeviceArgs));
+    }
+
+    /// <summary>The kwargs string a device is actually opened with.</summary>
+    public static string OpenArguments(string descriptor, string? deviceArgs)
+    {
+        if (string.IsNullOrWhiteSpace(deviceArgs))
+            return descriptor;
+
+        var extra = deviceArgs.Trim().TrimStart(',');
+        return string.IsNullOrWhiteSpace(descriptor) ? extra : $"{descriptor},{extra}";
     }
 
     public SdrDeviceCom(SdrDeviceCom cpy)

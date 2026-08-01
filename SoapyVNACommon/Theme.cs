@@ -688,7 +688,8 @@ public class Theme
         var style = ImGui.GetStyle();
         var draw = ImGui.GetWindowDrawList();
         var cursorPos = ImGui.GetCursorPos();
-        var mousePos = ImGui.GetCursorPos();
+        //the track is in screen space, so the mouse has to be read in screen space too
+        var mousePos = ImGui.GetMousePos();
         var startDrawBg = new Vector2(windowpos.X + cursorPos.X, windowpos.Y + cursorPos.Y);
         var endDrawBg = new Vector2(windowpos.X + cursorPos.X + cfg.Size.X, windowpos.Y + cursorPos.Y + cfg.Size.Y);
         draw.AddRectFilled(startDrawBg, endDrawBg, cfg.Bgcolor, cfg.RoundCorners);

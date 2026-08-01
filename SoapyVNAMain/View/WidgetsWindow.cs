@@ -167,8 +167,12 @@ internal class WidgetsWindow() : Overlay
                     if (Theme.DrawTextButton("Retry Initializing"))
                         try
                         {
+                            //reopened with the driver arguments the widget was created with
                             Widgets[key].Device.SdrDevice = new Device(
-                                Widgets[key].Device.Descriptor
+                                SdrDeviceCom.OpenArguments(
+                                    Widgets[key].Device.Descriptor,
+                                    Widgets[key].Device.DeviceArgs
+                                )
                             );
                             Widgets[key].Attempted = false;
                         }
@@ -196,6 +200,15 @@ internal class WidgetsWindow() : Overlay
 
                     case 1:
                         value.Window = new MainWindow(
+                            key,
+                            ImGui.GetCursorPos(),
+                            UserScreenConfiguration.windowSize - ImGui.GetCursorPos(),
+                            value.Device
+                        );
+                        break;
+
+                    case 2:
+                        value.Window = new SoapyRTSA.View.MainWindowView(
                             key,
                             ImGui.GetCursorPos(),
                             UserScreenConfiguration.windowSize - ImGui.GetCursorPos(),

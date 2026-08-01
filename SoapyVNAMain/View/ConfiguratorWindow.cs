@@ -66,7 +66,12 @@ public class ConfiguratorWindow
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     private static string _widgetName = "Widget1";
     private static int _selectedWidgetType, _selectedSdr = -1;
-    private static readonly string[] WidgetType = new[] { "Spectrum Analyzer", "Return Loss" };
+    private static readonly string[] WidgetType = new[]
+    {
+        "Spectrum Analyzer",
+        "Return Loss",
+        "Real Time Spectrum"
+    };
 
     private static readonly Dictionary<uint, StringList> AvailableRxAnntenna = new();
     private static readonly Dictionary<uint, StringList> AvailableTxAnntenna = new();
@@ -75,6 +80,12 @@ public class ConfiguratorWindow
     public static string SCustomRxSampleRate = "0", SCustomTxSampleRate = "0";
     public static int SelectedRxSampleRate = -1, SelectedTxSampleRate = -1;
     public static double RxSampleRate;
+
+    /// <summary>
+    ///     Driver arguments the device is opened with. Transport buffers can only be sized here: UHD builds
+    ///     its transport when the driver constructs, so a stream argument would come far too late.
+    /// </summary>
+    public static string SDeviceArgs = string.Empty;
 
     private static void CreateWidget()
     {
@@ -157,6 +168,11 @@ public class ConfiguratorWindow
                 {
                     _selectedSdr = i;
                     FetchAvailableAnntennas();
+
+                    //start from whatever this driver is known to need, the field stays editable
+                    SDeviceArgs = DeviceHelper.AvailableDevicesCom![i].DeviceArgs is { Length: > 0 } existing
+                        ? existing
+                        : DeviceHelper.SuggestDeviceArguments(devKwargs);
                 }
 
             Theme.TextbuttonTheme = Theme.GetTextButtonTheme();
@@ -179,6 +195,12 @@ public class ConfiguratorWindow
             if (ImGui.IsItemHovered())
                 ImGui.SetTooltip($"{_widgetName} Already Exists");
         }
+
+        Theme.NewLine();
+        Theme.Text($"{FontAwesome5.Sliders} Device Args (applied when the device is opened)");
+        Theme.InputTheme.Prefix = "key=value,key=value";
+        Theme.GlowingInput("Device Args", ref SDeviceArgs, Theme.InputTheme, 192);
+        Theme.Text("Transport buffers live here, not in stream args:\nUHD sizes its transport when the driver opens.");
 
         isvalid &= _selectedSdr != -1;
         try
@@ -209,6 +231,22 @@ public class ConfiguratorWindow
                     Theme.Text("select Source Anntenna");
                     Theme.GlowingCombo("select forward Anntenna", ref _selectedTxAnntenna,
                         AvailableTxAnntenna[(uint)_selectedTxChannel].ToArray()
+                        , Theme.InputTheme);
+                    isvalid &= _selectedRxAnntenna != -1;
+                    break;
+
+                case 2: //Real time spectrum: receive only, and it sets its own rate in its Device tab
+                    Theme.NewLine();
+                    Theme.Text("select Rx Channel");
+                    Theme.GlowingCombo("select Rtsa Channel", ref _selectedRxChannel,
+                        Array.ConvertAll(
+                            Enumerable.Range(0, (int)DeviceHelper.AvailableDevicesCom[_selectedSdr].AvailableRxChannels)
+                                .ToArray(), Convert.ToString)
+                        , Theme.InputTheme);
+                    Theme.NewLine();
+                    Theme.Text("select Rx Anntenna");
+                    Theme.GlowingCombo("select Rtsa Anntenna", ref _selectedRxAnntenna,
+                        AvailableRxAnntenna[(uint)_selectedRxChannel].ToArray()
                         , Theme.InputTheme);
                     isvalid &= _selectedRxAnntenna != -1;
                     break;
@@ -264,12 +302,21 @@ public class ConfiguratorWindow
         Theme.TextbuttonTheme.Bgcolor = isvalid ? Color.Green.ToUint() : Color.Red.ToUint();
         if (Theme.DrawTextButton($"{text}") && isvalid)
         {
-            //the spectrum widget owns its rate now, so creation only seeds it from the device
-            var rxSampleRate = _selectedWidgetType == 0
-                ? CurrentRxSampleRate(DeviceHelper.AvailableDevicesCom[_selectedSdr], (uint)_selectedRxChannel)
+            //driver arguments only bite at open time, so the device is reopened before the widget binds to it
+            if (!DeviceHelper.ReopenDevice(_selectedSdr, SDeviceArgs))
+            {
+                Logger.Warn("carrying on with the arguments the driver would accept");
+                SDeviceArgs = DeviceHelper.AvailableDevicesCom[_selectedSdr].DeviceArgs;
+            }
+
+            var selectedDevice = DeviceHelper.AvailableDevicesCom[_selectedSdr];
+
+            //the spectrum widgets own their rate now, so creation only seeds it from the device
+            var rxSampleRate = _selectedWidgetType is 0 or 2
+                ? CurrentRxSampleRate(selectedDevice, (uint)_selectedRxChannel)
                 : RxSampleRate;
 
-            var definedSdrCom = new SdrDeviceCom(DeviceHelper.AvailableDevicesCom[_selectedSdr])
+            var definedSdrCom = new SdrDeviceCom(selectedDevice)
             {
                 RxSampleRate = rxSampleRate,
                 TxSampleRate = rxSampleRate,
@@ -293,6 +340,11 @@ public class ConfiguratorWindow
 
                 case 1:
                     widget = new MainWindow(_widgetName, new Vector2(), UserScreenConfiguration.windowSize, definedSdrCom);
+                    break;
+
+                case 2:
+                    widget = new SoapyRTSA.View.MainWindowView(_widgetName, new Vector2(),
+                        UserScreenConfiguration.windowSize, definedSdrCom);
                     break;
             }
 
