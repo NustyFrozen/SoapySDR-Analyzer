@@ -77,6 +77,8 @@ public partial class ChannelPowerView : MeasurementFeature
 
         #region graphDraw
 
+        var refLevelFit = GraphPlotManager.RefLevelFit.Inside;
+
         try
         {
             draw.AddRectFilled(new Vector2(_left, _top), new Vector2(_right, _bottom), Color.FromArgb(16, 16, 16).ToUint());
@@ -139,6 +141,10 @@ public partial class ChannelPowerView : MeasurementFeature
 
                 if (sampleAPos.Y < _top || sampleBPos.Y < _top || sampleAPos.Y > _bottom || sampleBPos.Y > _bottom)
                 {
+                    refLevelFit |= sampleAPos.Y < _top || sampleBPos.Y < _top
+                        ? GraphPlotManager.RefLevelFit.AboveTop
+                        : GraphPlotManager.RefLevelFit.BelowBottom;
+
                     if (!_config.AutomaticLevel) continue;
 
                     if (sampleAPos.Y < _top || sampleBPos.Y < _top)
@@ -164,6 +170,8 @@ public partial class ChannelPowerView : MeasurementFeature
             _calculatingBandPower = false;
             Logger.Error($"Channe Power trace Render error -> {ex.Message}");
         }
+
+        GraphPlotManager.DrawRefLevelWarning(draw, new Vector2(_left, _top), refLevelFit);
 
         //draw OccupiedBW
         var occupiedStart = GraphPlotManager.ScaleToGraph(_left, _top, _right, _bottom,

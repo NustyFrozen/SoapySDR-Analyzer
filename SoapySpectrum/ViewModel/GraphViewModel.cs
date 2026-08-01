@@ -9,6 +9,19 @@ namespace SoapySA.View;
 
 public partial class GraphPlotManager
 {
+    /// <summary>
+    ///     Where the plotted bins sit relative to the display window. Anything but <see cref="Inside" />
+    ///     means the trace is being clipped against an edge of the graph, which on screen looks the same
+    ///     as a flat line and is worth saying out loud.
+    /// </summary>
+    [Flags]
+    public enum RefLevelFit
+    {
+        Inside = 0,
+        AboveTop = 1,
+        BelowBottom = 2
+    }
+
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     public int SSelectedTrace,
         SSelectedMarker;

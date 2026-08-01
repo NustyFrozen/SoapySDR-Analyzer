@@ -117,6 +117,8 @@ public partial class NormalMeasurementView : MeasurementFeature
 
         #endregion backgroundDraw
 
+        var refLevelFit = GraphPlotManager.RefLevelFit.Inside;
+
         try
         {
             for (var x = 0; x < _graphData.STraces.Length; x++)
@@ -159,6 +161,10 @@ public partial class NormalMeasurementView : MeasurementFeature
 
                     if (sampleAPos.Y < Top || sampleBPos.Y < Top || sampleAPos.Y > Bottom || sampleBPos.Y > Bottom)
                     {
+                        refLevelFit |= sampleAPos.Y < Top || sampleBPos.Y < Top
+                            ? GraphPlotManager.RefLevelFit.AboveTop
+                            : GraphPlotManager.RefLevelFit.BelowBottom;
+
                         if (!_config.AutomaticLevel) continue;
 
                         if (sampleAPos.Y < Top || sampleBPos.Y < Top)
@@ -293,6 +299,8 @@ public partial class NormalMeasurementView : MeasurementFeature
             if (!ex.Message.Contains("Sequence"))
                 Logger.Trace($"NormalMeasurement Render Error -> {ex.Message}");
         }
+
+        GraphPlotManager.DrawRefLevelWarning(draw, new Vector2(Left, Top), refLevelFit);
         return true;
     }
 }

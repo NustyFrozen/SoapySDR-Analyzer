@@ -14,14 +14,6 @@ public partial class DeviceView : TabViewModel
     /// </summary>
     public void RenderDeviceData()
     {
-        if (!_initialized)
-        {
-            for (var i = 0; i < GainValues.Length; i++)
-                GainValues[i] = _DeviceCom.RxGainValues[i].ToString();
-
-            _initialized = true;
-        }
-
         ImGui.Text($"{FontAwesome5.Microchip} {_DeviceCom.Descriptor}\n" +
                    $"CH {_DeviceCom.RxAntenna.Item1}\n" +
                    $"ANT {_DeviceCom.RxAntenna.Item2}");
@@ -46,16 +38,12 @@ public partial class DeviceView : TabViewModel
                 }
                 else
                 {
-                    if (range.Step != 0)
-                    {
-                        _DeviceCom.SdrDevice.SetGain(Direction.Rx, _DeviceCom.RxAntenna.Item1, gainElm.Key.Item2,
-                            Math.Round(results / range.Step) * range.Step);
-                    }
-                    else
-                    {
-                        // free value
-                        _DeviceCom.SdrDevice.SetGain(Direction.Rx, _DeviceCom.RxAntenna.Item1, gainElm.Key.Item2, results);
-                    }
+                    // snap to the step the element supports, or take the value as typed when it is free
+                    var applied = range.Step != 0 ? Math.Round(results / range.Step) * range.Step : results;
+
+                    _DeviceCom.SdrDevice.SetGain(Direction.Rx, _DeviceCom.RxAntenna.Item1, gainElm.Key.Item2, applied);
+                    //remember what actually reached the device, so a preset restores this exact split
+                    _Config.SetRxGain(_DeviceCom.RxAntenna.Item1, gainElm.Key.Item2, applied);
                 }
             }
         }
@@ -69,10 +57,79 @@ public partial class DeviceView : TabViewModel
         }
     }
 
+    /// <summary>
+    ///     Clocking and stream setup. The clock source lands on the device as soon as it is picked, the
+    ///     rest waits for Apply so a half typed rate is never handed to the driver.
+    /// </summary>
+    private void RenderDeviceSetup()
+    {
+        if (ClockSources.Length > 0)
+        {
+            Theme.Text("Clock Source", Theme.InputTheme);
+            if (Theme.GlowingCombo("clock_source", ref SSelectedClockSource, ClockSources, Theme.InputTheme))
+            {
+                _Config.ClockSource = ClockSources[SSelectedClockSource];
+                ApplyClocking();
+                _logger.Info($"clock source -> {_Config.ClockSource}");
+            }
+        }
+
+        Theme.Text($"Master Clock (Hz){(MasterClockRateHint.Length > 0 ? $"\n{MasterClockRateHint}" : string.Empty)}",
+            Theme.InputTheme);
+        Theme.InputTheme.Prefix = "Master Clock";
+        Theme.GlowingInput("master_clock", ref SMasterClockRate, Theme.InputTheme);
+
+        Theme.Text($"Sample Rate (Hz){(SampleRateHint.Length > 0 ? $"\n{SampleRateHint}" : string.Empty)}",
+            Theme.InputTheme);
+        Theme.InputTheme.Prefix = "Sample Rate";
+        Theme.GlowingInput("sample_rate", ref SSampleRate, Theme.InputTheme);
+
+        Theme.Text("Stream Args (key=value,...)", Theme.InputTheme);
+        Theme.InputTheme.Prefix = "Stream Args";
+        Theme.GlowingInput("stream_args", ref SStreamArgs, Theme.InputTheme, 128);
+
+        Theme.ButtonTheme.Text = "Apply";
+        if (Theme.Button("apply_device_setup", Theme.ButtonTheme))
+            ApplyDeviceSetup();
+    }
+
+    /// <summary>
+    ///     Commits the typed values. Only a changed stream argument re-opens the stream, since that costs a
+    ///     restart of the sweep.
+    /// </summary>
+    private void ApplyDeviceSetup()
+    {
+        if (Global.TryFormatFreq(SMasterClockRate, out var masterClock) && masterClock >= 0)
+            _Config.MasterClockRate = masterClock;
+        else
+            _logger.Error($"invalid master clock rate '{SMasterClockRate}'");
+
+        //a rejected value keeps the text the user typed, so the typo is visible and fixable
+        if (Global.TryFormatFreq(SSampleRate, out var sampleRate) && sampleRate > 0)
+            _Config.SampleRate = sampleRate;
+        else
+            _logger.Error($"invalid sample rate '{SSampleRate}'");
+
+        ApplyClocking();
+
+        var streamArgs = SStreamArgs.Trim();
+        if (streamArgs != _Config.StreamArgs)
+        {
+            _Config.StreamArgs = streamArgs;
+            RestartStream();
+        }
+
+        //a new master clock moves the rate the device can actually hit, so re-size the FFT around it
+        _fftManager.ResetIqFilter();
+    }
+
     public override void Render()
     {
         Theme.NewLine();
         RenderDeviceData();
+        Theme.NewLine();
+
+        RenderDeviceSetup();
         Theme.NewLine();
 
         Theme.Text("LO/PLL Leakage sleep (0-1000ms)", Theme.InputTheme);

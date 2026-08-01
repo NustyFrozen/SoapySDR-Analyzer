@@ -29,6 +29,12 @@ public class PerformFft
     private readonly Configuration Config;
     private readonly SdrDeviceCom Com;
     private readonly GraphPlotManager graphHandle;
+
+    /// <summary>
+    ///     Rate the receiver runs at. SdrDeviceCom is a struct, so every tab holds its own copy of it and
+    ///     a rate set in the UI would never reach here: the config is the one shared object.
+    /// </summary>
+    private double SampleRate => Config.SampleRate > 0 ? Config.SampleRate : Com.RxSampleRate;
     public PerformFft(IWidget widget,Configuration config, SdrDeviceCom com, GraphPlotManager graphHandle)
     {
         this.Config = config;
@@ -165,7 +171,7 @@ public class PerformFft
     {
         var rbw = Config.FftRbw;
         var numberOfSegments = Config.FftSegment;
-        var desiredSegmentLength = Com.RxSampleRate / rbw;
+        var desiredSegmentLength = SampleRate / rbw;
         var desiredfftLength = desiredSegmentLength * numberOfSegments;
         _fftSize = (int)Math.Pow(2, (int)Math.Ceiling(Math.Log(desiredfftLength, 2)));
 
@@ -179,7 +185,7 @@ public class PerformFft
         if (Com.SdrDevice == null) return;
 
         CalculateRbwvbw();
-        var sampleRate = Com.RxSampleRate;
+        var sampleRate = SampleRate;
         _hopSize = Config.FreqInterleaving ? sampleRate / 4.0 : sampleRate;
 
         graphHandle.ClearPlotData();
@@ -256,7 +262,7 @@ public class PerformFft
                         if (transmissionStream is null)
                         {
                             transmissionStream = Com.SdrDevice.SetupTxStream(StreamFormat.ComplexFloat32, new[] { Com.TxAntenna.Item1 }, "");
-                            Com.SdrDevice.SetSampleRate(Direction.Tx, Com.TxAntenna.Item1, Com.RxSampleRate);
+                            Com.SdrDevice.SetSampleRate(Direction.Tx, Com.TxAntenna.Item1, SampleRate);
                         }
                         transmissionStream.Activate();
                     }
@@ -274,7 +280,7 @@ public class PerformFft
                     else // Tracking
                     {
                         Com.SdrDevice.SetFrequency(Direction.Tx, Com.TxAntenna.Item1, Com.SdrDevice.GetFrequency(Direction.Rx, Com.RxAntenna.Item1));
-                        _whiteNoise = GenerateWhiteNoise((int)Com.RxSampleRate);
+                        _whiteNoise = GenerateWhiteNoise((int)SampleRate);
                     }
                     isTxEnabled = sourceMode != 0;
                     isTracking = sourceMode == 1;
@@ -297,7 +303,10 @@ public class PerformFft
         double sampleRate = 0.0, frequency = 0.0;
 
         Com.SdrDevice.SetAntenna(Direction.Rx, Com.RxAntenna.Item1, Com.RxAntenna.Item2);
-        var rxstream = Com.SdrDevice.SetupRxStream(StreamFormat.ComplexFloat32, new[] { Com.RxAntenna.Item1 }, "");
+        var streamArgs = Config.StreamArgs ?? string.Empty;
+        _logger.Info($"Opening RX stream (args \"{streamArgs}\")");
+        var rxstream = Com.SdrDevice.SetupRxStream(StreamFormat.ComplexFloat32, new[] { Com.RxAntenna.Item1 },
+            streamArgs);
         rxstream.Activate();
 
         var mtu = rxstream.MTU;
@@ -309,10 +318,19 @@ public class PerformFft
         {
             fixed (float* bufferPtr = floatBuffer)
             {
-                if (sampleRate != Com.RxSampleRate)
+                if (sampleRate != SampleRate)
             {
-                sampleRate = Com.RxSampleRate;
-                Com.SdrDevice.SetSampleRate(Direction.Rx, Com.RxAntenna.Item1, sampleRate);
+                //the rate is typed by hand now, so a driver refusing it must not take the sampler down
+                sampleRate = SampleRate;
+                try
+                {
+                    Com.SdrDevice.SetSampleRate(Direction.Rx, Com.RxAntenna.Item1, sampleRate);
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error($"device refused sample rate {sampleRate} -> {ex.Message}");
+                }
+
                 ResetIqFilter();
             }
 

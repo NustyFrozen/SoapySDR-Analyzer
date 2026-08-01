@@ -75,6 +75,9 @@ public partial class FilterBandwithView : MeasurementFeature
 
         #endregion Background Draw
 
+        var refLevelFit = GraphPlotManager.RefLevelFit.Inside;
+        var infoBlockHeight = 0f;
+
         try
         {
             // Access traces via the injected _graphData manager
@@ -109,6 +112,10 @@ public partial class FilterBandwithView : MeasurementFeature
 
                 if (sampleAPos.Y < Top || sampleBPos.Y < Top || sampleAPos.Y > Bottom || sampleBPos.Y > Bottom)
                 {
+                    refLevelFit |= sampleAPos.Y < Top || sampleBPos.Y < Top
+                        ? GraphPlotManager.RefLevelFit.AboveTop
+                        : GraphPlotManager.RefLevelFit.BelowBottom;
+
                     if (_config.AutomaticLevel)
                     {
                         if (sampleAPos.Y < Top || sampleBPos.Y < Top)
@@ -128,11 +135,15 @@ public partial class FilterBandwithView : MeasurementFeature
                            $"Span: {((passRange.Maximum - passRange.Minimum) / 1e3):F1} kHz";
             var infoPad = UserScreenConfiguration.ScaleUniform(10);
             draw.AddText(new Vector2(Left + infoPad, Top + infoPad), 0xFFFFFFFF, infoText);
+            infoBlockHeight = infoPad + ImGui.CalcTextSize(infoText).Y;
         }
         catch (Exception ex)
         {
             _logger.Trace($"FilterBandwith Render Error -> {ex.Message}");
         }
+
+        //this view already owns the corner, so the warning goes under its readout
+        GraphPlotManager.DrawRefLevelWarning(draw, new Vector2(Left, Top + infoBlockHeight), refLevelFit);
         return true;
     }
 }

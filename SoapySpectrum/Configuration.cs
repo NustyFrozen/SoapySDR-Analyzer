@@ -27,8 +27,14 @@ public class Configuration : INotifyPropertyChanged
     public event EventHandler? OnConfigSaveBegin;
     public event EventHandler? OnConfigSaveEnd;
 
+    //machine specific and derived from the widget name: they belong to the instance, never to a preset
+    [JsonIgnore]
     public readonly string PresetPath;
+
+    [JsonIgnore]
     public readonly string TracesPath;
+
+    [JsonIgnore]
     public readonly string MarkersPath;
 
     public Configuration(string widgetName, MainWindowView initiator)
@@ -39,6 +45,19 @@ public class Configuration : INotifyPropertyChanged
         PresetPath = Path.Combine(Global.ConfigPath, widgetName, "Preset.json");
         TracesPath = Path.Combine(Global.ConfigPath, widgetName, "traces.json");
         MarkersPath = Path.Combine(Global.ConfigPath, widgetName, "markers.json");
+    }
+
+    /// <summary>
+    ///     For the deserializer only. Without it Json.NET reaches for the constructor above, hands it a
+    ///     null widget name and throws out of Path.Combine, which is why loading a preset never took.
+    ///     What comes back is only a carrier: CopyFrom moves its values into the live instance.
+    /// </summary>
+    [JsonConstructor]
+    private Configuration()
+    {
+        _widgetName = string.Empty;
+        _parent = null!;
+        PresetPath = TracesPath = MarkersPath = string.Empty;
     }
 
     // --------------------------
@@ -107,6 +126,63 @@ public class Configuration : INotifyPropertyChanged
     {
         get => _freqInterleaving;
         set => SetField(ref _freqInterleaving, value);
+    }
+
+    /// <summary>Rate the receiver is asked to run at. Seeded from the device, then owned by the user.</summary>
+    private double _sampleRate;
+    public double SampleRate
+    {
+        get => _sampleRate;
+        set => SetField(ref _sampleRate, value);
+    }
+
+    /// <summary>Empty leaves the driver on whatever clock it picked for itself.</summary>
+    private string _clockSource = string.Empty;
+    public string ClockSource
+    {
+        get => _clockSource;
+        set => SetField(ref _clockSource, value ?? string.Empty);
+    }
+
+    /// <summary>Zero leaves the driver's own master clock alone.</summary>
+    private double _masterClockRate;
+    public double MasterClockRate
+    {
+        get => _masterClockRate;
+        set => SetField(ref _masterClockRate, value);
+    }
+
+    /// <summary>Driver specific stream arguments, e.g. "bufflen=8192,buffers=16". Applied when the stream opens.</summary>
+    private string _streamArgs = string.Empty;
+    public string StreamArgs
+    {
+        get => _streamArgs;
+        set => SetField(ref _streamArgs, value ?? string.Empty);
+    }
+
+    /// <summary>
+    ///     Value of every gain element, keyed "channel:element". Devices split their gain across several
+    ///     elements - UHD has PGA, others have LNA/VGA/AMP - and a preset has to restore each one rather
+    ///     than a single total.
+    /// </summary>
+    private Dictionary<string, double> _rxGains = new();
+    public Dictionary<string, double> RxGains
+    {
+        get => _rxGains;
+        set => SetField(ref _rxGains, value ?? new Dictionary<string, double>());
+    }
+
+    public static string GainKey(uint channel, string element) => $"{channel}:{element}";
+
+    /// <summary>Records a gain element the user changed, so the next save carries it.</summary>
+    public void SetRxGain(uint channel, string element, double value)
+    {
+        var key = GainKey(channel, element);
+        if (RxGains.TryGetValue(key, out var current) && current.Equals(value))
+            return;
+
+        RxGains[key] = value;
+        OnPropertyChanged(nameof(RxGains));
     }
 
     // amplitude
@@ -246,6 +322,13 @@ public class Configuration : INotifyPropertyChanged
         IqCorrection = true;
         FreqInterleaving = false;
 
+        //0 and empty mean "whatever the device already reports", resolved once the device is known
+        SampleRate = 0;
+        ClockSource = string.Empty;
+        MasterClockRate = 0;
+        StreamArgs = string.Empty;
+        RxGains = new Dictionary<string, double>();
+
         GraphStartDb = -136;
         GraphStopDb = 0;
         GraphOffsetDb = 0;
@@ -345,6 +428,14 @@ public class Configuration : INotifyPropertyChanged
         DeviceOptions = other.DeviceOptions ?? Array.Empty<string>();
         IqCorrection = other.IqCorrection;
         FreqInterleaving = other.FreqInterleaving;
+        SampleRate = other.SampleRate;
+        ClockSource = other.ClockSource;
+        MasterClockRate = other.MasterClockRate;
+        StreamArgs = other.StreamArgs;
+        //copied, not aliased: the loaded instance is thrown away right after this
+        RxGains = other.RxGains is null
+            ? new Dictionary<string, double>()
+            : new Dictionary<string, double>(other.RxGains);
 
         // amplitude
         GraphStartDb = other.GraphStartDb;

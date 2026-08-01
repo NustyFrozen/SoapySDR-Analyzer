@@ -27,6 +27,10 @@ namespace SoapySA.Extentions
             Configuration config = new Configuration(WidgetName, initiator);
             GraphPlotManager graphData = new GraphPlotManager(config);
             config.InitConfiguration();
+
+            //no preset yet: start from the rate the device was opened with
+            if (config.SampleRate <= 0)
+                config.SampleRate = device.RxSampleRate;
             PerformFft fftManager = new PerformFft(initiator,config,device, graphData);
 
             //Special measurement Modes

@@ -80,6 +80,33 @@ public class ConfiguratorWindow
     {
     }
 
+    /// <summary>
+    ///     Seed rate for a spectrum widget, which no longer asks for one here: whatever the device is
+    ///     already running at, falling back to the fastest rate it lists when it reports nothing.
+    /// </summary>
+    private static double CurrentRxSampleRate(SdrDeviceCom device, uint channel)
+    {
+        try
+        {
+            var rate = device.SdrDevice.GetSampleRate(Direction.Rx, channel);
+            if (rate > 0)
+                return rate;
+
+            if (device.DeviceRxSampleRates.TryGetValue((int)channel, out var rates))
+                //FetchSdrData appends an open ended range that would swamp any real rate
+                return rates.Where(x => x.Maximum < double.MaxValue)
+                    .Select(x => x.Maximum)
+                    .DefaultIfEmpty(0)
+                    .Max();
+        }
+        catch (Exception ex)
+        {
+            Logger.Warn($"could not read the device's sample rate -> {ex.Message}");
+        }
+
+        return 0;
+    }
+
     private static void FetchAvailableAnntennas()
     {
         _selectedRxAnntenna = -1;
@@ -172,18 +199,7 @@ public class ConfiguratorWindow
                         AvailableRxAnntenna[(uint)_selectedRxChannel].ToArray()
                         , Theme.InputTheme);
                     Theme.NewLine();
-                    Theme.Text("Rx Sample Rate:");
-                    //not optimal to do in a loop, but its only on widget creation so performance doesn't matter
-                    var combos = Array.ConvertAll(DeviceHelper.AvailableDevicesCom[_selectedSdr]
-                            .DeviceRxSampleRates[_selectedRxChannel]
-                            .ToList().FindAll(x => x.Maximum == x.Minimum && x.Step == 0).Select(x => x.Minimum)
-                            .ToArray(),
-                        Convert.ToString);
-                    if (Theme.GlowingCombo("selectRXWidget", ref SelectedRxSampleRate, combos, Theme.InputTheme))
-                    {
-                        RxSampleRate = Convert.ToDouble(combos[SelectedRxSampleRate]);
-                    }
-
+                    //no sample rate here: the spectrum widget sets its own in its Device tab
                     Theme.Text("select Source TX Channel (optional)");
                     Theme.GlowingCombo("select Source Channel", ref _selectedTxChannel,
                         Array.ConvertAll(
@@ -220,7 +236,7 @@ public class ConfiguratorWindow
                         , Theme.InputTheme);
                     Theme.Text("RX & TX Sample Rate:");
                     //not optimal to do in a loop, but its only on widget creation so performance doesn't matter that much
-                    combos = Array.ConvertAll(DeviceHelper.AvailableDevicesCom[_selectedSdr]
+                    var combos = Array.ConvertAll(DeviceHelper.AvailableDevicesCom[_selectedSdr]
                         .DeviceRxSampleRates[_selectedRxChannel]
                         .ToList().FindAll(x => x.Maximum == x.Minimum && x.Step == 0 &&
                                                DeviceHelper.AvailableDevicesCom[_selectedSdr]
@@ -244,14 +260,19 @@ public class ConfiguratorWindow
         Theme.NewLine();
         var text = isvalid
             ? $"{FontAwesome5.Check} Add Widget"
-            : $"{FontAwesome5.Cross} Please Select Antenna, Sample Rate and Channel";
+            : $"{FontAwesome5.Cross} Please Select {(_selectedWidgetType == 0 ? "Antenna and Channel" : "Antenna, Sample Rate and Channel")}";
         Theme.TextbuttonTheme.Bgcolor = isvalid ? Color.Green.ToUint() : Color.Red.ToUint();
         if (Theme.DrawTextButton($"{text}") && isvalid)
         {
+            //the spectrum widget owns its rate now, so creation only seeds it from the device
+            var rxSampleRate = _selectedWidgetType == 0
+                ? CurrentRxSampleRate(DeviceHelper.AvailableDevicesCom[_selectedSdr], (uint)_selectedRxChannel)
+                : RxSampleRate;
+
             var definedSdrCom = new SdrDeviceCom(DeviceHelper.AvailableDevicesCom[_selectedSdr])
             {
-                RxSampleRate = RxSampleRate,
-                TxSampleRate = RxSampleRate,
+                RxSampleRate = rxSampleRate,
+                TxSampleRate = rxSampleRate,
                 RxAntenna = _selectedRxAnntenna == -1
                     ? null
                     : new Tuple<uint, string>((uint)_selectedRxChannel,
