@@ -52,7 +52,9 @@ public partial class FilterBandwithView : MeasurementFeature
             mousePosFreq = (float)(FreqStart + (mousePos.X - Left) / UserScreenConfiguration.GraphSize.X * (FreqStop - FreqStart));
             mousePosdB = (float)(GraphStartDb - (Bottom - mousePos.Y + Top) / Bottom * (Math.Abs(GraphEndDb) - Math.Abs(GraphStartDb)) + DbOffset);
 
-            draw.AddText(new Vector2(mousePos.X + 5, mousePos.Y + 5), Color.FromArgb(100, 100, 100).ToUint(),
+            var mouseLabelGap = UserScreenConfiguration.PercentUniform(UserScreenConfiguration.PaddingPct);
+            draw.AddText(new Vector2(mousePos.X + mouseLabelGap, mousePos.Y + mouseLabelGap),
+                Color.FromArgb(100, 100, 100).ToUint(),
                 $"Freq {(mousePosFreq / 1e6).ToString().TruncateLongString(5)}M\ndBm {mousePosdB}");
         }
 
@@ -124,7 +126,8 @@ public partial class FilterBandwithView : MeasurementFeature
                            $"Start: {((_filterCenterFreq - _leftBw) / 1e6):F3} MHz\n" +
                            $"Stop: {((_filterCenterFreq + _rightBw) / 1e6):F3} MHz\n" +
                            $"Span: {((passRange.Maximum - passRange.Minimum) / 1e3):F1} kHz";
-            draw.AddText(new Vector2(Left + 10, Top + 10), 0xFFFFFFFF, infoText);
+            var infoPad = UserScreenConfiguration.ScaleUniform(10);
+            draw.AddText(new Vector2(Left + infoPad, Top + infoPad), 0xFFFFFFFF, infoText);
         }
         catch (Exception ex)
         {

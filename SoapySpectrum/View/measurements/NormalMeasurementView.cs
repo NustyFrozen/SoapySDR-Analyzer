@@ -18,6 +18,16 @@ public partial class NormalMeasurementView : MeasurementFeature
     private readonly Configuration _config;
     private readonly GraphPlotManager _graphData;
     public override string Name => "None";
+
+    #region Graph overlay metrics as a percentage of the screen
+
+    // converted from the original 1920x1080 pixel design
+    private const float MarkerRadiusPct = 6.0f / UserScreenConfiguration.DesignHeight;
+    private const float DeltaCrossPct = 5.0f / UserScreenConfiguration.DesignHeight;
+    private const float LabelGapPct = 5.0f / UserScreenConfiguration.DesignHeight;
+    private const float LabelGapSmallPct = 2.0f / UserScreenConfiguration.DesignHeight;
+
+    #endregion Graph overlay metrics as a percentage of the screen
     public NormalMeasurementView(Configuration config, GraphPlotManager graphData)
     {
         _config = config;
@@ -79,7 +89,9 @@ public partial class NormalMeasurementView : MeasurementFeature
                 (Bottom - mousePos.Y + Top) / Bottom * (Math.Abs(GraphEndDb) - Math.Abs(GraphStartDb)) + DbOffset);
             mouseRange.X = (float)(mousePosFreq - (FreqStop - FreqStart) / GraphLabelIdx);
             mouseRange.Y = (float)(mousePosFreq + (FreqStop - FreqStart) / GraphLabelIdx);
-            draw.AddText(new Vector2(mousePos.X + 5, mousePos.Y + 5), Color.FromArgb(100, 100, 100).ToUint(),
+            var mouseLabelGap = UserScreenConfiguration.PercentUniform(LabelGapPct);
+            draw.AddText(new Vector2(mousePos.X + mouseLabelGap, mousePos.Y + mouseLabelGap),
+                Color.FromArgb(100, 100, 100).ToUint(),
                 $"Freq {(mousePosFreq / 1e6).ToString().TruncateLongString(5)}M\ndBm {mousePosdB}");
         }
 
@@ -210,8 +222,9 @@ public partial class NormalMeasurementView : MeasurementFeature
                     var markerPosOnGraph = GraphPlotManager.ScaleToGraph(Left, Top, Right, Bottom,
                         (float)currentActiveMarkers[c].Position, (float)currentActiveMarkers[c].Value, FreqStart,
                         FreqStop, GraphStartDb, GraphEndDb);
-                    draw.AddCircleFilled(markerPosOnGraph, 6f, traceColorUint);
-                    draw.AddCircle(markerPosOnGraph, 6.1f, Color.White.ToUint()); //outline
+                    var markerRadius = UserScreenConfiguration.PercentUniform(MarkerRadiusPct);
+                    draw.AddCircleFilled(markerPosOnGraph, markerRadius, traceColorUint);
+                    draw.AddCircle(markerPosOnGraph, markerRadius * 1.017f, Color.White.ToUint()); //outline
                     var markerValue = currentActiveMarkers[c].Value;
                     var markerPosition = currentActiveMarkers[c].Position;
                     if (currentActiveMarkers[c].DeltaReference != 0)
@@ -231,12 +244,15 @@ public partial class NormalMeasurementView : MeasurementFeature
                             (float)currentActiveMarkers[c].DeltaFreq, (float)currentActiveMarkers[c].DeltadB, FreqStart,
                             FreqStop, GraphStartDb, GraphEndDb);
                         var textSize = ImGui.CalcTextSize($"Delta Marker {c + 1}");
+                        var cross = UserScreenConfiguration.PercentUniform(DeltaCrossPct);
 
-                        draw.AddLine(new Vector2(deltaPosition.X + 5, deltaPosition.Y),
-                            new Vector2(deltaPosition.X - 5, deltaPosition.Y), traceColorUint);
-                        draw.AddLine(new Vector2(deltaPosition.X, deltaPosition.Y + 5),
-                            new Vector2(deltaPosition.X, deltaPosition.Y - 5), traceColorUint);
-                        draw.AddText(new Vector2(deltaPosition.X - textSize.X / 2, deltaPosition.Y - textSize.Y - 2),
+                        draw.AddLine(new Vector2(deltaPosition.X + cross, deltaPosition.Y),
+                            new Vector2(deltaPosition.X - cross, deltaPosition.Y), traceColorUint);
+                        draw.AddLine(new Vector2(deltaPosition.X, deltaPosition.Y + cross),
+                            new Vector2(deltaPosition.X, deltaPosition.Y - cross), traceColorUint);
+                        draw.AddText(
+                            new Vector2(deltaPosition.X - textSize.X / 2,
+                                deltaPosition.Y - textSize.Y - UserScreenConfiguration.PercentUniform(LabelGapSmallPct)),
                             Color.White.ToUint(), $"Delta Marker {c + 1}");
 
                         var deltaDb = (currentActiveMarkers[c].Value - currentActiveMarkers[c].DeltadB).ToString()
@@ -267,7 +283,7 @@ public partial class NormalMeasurementView : MeasurementFeature
                     var textStatusSize = ImGui.CalcTextSize(markerstatusText);
                     draw.AddText(new Vector2(Right + graphStatus.X - textStatusSize.X, Top + graphStatus.Y),
                         traceColorUint, markerstatusText);
-                    graphStatus.X -= textStatusSize.X + 5;
+                    graphStatus.X -= textStatusSize.X + UserScreenConfiguration.PercentUniform(LabelGapPct);
                     currentActiveMarkers[c].TxtStatus = string.Empty; //clear
                 }
             }

@@ -38,8 +38,10 @@ internal class WidgetsWindow() : Overlay
         var fontsPath = AppDomain.CurrentDomain.BaseDirectory;
         // --- SMOOTHNESS FIX 1: Increase Font Size ---
         // On a 1080p screen, 16.0f is often too small and gets aliased.
-        // 18.0f or 20.0f usually looks much crisper.
-        float baseFontSize = 16.0f;
+        // The atlas is rasterised at the size the current resolution actually needs
+        // (16px design size * font boost, scaled by the screen percentage), so text stays
+        // crisp on a 4K panel instead of being a blown up 1080p atlas.
+        float baseFontSize = UserScreenConfiguration.FontSizePx;
 
         // Base text font
         ImFontPtr poppins = io.Fonts.AddFontFromFileTTF(
@@ -73,6 +75,7 @@ internal class WidgetsWindow() : Overlay
 
         // Set default font
         ImGuiNative.igGetIO()->FontDefault = poppins.NativePtr;
+        UserScreenConfiguration.OnFontAtlasBuilt();
 
         // 3) Rebuild + upload atlas texture
         // Ensure your 'renderer' variable is the ImGuiRenderer instance
@@ -119,7 +122,7 @@ internal class WidgetsWindow() : Overlay
     {
         if (!_initializedResources)
         {
-            Theme.SetScaleSize(UserScreenConfiguration.GetDefaultScaleSize());
+            Theme.Refresh();
             _initializedResources = true;
         }
 

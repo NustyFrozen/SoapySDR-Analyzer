@@ -19,8 +19,8 @@ if (OperatingSystem.IsWindows())
 {
     SoapyVNACommon.Extentions.Imports.AllocConsole();
 }
-int screenWidth = 1920;
-int screenHeight = 1080;
+int screenWidth = (int)UserScreenConfiguration.DesignWidth;
+int screenHeight = (int)UserScreenConfiguration.DesignHeight;
 using var window = Window.Create(WindowOptions.Default);
 
 // Declare some variables
@@ -31,21 +31,8 @@ IInputContext? inputContext = null;
 // Our loading function
 window.Load += () =>
 {
-    controller = new ImGuiController(
-        gl = window.CreateOpenGL(), // load OpenGL
-        window, // pass in our window
-        inputContext =
-            window.CreateInput() // create an input context
-        ,
-        onConfigureIO: () =>
-        {
-            //adding fonts
-            WidgetsWindow.LoadResources();
-            Theme.InitDefaultTheme();
-            ImGui.GetIO().FontGlobalScale = 1.4f;
-            Theme.InitDefaultTheme();
-        }
-    );
+    // The screen resolution has to be known before the fonts and the theme are built, because
+    // every GUI dimension is a percentage of it.
     var monitor = window.Monitor;
     if (monitor is not null)
     {
@@ -57,10 +44,29 @@ window.Load += () =>
             screenHeight = resolution.Value[1];
         }
     }
-    { }
+
+    UserScreenConfiguration.UpdateScreenSize(new Vector2(screenWidth, screenHeight));
+    UserScreenConfiguration.UpdateWindowSize(new Vector2(screenWidth, screenHeight));
+
+    controller = new ImGuiController(
+        gl = window.CreateOpenGL(), // load OpenGL
+        window, // pass in our window
+        inputContext =
+            window.CreateInput() // create an input context
+        ,
+        onConfigureIO: () =>
+        {
+            //adding fonts, rasterised for the resolution resolved above
+            WidgetsWindow.LoadResources();
+            Theme.InitDefaultTheme();
+        }
+    );
+
+    window.Resize += (x) => UserScreenConfiguration.UpdateWindowSize(new Vector2(x.X, x.Y));
     window.Size = new Silk.NET.Maths.Vector2D<int>(screenWidth, screenHeight);
     window.Position = new Silk.NET.Maths.Vector2D<int>(0, 0);
-    window.Resize += (x) => UserScreenConfiguration.UpdateWindowSize(new Vector2(x.X, x.Y));
+    //the window may not have been granted the size we asked for (tiling WMs, DPI scaling)
+    UserScreenConfiguration.UpdateWindowSize(new Vector2(window.Size.X, window.Size.Y));
 };
 
 // Handle resizes
@@ -91,7 +97,7 @@ window.Render += delta =>
     try
     {
         ImGui.SetNextWindowPos(new Vector2(0, 0));
-        ImGui.SetNextWindowSize(new Vector2(screenWidth, screenHeight));
+        ImGui.SetNextWindowSize(UserScreenConfiguration.windowSize);
         Overlay.Render();
     }
     catch (Exception ex)

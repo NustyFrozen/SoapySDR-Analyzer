@@ -5,12 +5,16 @@ using ImGuiNET;
 using NLog;
 using SoapyRL.Extentions;
 using SoapyRL.View.tabs;
+using SoapySA.Extentions;
 using static SoapyVNACommon.Theme;
 
 namespace SoapyRL.View;
 
 public class Graph(MainWindow initiator)
 {
+    /// <summary>Marker dot radius: 4px @1080p -> 0.37% of the screen's shortest side.</summary>
+    private const float MarkerRadiusPct = 4.0f / UserScreenConfiguration.DesignHeight;
+
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
     private Thread _calculateBandPowerThread;
@@ -132,7 +136,9 @@ public class Graph(MainWindow initiator)
                                  (Math.Abs(graphEndDb) - Math.Abs(graphStartDb)));
             mouseRange.X = (float)(mousePosFreq - (freqStop - freqStart) / graphLabelIdx);
             mouseRange.Y = (float)(mousePosFreq + (freqStop - freqStart) / graphLabelIdx);
-            draw.AddText(new Vector2(mousePos.X + 5, mousePos.Y + 5), Color.FromArgb(100, 100, 100).ToUint(),
+            var mouseLabelGap = UserScreenConfiguration.PercentUniform(UserScreenConfiguration.PaddingPct);
+            draw.AddText(new Vector2(mousePos.X + mouseLabelGap, mousePos.Y + mouseLabelGap),
+                Color.FromArgb(100, 100, 100).ToUint(),
                 $"Freq {(mousePosFreq / 1e6).ToString().TruncateLongString(5)}M\ndBm {mousePosdB}");
         }
 
@@ -288,8 +294,9 @@ public class Graph(MainWindow initiator)
             var forwarded = 1 - reflected;
             var markerPosOnGraph = ScaleToGraph(left, top, right, bottom, (float)Parent.TabMarker.SMarker.Position,
                 (float)rl, freqStart, freqStop, graphStartDb, graphEndDb);
-            draw.AddCircleFilled(markerPosOnGraph, 4f, Parent.TabTrace.STraces[1].Color);
-            draw.AddCircle(markerPosOnGraph, 4.1f, Color.Black.ToUint()); //outline
+            var markerRadius = UserScreenConfiguration.PercentUniform(MarkerRadiusPct);
+            draw.AddCircleFilled(markerPosOnGraph, markerRadius, Parent.TabTrace.STraces[1].Color);
+            draw.AddCircle(markerPosOnGraph, markerRadius * 1.025f, Color.Black.ToUint()); //outline
 
             Parent.TabMarker.SMarker.TxtStatus += $"Marker\n" +
                                                     $"Freq {(markerPosition / 1e6).ToString().TruncateLongString(5)}" +

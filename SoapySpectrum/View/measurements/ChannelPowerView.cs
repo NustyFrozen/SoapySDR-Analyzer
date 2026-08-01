@@ -179,7 +179,8 @@ public partial class ChannelPowerView : MeasurementFeature
 
         text = $"OBW {_calculatedoccupiedBw}hz";
         textSize = ImGui.CalcTextSize(text);
-        draw.AddText(occupiedStart + new Vector2(0, -2 - textSize.Y), 0XFF00FF00, text);
+        draw.AddText(occupiedStart + new Vector2(0, -UserScreenConfiguration.ScaleUniform(2) - textSize.Y), 0XFF00FF00,
+            text);
 
         #endregion graphDraw
 
@@ -209,7 +210,7 @@ public partial class ChannelPowerView : MeasurementFeature
         {
             textSize = ImGui.CalcTextSize(measurement);
             draw.AddText(textPos, 0xFFFFFFFF, measurement);
-            textPos.Y += textSize.Y + 5 * UserScreenConfiguration.ScaleSize.Y;
+            textPos.Y += textSize.Y + UserScreenConfiguration.PercentY(UserScreenConfiguration.PaddingPct);
         }
         return true;
     }
