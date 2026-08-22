@@ -1,30 +1,24 @@
 # SoapySDR Analyzer - A Vendor neutral SDR based RF Signal Analyzer
 
 
-## showcase Videos
-
-
-
-https://github.com/user-attachments/assets/f6f64b46-d350-4405-b3f5-7899abffb9f7
-
-
-
-
-https://github.com/user-attachments/assets/5ed95bb9-727f-49ad-a29b-f17a7710cad9
 
 
 ![Spectrum Image](https://github.com/NustyFrozen/Soapy-.NET-Spectrum-Analayzer/blob/main/Media/ui.png?raw=true)
+<img width="2491" height="1346" alt="image" src="https://github.com/user-attachments/assets/ddf376c1-e802-4027-87c0-a6d1749c61bd" />
 
-## agenda
-Make an industry-level SDR Based RF testing equipments
-that supports all software-defined radio vendors for free
-since known solutions in the market are quite expensive
+## showcase Videos
+
+https://github.com/user-attachments/assets/f6f64b46-d350-4405-b3f5-7899abffb9f7
+
+https://github.com/user-attachments/assets/5ed95bb9-727f-49ad-a29b-f17a7710cad9
+
 
 ## Current Features
 RL - Return Loss / VSWR / Reflection Coefficent / Mismatch loss using a circulator and full duplex SDR board
 <br>
 Swept Spectrum Analyzer
-
+<br>
+Real Time Spectrum Analyzer (RTSA)
 ### Signal Analyzer Mode
 | Feature | Description 
 | ----------- | ----------- |
