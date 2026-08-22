@@ -18,11 +18,13 @@ internal class WidgetsWindow() : Overlay
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     public static Dictionary<string, DefinedWidget> Widgets = new();
 
-    private static bool _visble = true, _initializedResources;
+    private static bool _visble = true,
+        _initializedResources;
 
     private static ushort[] _iconRange = new ushort[] { 0xe005, 0xf8ff, 0 };
 
-    private static ImFontPtr _poppinsFont, _iconFont;
+    private static ImFontPtr _poppinsFont,
+        _iconFont;
     public static bool EditMode;
     private DefinedWidget _selectedWidget = new() { IsComplete = false };
 
@@ -33,15 +35,17 @@ internal class WidgetsWindow() : Overlay
 
         // 1) Clear old fonts
         io.Fonts.Clear();
-
+        var fontsPath = AppDomain.CurrentDomain.BaseDirectory;
         // --- SMOOTHNESS FIX 1: Increase Font Size ---
         // On a 1080p screen, 16.0f is often too small and gets aliased.
-        // 18.0f or 20.0f usually looks much crisper.
-        float baseFontSize = 16.0f;
+        // The atlas is rasterised at the size the current resolution actually needs
+        // (16px design size * font boost, scaled by the screen percentage), so text stays
+        // crisp on a 4K panel instead of being a blown up 1080p atlas.
+        float baseFontSize = UserScreenConfiguration.FontSizePx;
 
         // Base text font
         ImFontPtr poppins = io.Fonts.AddFontFromFileTTF(
-            "Fonts/Poppins-Light.ttf",
+            Path.Combine(fontsPath, "Fonts", "Poppins-Light.ttf"),
             baseFontSize,
             null,
             io.Fonts.GetGlyphRangesChineseSimplifiedCommon()
@@ -62,7 +66,7 @@ internal class WidgetsWindow() : Overlay
         fixed (ushort* pRanges = iconRanges)
         {
             io.Fonts.AddFontFromFileTTF(
-                "Fonts/fa-solid-900.ttf",
+                Path.Combine(fontsPath, "Fonts", "fa-solid-900.ttf"),
                 baseFontSize, // Match base font size for alignment
                 config,
                 (IntPtr)pRanges
@@ -71,10 +75,10 @@ internal class WidgetsWindow() : Overlay
 
         // Set default font
         ImGuiNative.igGetIO()->FontDefault = poppins.NativePtr;
+        UserScreenConfiguration.OnFontAtlasBuilt();
 
         // 3) Rebuild + upload atlas texture
         // Ensure your 'renderer' variable is the ImGuiRenderer instance
-        
 
         // Clean up native config
         ImGuiNative.ImFontConfig_destroy(config);
@@ -87,7 +91,10 @@ internal class WidgetsWindow() : Overlay
         foreach (var widgetFullName in Directory.GetDirectories(Global.ConfigPath))
             try
             {
-                var name = widgetFullName.Replace($"{Global.ConfigPath}\\", "");
+                var name = widgetFullName
+                    .Replace($"{Global.ConfigPath}", "")
+                    .Replace("\\", "")
+                    .Replace("/", "");
                 var widget = DefinedWidget.LoadWidget(widgetFullName);
                 //making sure device is connected and re-intializing the device in the
                 widget.IsComplete = false;
@@ -97,7 +104,9 @@ internal class WidgetsWindow() : Overlay
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error($"Error Loading Widget Device Initialization {widgetFullName} --> {ex.Message}");
+                    Logger.Error(
+                        $"Error Loading Widget Device Initialization {widgetFullName} --> {ex.Message}"
+                    );
                     widget.Attempted = true;
                 }
 
@@ -109,16 +118,16 @@ internal class WidgetsWindow() : Overlay
             }
     }
 
-     void Overlay.Render()
+    void Overlay.Render()
     {
         if (!_initializedResources)
         {
-            Theme.SetScaleSize(UserScreenConfiguration.GetDefaultScaleSize());
+            Theme.Refresh();
             _initializedResources = true;
         }
-        
 
-        if (!_visble) return;
+        if (!_visble)
+            return;
         ImGui.Begin("Widget Manager", UserScreenConfiguration.MainWindowFlags);
 
         if (!EditMode)
@@ -151,17 +160,27 @@ internal class WidgetsWindow() : Overlay
             {
                 if (Widgets[key].Attempted)
                 {
-                    ImGui.Text($"{key} UnInitiated Device {Widgets[key].Device.Descriptor} not found");
+                    ImGui.Text(
+                        $"{key} UnInitiated Device {Widgets[key].Device.Descriptor} not found"
+                    );
                     Theme.NewLine();
                     if (Theme.DrawTextButton("Retry Initializing"))
                         try
                         {
-                            Widgets[key].Device.SdrDevice = new Device(Widgets[key].Device.Descriptor);
+                            //reopened with the driver arguments the widget was created with
+                            Widgets[key].Device.SdrDevice = new Device(
+                                SdrDeviceCom.OpenArguments(
+                                    Widgets[key].Device.Descriptor,
+                                    Widgets[key].Device.DeviceArgs
+                                )
+                            );
                             Widgets[key].Attempted = false;
                         }
                         catch (Exception ex)
                         {
-                            Logger.Error($"Error Loading Widget Device Initialization {key} --> {ex.Message}");
+                            Logger.Error(
+                                $"Error Loading Widget Device Initialization {key} --> {ex.Message}"
+                            );
                             Widgets[key].Attempted = true;
                             continue; //still can't find device
                         }
@@ -171,13 +190,30 @@ internal class WidgetsWindow() : Overlay
                 switch (value.WidgetType)
                 {
                     case 0:
-                        value.Window = new MainWindowView(key, ImGui.GetCursorPos(),
-                            UserScreenConfiguration.windowSize - ImGui.GetCursorPos(), value.Device);
+                        value.Window = new MainWindowView(
+                            key,
+                            ImGui.GetCursorPos(),
+                            UserScreenConfiguration.windowSize - ImGui.GetCursorPos(),
+                            value.Device
+                        );
                         break;
 
                     case 1:
-                        value.Window = new MainWindow(key, ImGui.GetCursorPos(),
-                            UserScreenConfiguration.windowSize - ImGui.GetCursorPos(), value.Device);
+                        value.Window = new MainWindow(
+                            key,
+                            ImGui.GetCursorPos(),
+                            UserScreenConfiguration.windowSize - ImGui.GetCursorPos(),
+                            value.Device
+                        );
+                        break;
+
+                    case 2:
+                        value.Window = new SoapyRTSA.View.MainWindowView(
+                            key,
+                            ImGui.GetCursorPos(),
+                            UserScreenConfiguration.windowSize - ImGui.GetCursorPos(),
+                            value.Device
+                        );
                         break;
                 }
 
@@ -194,6 +230,5 @@ internal class WidgetsWindow() : Overlay
         }
         ImGui.End();
     }
-
-
 }
+

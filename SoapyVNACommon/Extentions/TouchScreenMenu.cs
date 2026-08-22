@@ -1,11 +1,17 @@
 using System.ComponentModel;
 using System.Numerics;
 using ImGuiNET;
+using SoapySA.Extentions;
 
 namespace SoapyVNACommon.Extentions;
 
 public unsafe class TouchScreenMenu
 {
+    /// <summary>Keypad size: 400x400px @1080p -> 20.8% x 37% of the screen.</summary>
+    private const float PickerWidthPct = 400.0f / UserScreenConfiguration.DesignWidth;
+
+    private const float PickerHeightPct = 400.0f / UserScreenConfiguration.DesignHeight;
+
     public static List<TouchScreenMenu> picks = new List<TouchScreenMenu>();
     private string _pick = string.Empty;
     public event PropertyChangedEventHandler OnNumberPicked;
@@ -27,7 +33,7 @@ public unsafe class TouchScreenMenu
     }
     public void RenderFrequencyPicker()
     {
-        ImGui.SetNextWindowSize(new Vector2(400,400));
+        ImGui.SetNextWindowSize(UserScreenConfiguration.Percent(PickerWidthPct, PickerHeightPct));
         ImGui.Begin("Pick Frequency", ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoTitleBar);
         ImGui.Text(_pick);
         var windowSize = ImGui.GetWindowSize();

@@ -1,19 +1,32 @@
+using System.Numerics;
 using Newtonsoft.Json;
 using NLog;
 using SoapySA.Model;
 using SoapySA.View.tabs;
 using SoapyVNACommon.Extentions;
-using System.Numerics;
 
 namespace SoapySA.View;
 
 public partial class GraphPlotManager
 {
+    /// <summary>
+    ///     Where the plotted bins sit relative to the display window. Anything but <see cref="Inside" />
+    ///     means the trace is being clipped against an edge of the graph, which on screen looks the same
+    ///     as a flat line and is worth saying out loud.
+    /// </summary>
+    [Flags]
+    public enum RefLevelFit
+    {
+        Inside = 0,
+        AboveTop = 1,
+        BelowBottom = 2
+    }
+
     private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-    public int SSelectedTrace, SSelectedMarker;
+    public int SSelectedTrace,
+        SSelectedMarker;
     public Trace[] STraces = new Trace[6];
     public Marker[] Markers = new Marker[9];
-
 
     public GraphPlotManager(Configuration config)
     {
@@ -23,24 +36,29 @@ public partial class GraphPlotManager
 
         for (var i = 0; i < Markers.Length; i++)
         {
-            Markers[i] = new Marker
-            {
-                DeltaReference = 0,
-                Id = i
-            };
+            Markers[i] = new Marker { DeltaReference = 0, Id = i };
         }
         MarkerView.SMarkerTraceCombo = TraceView.SComboTraces;
         STraces[0].ViewStatus = TraceViewStatus.Active;
-        config.OnConfigLoadBegin += (object sender,EventArgs e) =>
+        config.OnConfigLoadBegin += (object sender, EventArgs e) =>
         {
-            Markers = JsonConvert.DeserializeObject<Marker[]>(File.ReadAllText(config.MarkersPath)) ?? Markers;
-            STraces = JsonConvert.DeserializeObject<Trace[]>(File.ReadAllText(config.TracesPath)) ?? STraces;
+            Markers =
+                JsonConvert.DeserializeObject<Marker[]>(File.ReadAllText(config.MarkersPath))
+                ?? Markers;
+            STraces =
+                JsonConvert.DeserializeObject<Trace[]>(File.ReadAllText(config.TracesPath))
+                ?? STraces;
         };
         config.OnConfigSaveBegin += (object sender, EventArgs e) =>
         {
-            File.WriteAllText(config.MarkersPath, JsonConvert.SerializeObject(Markers, Formatting.Indented));
-            File.WriteAllText(config.TracesPath, JsonConvert.SerializeObject(STraces, Formatting.Indented));
-
+            File.WriteAllText(
+                config.MarkersPath,
+                JsonConvert.SerializeObject(Markers, Formatting.Indented)
+            );
+            File.WriteAllText(
+                config.TracesPath,
+                JsonConvert.SerializeObject(STraces, Formatting.Indented)
+            );
         };
     }
 
@@ -57,14 +75,14 @@ public partial class GraphPlotManager
 
     public void UpdateData(float[][] psd)
     {
-        var psdSpan = psd.AsSpan();
-        var freqData = psdSpan[1];
-        var ampData = psdSpan[0];
+        var freqData = psd[1].AsSpan();
+        var ampData = psd[0].AsSpan();
 
         for (var i = 0; i < STraces.Length; i++)
         {
             var trace = STraces[i];
-            if (trace.ViewStatus != TraceViewStatus.Active) continue;
+            if (trace.ViewStatus != TraceViewStatus.Active)
+                continue;
 
             var plot = trace.Plot;
             lock (plot)
@@ -86,7 +104,8 @@ public partial class GraphPlotManager
                         {
                             if (plot.TryGetValue(freqData[k], out float currentMin))
                             {
-                                if (currentMin > ampData[k]) plot[freqData[k]] = ampData[k];
+                                if (currentMin > ampData[k])
+                                    plot[freqData[k]] = ampData[k];
                             }
                             else
                             {
@@ -100,7 +119,8 @@ public partial class GraphPlotManager
                         {
                             if (plot.TryGetValue(freqData[k], out float currentMax))
                             {
-                                if (currentMax < ampData[k]) plot[freqData[k]] = ampData[k];
+                                if (currentMax < ampData[k])
+                                    plot[freqData[k]] = ampData[k];
                             }
                             else
                             {
@@ -113,7 +133,9 @@ public partial class GraphPlotManager
                         for (var k = 0; k < ampData.Length; k++)
                         {
                             if (plot.ContainsKey(freqData[k]))
-                                plot[freqData[k]] = (plot[freqData[k]] * trace.Average + ampData[k]) / (trace.Average + 1);
+                                plot[freqData[k]] =
+                                    (plot[freqData[k]] * trace.Average + ampData[k])
+                                    / (trace.Average + 1);
                             else
                                 plot.Add(freqData[k], ampData[k]);
                         }
@@ -125,11 +147,22 @@ public partial class GraphPlotManager
         }
     }
 
-    public static Vector2 ScaleToGraph(float left, float top, float right, float bottom, float freq, float dB,
-        double freqStart, double freqStop, double graphStartDb, double graphEndDb)
+    public static Vector2 ScaleToGraph(
+        float left,
+        float top,
+        float right,
+        float bottom,
+        float freq,
+        float dB,
+        double freqStart,
+        double freqStop,
+        double graphStartDb,
+        double graphEndDb
+    )
     {
         var scaledX = Imports.Scale(freq, freqStart, freqStop, left, right);
         var scaledY = Imports.Scale(dB, graphStartDb, graphEndDb, bottom, top);
         return new Vector2((float)scaledX, (float)scaledY);
     }
 }
+

@@ -39,8 +39,9 @@ public partial class MeasurementsView(PerformFft fftManager,GraphPlotManager _gr
                         var start = (double)Config.FreqStart;
                         var stop = (double)Config.FreqStop;
                         var center = (stop - start) / 2.0 + start;
-                        start = center - COM.RxSampleRate / 2.0;
-                        stop = center + COM.RxSampleRate / 2.0;
+                        var sampleRate = Config.SampleRate > 0 ? Config.SampleRate : COM.RxSampleRate;
+                        start = center - sampleRate / 2.0;
+                        stop = center + sampleRate / 2.0;
                         Config.FreqStart = start;
                         Config.FreqStop = stop;
                         fftManager.ResetIqFilter();

@@ -2,6 +2,7 @@
 using ImGuiNET;
 using NLog;
 using SoapyRL.View.tabs;
+using SoapySA.Extentions;
 using SoapyVNACommon;
 using SoapyVNACommon.Extentions;
 
@@ -49,7 +50,9 @@ public class MainWindow : IWidget
         Graph.DrawGraph();
         ImGui.EndChild();
 
-        ImGui.SetCursorPos(new Vector2(Configuration.GraphSize.X + 60 * Configuration.ScaleSize.X, 10));
+        ImGui.SetCursorPos(new Vector2(
+            Configuration.GraphSize.X + UserScreenConfiguration.PercentX(UserScreenConfiguration.OptionGapXPct),
+            UserScreenConfiguration.PercentY(UserScreenConfiguration.MarginYPct)));
         ImGui.BeginChild("Options", Configuration.OptionSize);
         Theme.NewLine();
         TabDevice.RenderDevice();

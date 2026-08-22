@@ -77,6 +77,8 @@ public partial class ChannelPowerView : MeasurementFeature
 
         #region graphDraw
 
+        var refLevelFit = GraphPlotManager.RefLevelFit.Inside;
+
         try
         {
             draw.AddRectFilled(new Vector2(_left, _top), new Vector2(_right, _bottom), Color.FromArgb(16, 16, 16).ToUint());
@@ -139,6 +141,10 @@ public partial class ChannelPowerView : MeasurementFeature
 
                 if (sampleAPos.Y < _top || sampleBPos.Y < _top || sampleAPos.Y > _bottom || sampleBPos.Y > _bottom)
                 {
+                    refLevelFit |= sampleAPos.Y < _top || sampleBPos.Y < _top
+                        ? GraphPlotManager.RefLevelFit.AboveTop
+                        : GraphPlotManager.RefLevelFit.BelowBottom;
+
                     if (!_config.AutomaticLevel) continue;
 
                     if (sampleAPos.Y < _top || sampleBPos.Y < _top)
@@ -165,6 +171,8 @@ public partial class ChannelPowerView : MeasurementFeature
             Logger.Error($"Channe Power trace Render error -> {ex.Message}");
         }
 
+        GraphPlotManager.DrawRefLevelWarning(draw, new Vector2(_left, _top), refLevelFit);
+
         //draw OccupiedBW
         var occupiedStart = GraphPlotManager.ScaleToGraph(_left, _top, _right, _bottom,
             (float)(_center - _calculatedoccupiedBw / 2.0f), peakValue, _center - _span / 2,
@@ -179,7 +187,8 @@ public partial class ChannelPowerView : MeasurementFeature
 
         text = $"OBW {_calculatedoccupiedBw}hz";
         textSize = ImGui.CalcTextSize(text);
-        draw.AddText(occupiedStart + new Vector2(0, -2 - textSize.Y), 0XFF00FF00, text);
+        draw.AddText(occupiedStart + new Vector2(0, -UserScreenConfiguration.ScaleUniform(2) - textSize.Y), 0XFF00FF00,
+            text);
 
         #endregion graphDraw
 
@@ -209,7 +218,7 @@ public partial class ChannelPowerView : MeasurementFeature
         {
             textSize = ImGui.CalcTextSize(measurement);
             draw.AddText(textPos, 0xFFFFFFFF, measurement);
-            textPos.Y += textSize.Y + 5 * UserScreenConfiguration.ScaleSize.Y;
+            textPos.Y += textSize.Y + UserScreenConfiguration.PercentY(UserScreenConfiguration.PaddingPct);
         }
         return true;
     }

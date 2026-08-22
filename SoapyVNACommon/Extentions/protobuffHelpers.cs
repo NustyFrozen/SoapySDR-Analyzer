@@ -29,6 +29,9 @@ public class SdrDeviceComDto
     [ProtoMember(17)] public UIntStringTupleSurrogate RxAntenna { get; set; }
     [ProtoMember(18)] public UIntStringTupleSurrogate TxAntenna { get; set; }
 
+    /// <summary>Driver arguments the device has to be reopened with. Absent in files written before this existed.</summary>
+    [ProtoMember(19)] public string DeviceArgs { get; set; } = string.Empty;
+
     // Conversion to DTO
     public static SdrDeviceComDto ToDto(SdrDeviceCom src)
     {
@@ -59,14 +62,16 @@ public class SdrDeviceComDto
             TxGains = src.TxGains.ToDictionary(kvp => (UIntStringTupleSurrogate)kvp.Key,
                 kvp => (RangeIntTupleSurrogate)kvp.Value),
             RxAntenna = src.RxAntenna,
-            TxAntenna = src.TxAntenna
+            TxAntenna = src.TxAntenna,
+            DeviceArgs = src.DeviceArgs ?? string.Empty
         };
     }
 
     // Conversion from DTO
     public static SdrDeviceCom FromDto(SdrDeviceComDto dto)
     {
-        var result = new SdrDeviceCom(dto.Descriptor)
+        //reopened with the same driver arguments, otherwise the transport sizing is silently lost
+        var result = new SdrDeviceCom(dto.Descriptor, dto.DeviceArgs)
         {
             RxSampleRate = dto.RxSampleRate,
             TxSampleRate = dto.TxSampleRate,

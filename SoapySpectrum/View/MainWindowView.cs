@@ -33,18 +33,21 @@ public partial class MainWindowView : IWidget
         Theme.InitDefaultTheme();
 
         NormalMeasurementView.SWaitForMouseClick.Restart();
-        Theme.SetScaleSize(UserScreenConfiguration.ScaleSize);
-        ImGui.GetIO().FontGlobalScale = 1.4f;
+        Theme.Refresh();
     }
+
+    /// <summary>Crosshair cursor, half length 5px @1080p -> 0.46% of the screen's shortest side.</summary>
+    private const float CursorHalfLengthPct = 5.0f / UserScreenConfiguration.DesignHeight;
 
     public static void DrawCursor()
     {
         ImGui.SetMouseCursor(ImGuiMouseCursor.None);
         var cursorpos = ImGui.GetMousePos();
-        ImGui.GetForegroundDrawList().AddLine(new Vector2(cursorpos.X - 5, cursorpos.Y),
-            new Vector2(cursorpos.X + 5, cursorpos.Y), Color.White.ToUint());
-        ImGui.GetForegroundDrawList().AddLine(new Vector2(cursorpos.X, cursorpos.Y - 5),
-            new Vector2(cursorpos.X, cursorpos.Y + 5), Color.White.ToUint());
+        var half = UserScreenConfiguration.PercentUniform(CursorHalfLengthPct);
+        ImGui.GetForegroundDrawList().AddLine(new Vector2(cursorpos.X - half, cursorpos.Y),
+            new Vector2(cursorpos.X + half, cursorpos.Y), Color.White.ToUint());
+        ImGui.GetForegroundDrawList().AddLine(new Vector2(cursorpos.X, cursorpos.Y - half),
+            new Vector2(cursorpos.X, cursorpos.Y + half), Color.White.ToUint());
     }
 
    
@@ -72,8 +75,9 @@ public partial class MainWindowView : IWidget
         GraphManager.drawGraph();
         ImGui.EndChild();
 
-        ImGui.SetCursorPos(new Vector2(UserScreenConfiguration.GraphSize.X + 60 * UserScreenConfiguration.ScaleSize.X,
-            UserScreenConfiguration.PositionOffset.Y + 30 * UserScreenConfiguration.ScaleSize.Y));
+        ImGui.SetCursorPos(new Vector2(
+            UserScreenConfiguration.GraphSize.X + UserScreenConfiguration.PercentX(UserScreenConfiguration.OptionGapXPct),
+            UserScreenConfiguration.PositionOffset.Y + UserScreenConfiguration.PercentY(UserScreenConfiguration.OptionGapYPct)));
         ImGui.BeginChild("Spectrum Options", UserScreenConfiguration.OptionSize);
         Theme.InputTheme.Prefix = "RBW";
         if (_ActiveTab is { } tab)

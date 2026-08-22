@@ -1,6 +1,7 @@
 ﻿using System.Drawing;
 using System.Numerics;
 using ImGuiNET;
+using SoapySA.Extentions;
 using SoapyVNACommon.Extentions;
 
 namespace SoapyVNACommon;
@@ -23,6 +24,48 @@ public class Theme
         End
     }
 
+    #region Widget metrics as a percentage of the screen
+
+    // Converted from the original 1920x1080 pixel design: every value below is a fraction of the
+    // screen, so the theme keeps its proportions on any resolution.
+
+    /// <summary>Width of an input/button/slider: 320px @1080p -> 16.67% of the screen width.</summary>
+    public const float WidgetWidthPct = 320.0f / UserScreenConfiguration.DesignWidth;
+
+    /// <summary>Height of an input/button/slider: 45px @1080p -> 4.17% of the screen height.</summary>
+    public const float WidgetHeightPct = 45.0f / UserScreenConfiguration.DesignHeight;
+
+    /// <summary>Corner rounding: 5px @1080p -> 0.46% of the screen's shortest side.</summary>
+    public const float RoundCornersPct = 5.0f / UserScreenConfiguration.DesignHeight;
+
+    /// <summary>Border/glow thickness: 3px @1080p.</summary>
+    public const float BorderThicknessPct = 3.0f / UserScreenConfiguration.DesignHeight;
+
+    /// <summary>Spinner radius / thickness: 20px / 4px @1080p.</summary>
+    public const float CircleRadiusPct = 20.0f / UserScreenConfiguration.DesignHeight;
+
+    public const float CircleThicknessPct = 4.0f / UserScreenConfiguration.DesignHeight;
+
+    /// <summary>Spinner slide distance: -90px @1080p.</summary>
+    public const float CirclePositionYPct = -90.0f / UserScreenConfiguration.DesignHeight;
+
+    /// <summary>Slider value tooltip offset: -20px @1080p.</summary>
+    public const float SliderLabelOffsetPct = -20.0f / UserScreenConfiguration.DesignHeight;
+
+    /// <summary>Slider tooltip arrow half width: 8px @1080p.</summary>
+    public const float SliderArrowPct = 8.0f / UserScreenConfiguration.DesignHeight;
+
+    /// <summary>Exit button stroke thickness: 2px @1080p.</summary>
+    public const float StrokeThicknessPct = 2.0f / UserScreenConfiguration.DesignHeight;
+
+    /// <summary>Window border / rounding of the ImGui style: 1px / 5px @1080p.</summary>
+    public const float WindowBorderPct = 1.0f / UserScreenConfiguration.DesignHeight;
+
+    /// <summary>Widget width, in pixels, for the current resolution.</summary>
+    public static Vector2 WidgetSize => UserScreenConfiguration.Percent(WidgetWidthPct, WidgetHeightPct);
+
+    #endregion Widget metrics as a percentage of the screen
+
     public static GlowingInputConfigurator InputTheme = GetTextTheme();
     public static ButtonConfigurator ButtonTheme = GetbuttonTheme();
     public static ButtonConfigurator TextbuttonTheme = GetTextButtonTheme();
@@ -30,15 +73,43 @@ public class Theme
     public static SliderInputConfigurator SliderTheme = GetSliderTheme();
 
     private static readonly Dictionary<string, object> FrameData = new();
-    private static Vector2 _scaleSize = new(1.5f, 1.5f);
 
-    public static void SetScaleSize(Vector2 size)
+    private static float _appliedStyleScale = 1.0f;
+
+    /// <summary>
+    /// Rebuilds every cached configurator against the current screen size. Called automatically by
+    /// <see cref="UserScreenConfiguration.UpdateWindowSize"/> whenever the resolution changes.
+    /// </summary>
+    public static void Refresh()
     {
-        _scaleSize = size;
         InputTheme = GetTextTheme();
         ButtonTheme = GetbuttonTheme();
         SliderTheme = GetSliderTheme();
         TextbuttonTheme = GetTextButtonTheme();
+        ApplyStyleScale();
+    }
+
+    /// <summary>
+    /// Scales ImGui's own metrics (frame padding, item spacing, scrollbars, grab sizes, ...) so the
+    /// built-in widgets follow the screen resolution too. ImGui's ScaleAllSizes is cumulative, so
+    /// only the delta since the last call is applied.
+    /// </summary>
+    private static void ApplyStyleScale()
+    {
+        if (ImGui.GetCurrentContext() == IntPtr.Zero)
+            return;
+
+        var style = ImGui.GetStyle();
+        var target = UserScreenConfiguration.UniformScale;
+        if (target > 0.0001f && Math.Abs(target - _appliedStyleScale) >= 0.0001f)
+        {
+            style.ScaleAllSizes(target / _appliedStyleScale);
+            _appliedStyleScale = target;
+        }
+
+        //re-applied after ScaleAllSizes so these stay driven by the percentages above
+        style.WindowBorderSize = UserScreenConfiguration.PercentUniform(WindowBorderPct);
+        style.WindowRounding = UserScreenConfiguration.PercentUniform(RoundCornersPct);
     }
 
     public static void InitDefaultTheme()
@@ -52,8 +123,7 @@ public class Theme
         style.Colors[ImGuiCol.FrameBgActive.ToInt()] = Color.FromArgb(255, 203, 203, 203).ToVec4();
         style.Colors[ImGuiCol.CheckMark.ToInt()] = Color.FromArgb(255, 91, 36, 221).ToVec4();
         //style.Colors[ImGuiCol.FrameBg] =
-        style.WindowBorderSize = 1;
-        style.WindowRounding = 5;
+        ApplyStyleScale();
     }
 
     public static bool Button(string text)
@@ -345,24 +415,26 @@ public class Theme
         var windowsize = ImGui.GetWindowSize();
         var draw = ImGui.GetForegroundDrawList();
         var stepper = windowsize.Y * 0.01f;
+        var px = UserScreenConfiguration.ScaleUniform(1);
         style.WindowBorderSize = 0;
         for (var i = 0.01f; i < 1; i += 0.001f)
         {
             draw.AddLine(
                 new Vector2(windowpos.X,
                     windowpos.Y + i * windowsize.Y)
-                , new Vector2(windowpos.X + 1, windowpos.Y + (i - 0.01f) * windowsize.Y),
-                topColor.ToColor().Lerp(bottomColor.ToColor(), i).ToUint(), 2);
+                , new Vector2(windowpos.X + px, windowpos.Y + (i - 0.01f) * windowsize.Y),
+                topColor.ToColor().Lerp(bottomColor.ToColor(), i).ToUint(), 2 * px);
             draw.AddLine(
-                new Vector2(windowpos.X + windowsize.X - 1,
+                new Vector2(windowpos.X + windowsize.X - px,
                     windowpos.Y + i * windowsize.Y)
                 , new Vector2(windowpos.X + windowsize.X, windowpos.Y + (i - 0.01f) * windowsize.Y),
-                topColor.ToColor().Lerp(bottomColor.ToColor(), i).ToUint(), 3);
+                topColor.ToColor().Lerp(bottomColor.ToColor(), i).ToUint(), 3 * px);
         }
 
-        draw.AddRect(new Vector2(windowpos.X, windowpos.Y - 1), new Vector2(windowpos.X + windowsize.X + 1, windowpos.Y)
+        draw.AddRect(new Vector2(windowpos.X, windowpos.Y - px),
+            new Vector2(windowpos.X + windowsize.X + px, windowpos.Y)
             , topColor.ToColor().ToUint(), style.WindowRounding,
-            ImDrawFlags.RoundCornersTopLeft | ImDrawFlags.RoundCornersTopRight, 1.5f);
+            ImDrawFlags.RoundCornersTopLeft | ImDrawFlags.RoundCornersTopRight, 1.5f * px);
     }
 
     public static void GradientRect(Vector2 pMin, Vector2 pMax, Vector4 topColor, Vector4 bottomColor,
@@ -373,29 +445,30 @@ public class Theme
         var windowsize = new Vector2(pMin.X - pMax.X, pMin.Y - pMax.Y);
         var draw = ImGui.GetForegroundDrawList();
         var stepper = windowsize.Y * 0.01f;
+        var px = UserScreenConfiguration.ScaleUniform(1);
         style.WindowBorderSize = 0;
         for (var i = 0.01f; i < 1; i += 0.01f)
         {
             draw.AddLine(
                 new Vector2(windowpos.X + pMin.X,
                     pMin.Y + windowpos.Y + i * windowsize.Y)
-                , new Vector2(windowpos.X + 1 + pMin.X, pMin.Y + windowpos.Y + (i - 0.01f) * windowsize.Y),
-                topColor.ToColor().Lerp(bottomColor.ToColor(), i).ToUint(), 2);
+                , new Vector2(windowpos.X + px + pMin.X, pMin.Y + windowpos.Y + (i - 0.01f) * windowsize.Y),
+                topColor.ToColor().Lerp(bottomColor.ToColor(), i).ToUint(), 2 * px);
             draw.AddLine(
-                new Vector2(windowpos.X + windowsize.X - 1 + pMin.X,
+                new Vector2(windowpos.X + windowsize.X - px + pMin.X,
                     windowpos.Y + i * windowsize.Y + pMin.Y)
                 , new Vector2(windowpos.X + windowsize.X + pMin.X, windowpos.Y + pMin.Y + (i - 0.01f) * windowsize.Y),
-                topColor.ToColor().Lerp(bottomColor.ToColor(), i).ToUint(), 3);
+                topColor.ToColor().Lerp(bottomColor.ToColor(), i).ToUint(), 3 * px);
         }
 
-        draw.AddRect(new Vector2(windowpos.X + pMin.X, windowpos.Y + pMin.Y - 1)
-            , new Vector2(windowpos.X + windowsize.X + 1 + pMin.X, pMin.Y + windowpos.Y)
+        draw.AddRect(new Vector2(windowpos.X + pMin.X, windowpos.Y + pMin.Y - px)
+            , new Vector2(windowpos.X + windowsize.X + px + pMin.X, pMin.Y + windowpos.Y)
             , topColor.ToColor().ToUint(), cornerRadius,
-            ImDrawFlags.RoundCornersTopLeft | ImDrawFlags.RoundCornersTopRight, 1.5f);
-        draw.AddRect(new Vector2(windowpos.X + pMin.X, windowpos.Y + pMin.Y - 1 + windowsize.Y)
-            , new Vector2(windowpos.X + windowsize.X + 1 + pMin.X, pMin.Y + windowpos.Y + windowsize.Y)
+            ImDrawFlags.RoundCornersTopLeft | ImDrawFlags.RoundCornersTopRight, 1.5f * px);
+        draw.AddRect(new Vector2(windowpos.X + pMin.X, windowpos.Y + pMin.Y - px + windowsize.Y)
+            , new Vector2(windowpos.X + windowsize.X + px + pMin.X, pMin.Y + windowpos.Y + windowsize.Y)
             , bottomColor.ToColor().ToUint(), cornerRadius,
-            ImDrawFlags.RoundCornersTopLeft | ImDrawFlags.RoundCornersTopRight, 1.5f);
+            ImDrawFlags.RoundCornersTopLeft | ImDrawFlags.RoundCornersTopRight, 1.5f * px);
     }
 
     public static void GradientGlowingInput(string label, ref string text, GlowingInputConfigurator cfg,
@@ -451,13 +524,13 @@ public class Theme
         if (ImGui.IsItemActive())
         {
             borderColorActive = borderColorActive.ToColor().Lerp(cfg.BorderColorActive.ToColor(), 0.01f).ToUint();
-            if (borderThicknessActive <= cfg.BorderThickness + 3)
-                borderThicknessActive += 0.01f;
+            if (borderThicknessActive <= cfg.BorderThickness + UserScreenConfiguration.ScaleUniform(3))
+                borderThicknessActive += UserScreenConfiguration.ScaleUniform(0.01f);
         }
         else
         {
             if (borderThicknessActive > cfg.BorderThickness)
-                borderThicknessActive -= 0.01f;
+                borderThicknessActive -= UserScreenConfiguration.ScaleUniform(0.01f);
             borderColorActive = borderColorActive.ToColor().Lerp(cfg.BorderColor.ToColor(), 0.01f).ToUint();
         }
 
@@ -552,7 +625,8 @@ public class Theme
         var style = ImGui.GetStyle();
         var draw = ImGui.GetWindowDrawList();
         var cursorPos = ImGui.GetCursorPos();
-        var start = new Vector2(windowpos.X + ImGui.GetContentRegionAvail().X - size - 5, windowpos.Y - size + 30);
+        var start = new Vector2(windowpos.X + ImGui.GetContentRegionAvail().X - size - UserScreenConfiguration.ScaleX(5),
+            windowpos.Y - size + UserScreenConfiguration.ScaleY(30));
         var end = new Vector2(start.X + size, start.Y + size);
         if (ImGui.IsMouseHoveringRect(start, end))
         {
@@ -565,8 +639,9 @@ public class Theme
         }
 
         FrameData["DrawExitButtonLabel"] = exitColorActive;
-        draw.AddLine(start, end, exitColorActive.ToUint(), 2);
-        draw.AddLine(new Vector2(end.X, start.Y), new Vector2(start.X, end.Y), exitColorActive.ToUint(), 2);
+        var strokeThickness = UserScreenConfiguration.PercentUniform(StrokeThicknessPct);
+        draw.AddLine(start, end, exitColorActive.ToUint(), strokeThickness);
+        draw.AddLine(new Vector2(end.X, start.Y), new Vector2(start.X, end.Y), exitColorActive.ToUint(), strokeThickness);
     }
 
     public static bool Slider(string label, float min, float max, ref float value, SliderInputConfigurator cfg)
@@ -613,7 +688,8 @@ public class Theme
         var style = ImGui.GetStyle();
         var draw = ImGui.GetWindowDrawList();
         var cursorPos = ImGui.GetCursorPos();
-        var mousePos = ImGui.GetCursorPos();
+        //the track is in screen space, so the mouse has to be read in screen space too
+        var mousePos = ImGui.GetMousePos();
         var startDrawBg = new Vector2(windowpos.X + cursorPos.X, windowpos.Y + cursorPos.Y);
         var endDrawBg = new Vector2(windowpos.X + cursorPos.X + cfg.Size.X, windowpos.Y + cursorPos.Y + cfg.Size.Y);
         draw.AddRectFilled(startDrawBg, endDrawBg, cfg.Bgcolor, cfg.RoundCorners);
@@ -647,13 +723,13 @@ public class Theme
             }
 
             borderColorActive = borderColorActive.ToColor().Lerp(cfg.BorderColorActive.ToColor(), 0.01f).ToUint();
-            if (borderThicknessActive <= cfg.BorderThickness + 3)
-                borderThicknessActive += 0.01f;
+            if (borderThicknessActive <= cfg.BorderThickness + UserScreenConfiguration.ScaleUniform(3))
+                borderThicknessActive += UserScreenConfiguration.ScaleUniform(0.01f);
         }
         else
         {
             if (borderThicknessActive > cfg.BorderThickness)
-                borderThicknessActive -= 0.01f;
+                borderThicknessActive -= UserScreenConfiguration.ScaleUniform(0.01f);
             lerpProgress -= 0.0025f;
             borderColorActive = borderColorActive.ToColor().Lerp(cfg.BorderColor.ToColor(), 0.01f).ToUint();
         }
@@ -678,10 +754,11 @@ public class Theme
                 startDrawBg.Y - textSize.Y + cfg.YoffsetLabel * lerpProgress);
             var endRect = new Vector2(startDrawBg.X + drawPos + textSize.X / 2,
                 startDrawBg.Y + cfg.YoffsetLabel * lerpProgress);
+            var arrowHalfWidth = UserScreenConfiguration.PercentUniform(SliderArrowPct);
             draw.AddRectFilled(startRect
-                , endRect, sliderColorActive, 4);
-            draw.AddTriangleFilled(new Vector2(startRect.X + textSize.X / 2 - 8, endRect.Y),
-                new Vector2(startRect.X + textSize.X / 2 + 8, endRect.Y),
+                , endRect, sliderColorActive, UserScreenConfiguration.ScaleUniform(4));
+            draw.AddTriangleFilled(new Vector2(startRect.X + textSize.X / 2 - arrowHalfWidth, endRect.Y),
+                new Vector2(startRect.X + textSize.X / 2 + arrowHalfWidth, endRect.Y),
                 new Vector2(startDrawBg.X + drawPos, startDrawBg.Y + cfg.YoffsetLabel * lerpProgress * 0.5f),
                 sliderColorActive);
             draw.AddText(
@@ -769,14 +846,14 @@ public class Theme
         if (ImGui.IsItemActive())
         {
             borderColorActive = borderColorActive.ToColor().Lerp(cfg.BorderColorActive.ToColor(), 0.01f).ToUint();
-            if (borderThicknessActive <= cfg.BorderThickness + 3)
-                borderThicknessActive += 0.01f;
+            if (borderThicknessActive <= cfg.BorderThickness + UserScreenConfiguration.ScaleUniform(3))
+                borderThicknessActive += UserScreenConfiguration.ScaleUniform(0.01f);
             
         }
         else
         {
             if (borderThicknessActive > cfg.BorderThickness)
-                borderThicknessActive -= 0.01f;
+                borderThicknessActive -= UserScreenConfiguration.ScaleUniform(0.01f);
             borderColorActive = borderColorActive.ToColor().Lerp(cfg.BorderColor.ToColor(), 0.01f).ToUint();
         }
 
@@ -841,18 +918,18 @@ public class Theme
         ImGui.SetCursorPos(new Vector2(ImGui.GetCursorPosX() + style.FramePadding.X,
             ImGui.GetCursorPosY() + cfg.Size.Y / 2.0f - ImGui.CalcTextSize(cfg.Prefix).Y / 2.0f
         ));
-        ImGui.SetNextItemWidth(cfg.Size.X - 3 * _scaleSize.X);
+        ImGui.SetNextItemWidth(cfg.Size.X - UserScreenConfiguration.ScaleX(3));
         var results = ImGui.Combo(label, ref selectedIndx, items, items.Length);
         if (ImGui.IsItemActive())
         {
             borderColorActive = borderColorActive.ToColor().Lerp(cfg.BorderColorActive.ToColor(), 0.01f).ToUint();
-            if (borderThicknessActive <= cfg.BorderThickness + 3)
-                borderThicknessActive += 0.01f;
+            if (borderThicknessActive <= cfg.BorderThickness + UserScreenConfiguration.ScaleUniform(3))
+                borderThicknessActive += UserScreenConfiguration.ScaleUniform(0.01f);
         }
         else
         {
             if (borderThicknessActive > cfg.BorderThickness)
-                borderThicknessActive -= 0.01f;
+                borderThicknessActive -= UserScreenConfiguration.ScaleUniform(0.01f);
             borderColorActive = borderColorActive.ToColor().Lerp(cfg.BorderColor.ToColor(), 0.01f).ToUint();
         }
 
@@ -898,11 +975,13 @@ public class Theme
 
         angle += speed;
         var lim = 2.0f * (float)Math.PI * progress;
+        //segment length follows the resolution so the arc stays solid on a bigger radius
+        var segment = UserScreenConfiguration.ScaleUniform(1);
         for (float i = 0; i < lim; i += 0.01f)
         {
             var unDiscover = new Vector2(radius * (float)Math.Sin(angle + i), radius * (float)Math.Cos(angle + i));
             var steppedColor = bg.Lerp(color.ToColor(), i / lim);
-            draw.AddLine(new Vector2(pos.X + unDiscover.X - 1, pos.Y + unDiscover.Y - 1)
+            draw.AddLine(new Vector2(pos.X + unDiscover.X - segment, pos.Y + unDiscover.Y - segment)
                 , new Vector2(pos.X + unDiscover.X, pos.Y + unDiscover.Y), steppedColor.ToUint(), tickness);
         }
 
@@ -912,82 +991,88 @@ public class Theme
 
     public static void NewLine()
     {
-        ImGui.Dummy(new Vector2(0, 45.0f * _scaleSize.Y)); // Adds 20px vertical space
+        // one widget height of vertical space (4.17% of the screen height)
+        ImGui.Dummy(new Vector2(0, UserScreenConfiguration.PercentY(WidgetHeightPct)));
     }
 
     public static void SameLine()
     {
         ImGui.SameLine();
-        ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 320 * _scaleSize.X);
+        // one widget width of horizontal space (16.67% of the screen width)
+        ImGui.SetCursorPosX(ImGui.GetCursorPosX() + UserScreenConfiguration.PercentX(WidgetWidthPct));
     }
 
     public static GlowingInputConfigurator GetTextTheme()
     {
         var textboxTheme = new GlowingInputConfigurator();
-        textboxTheme.Size = new Vector2(320 * _scaleSize.X, 45f * _scaleSize.Y);
-        textboxTheme.RoundCorners = 5;
+        textboxTheme.Size = WidgetSize;
+        textboxTheme.RoundCorners = UserScreenConfiguration.PercentUniform(RoundCornersPct);
         textboxTheme.Prefix = "Username";
-        textboxTheme.BorderThickness = 3f;
+        textboxTheme.BorderThickness = UserScreenConfiguration.PercentUniform(BorderThicknessPct);
         textboxTheme.Bgcolor = Color.FromArgb(28, 28, 32).ToUint();
         textboxTheme.BorderColor = Color.FromArgb(88, 37, 227).ToUint();
         textboxTheme.BorderColorActive = Color.FromArgb(115, 70, 232).ToUint();
         textboxTheme.TextColor = Color.White.ToUint();
-        textboxTheme.FontScale = 16f;
+        textboxTheme.FontScale = UserScreenConfiguration.FontSizePx;
         return textboxTheme;
     }
 
     public static SliderInputConfigurator GetSliderTheme()
     {
         var textboxTheme = new SliderInputConfigurator();
-        textboxTheme.Size = new Vector2(320 * _scaleSize.X, 45f * _scaleSize.Y);
-        textboxTheme.RoundCorners = 2;
-        textboxTheme.BorderThickness = 3f;
+        textboxTheme.Size = WidgetSize;
+        textboxTheme.RoundCorners = UserScreenConfiguration.ScaleUniform(2);
+        textboxTheme.BorderThickness = UserScreenConfiguration.PercentUniform(BorderThicknessPct);
         textboxTheme.Bgcolor = Color.FromArgb(28, 28, 32).ToUint();
         textboxTheme.BorderColor = Color.FromArgb(88, 37, 227).ToUint();
         textboxTheme.BorderColorActive = Color.FromArgb(115, 70, 232).ToUint();
         textboxTheme.SliderColor = Color.FromArgb(82, 34, 204).ToUint();
         textboxTheme.SliderColorActive = Color.FromArgb(119, 73, 226).ToUint();
-        textboxTheme.YoffsetLabel = -20;
+        textboxTheme.YoffsetLabel = UserScreenConfiguration.PercentY(SliderLabelOffsetPct);
         return textboxTheme;
     }
 
     public static ButtonConfigurator GetTextButtonTheme()
     {
         var textboxTheme = new ButtonConfigurator();
-        textboxTheme.Size = new Vector2(320 * _scaleSize.X, 45f * _scaleSize.Y);
-        textboxTheme.RoundCorners = 5;
+        textboxTheme.Size = WidgetSize;
+        textboxTheme.RoundCorners = UserScreenConfiguration.PercentUniform(RoundCornersPct);
         textboxTheme.Text = "NULL";
         textboxTheme.Bgcolor = Color.FromArgb(100, 100, 100).ToUint();
         textboxTheme.ColorHover = Color.FromArgb(222, 222, 222).ToUint();
         textboxTheme.TextColor = Color.White.ToUint();
         textboxTheme.WaitSpeed = 0.00025f;
         textboxTheme.SlideSpeed = 0.0025f;
-        textboxTheme.CircleThickness = 4;
-        textboxTheme.CircleRadius = 20;
+        textboxTheme.CircleThickness = CircleThicknessPx;
+        textboxTheme.CircleRadius = UserScreenConfiguration.PercentUniform(CircleRadiusPct);
         textboxTheme.CircleColor = Color.FromArgb(82, 34, 204).ToUint();
         textboxTheme.CircleSpeed = 0.005f;
-        textboxTheme.CirclePositionY = -90;
+        textboxTheme.CirclePositionY = UserScreenConfiguration.PercentY(CirclePositionYPct);
         return textboxTheme;
     }
 
     public static ButtonConfigurator GetbuttonTheme()
     {
         var textboxTheme = new ButtonConfigurator();
-        textboxTheme.Size = new Vector2(320 * _scaleSize.X, 45f * _scaleSize.Y);
-        textboxTheme.RoundCorners = 5;
+        textboxTheme.Size = WidgetSize;
+        textboxTheme.RoundCorners = UserScreenConfiguration.PercentUniform(RoundCornersPct);
         textboxTheme.Text = "NULL";
         textboxTheme.Bgcolor = Color.FromArgb(91, 36, 221).ToUint();
         textboxTheme.ColorHover = Color.FromArgb(114, 71, 224).ToUint();
         textboxTheme.TextColor = Color.White.ToUint();
         textboxTheme.WaitSpeed = 0.00025f;
         textboxTheme.SlideSpeed = 0.0025f;
-        textboxTheme.CircleThickness = 4;
-        textboxTheme.CircleRadius = 20;
+        textboxTheme.CircleThickness = CircleThicknessPx;
+        textboxTheme.CircleRadius = UserScreenConfiguration.PercentUniform(CircleRadiusPct);
         textboxTheme.CircleColor = Color.FromArgb(82, 34, 204).ToUint();
         textboxTheme.CircleSpeed = 0.005f;
-        textboxTheme.CirclePositionY = -90;
+        textboxTheme.CirclePositionY = UserScreenConfiguration.PercentY(CirclePositionYPct);
         return textboxTheme;
     }
+
+    /// <summary>CircleThickness is a uint, so the scaled value is rounded and clamped to >= 1px.</summary>
+    private static uint CircleThicknessPx =>
+        (uint)Math.Max(1, MathF.Round(UserScreenConfiguration.PercentUniform(CircleThicknessPct)));
 
     private struct ColFrame
     {

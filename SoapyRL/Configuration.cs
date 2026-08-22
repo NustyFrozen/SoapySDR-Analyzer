@@ -5,6 +5,7 @@ using NLog;
 using SoapyRL.Extentions;
 using SoapyRL.View;
 using SoapyRL.View.tabs;
+using SoapySA.Extentions;
 using SoapyVNACommon.Extentions;
 
 namespace SoapyRL;
@@ -13,51 +14,37 @@ public class Configuration(string widgetName, MainWindow initiator, Vector2 wind
 {
     private readonly Logger _logger = LogManager.GetCurrentClassLogger();
     private readonly MainWindow _parent = initiator;
+
 #if DEBUG
-    public static Vector2 ScreenSize = new Vector2(1920, 1080);
-
-    public Vector2 GetScreenSize()
-    {
-        return ScreenSize;
-    }
-
-    public Vector2 GetDefaultScaleSize()
-    {
-        return GetScreenSize() / new Vector2(1920.0f, 1080.0f);
-    }
-
-    public readonly Vector2 SWidgetSize = windowSize;
-
-    public Vector2 MainWindowPos = pos;
     public ImGuiWindowFlags mainWindowFlags = ImGuiWindowFlags.NoScrollbar;
-#else
-
-    public ImGuiWindowFlags MainWindowFlags =
-        ImGuiWindowFlags.NoScrollbar
-        | ImGuiWindowFlags.NoTitleBar
-        | ImGuiWindowFlags.NoScrollWithMouse
-        | ImGuiWindowFlags.NoMove;
-    public static Vector2 ScreenSize = new Vector2(1920, 1080);
-
-    public Vector2 GetScreenSize()
-    {
-        return ScreenSize;
-    }
-
-    public Vector2 GetDefaultScaleSize()
-    {
-        return GetScreenSize() / new Vector2(1920.0f, 1080.0f);
-    }
-
-    public readonly Vector2 SWidgetSize = windowSize;
-
-    public Vector2 MainWindowPos = pos;
 #endif
 
-    public Vector2 ScaleSize = new(windowSize.X / 1920.0f, windowSize.Y / 1080.0f),
-        PositionOffset = new(50 * windowSize.X / 1920.0f, 10 * windowSize.Y / 1080.0f),
-        GraphSize = new(Convert.ToInt16(windowSize.X * .8), Convert.ToInt16(windowSize.Y * .9)),
-        OptionSize = new(Convert.ToInt16(windowSize.X * .2), Convert.ToInt16(windowSize.Y));
+    // Every GUI dimension below is a percentage of the screen resolved by UserScreenConfiguration,
+    // so this widget scales exactly like the spectrum widget instead of keeping its own copy of the
+    // 1920x1080 pixel maths.
+    public ImGuiWindowFlags MainWindowFlags => UserScreenConfiguration.MainWindowFlags;
+
+    public static Vector2 ScreenSize => UserScreenConfiguration.ScreenSize;
+
+    public Vector2 GetScreenSize()
+    {
+        return UserScreenConfiguration.ScreenSize;
+    }
+
+    public Vector2 GetDefaultScaleSize()
+    {
+        return UserScreenConfiguration.GetDefaultScaleSize();
+    }
+
+    /// <summary>Size this widget was created with. The layout itself follows the live screen size.</summary>
+    public readonly Vector2 SWidgetSize = windowSize;
+
+    public Vector2 MainWindowPos = pos;
+
+    public Vector2 ScaleSize => UserScreenConfiguration.ScaleSize;
+    public Vector2 PositionOffset => UserScreenConfiguration.PositionOffset;
+    public Vector2 GraphSize => UserScreenConfiguration.GraphSize;
+    public Vector2 OptionSize => UserScreenConfiguration.OptionSize;
 
     //Path.GetDirectoryName(Application.ExecutablePath)
     public string PresetPath = Path.Combine(Global.ConfigPath, widgetName, "Preset.json");

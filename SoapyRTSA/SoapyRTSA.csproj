@@ -1,11 +1,23 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <OutputType>WinExe</OutputType>
-        <TargetFramework>net8.0-windows</TargetFramework>
+        <OutputType>Library</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
         <Nullable>enable</Nullable>
-        <UseWindowsForms>true</UseWindowsForms>
         <ImplicitUsings>enable</ImplicitUsings>
+        <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+        <Configurations>Debug;Release;debug-verbose</Configurations>
+        <Platforms>AnyCPU;x64</Platforms>
     </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\SoapyVNACommon\SoapyVNACommon.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="Pothosware.SoapySDR">
+        <HintPath>..\SoapyVNACommon\SoapySDR\Libs\Pothosware.SoapySDR.dll</HintPath>
+      </Reference>
+    </ItemGroup>
 
 </Project>
