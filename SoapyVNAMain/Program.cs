@@ -3,6 +3,7 @@
 
 using System.Numerics;
 using ImGuiNET;
+using NLog;
 using Silk.NET.Input;
 using Silk.NET.OpenGL;
 using Silk.NET.OpenGL.Extensions.ImGui;
@@ -56,8 +57,11 @@ window.Load += () =>
         ,
         onConfigureIO: () =>
         {
-            //adding fonts, rasterised for the resolution resolved above
+            
+            //adding fonts
             WidgetsWindow.LoadResources();
+            Theme.InitDefaultTheme();
+            ImGui.GetIO().FontGlobalScale = 1.4f * UserScreenConfiguration.GetDefaultScaleSize().X;
             Theme.InitDefaultTheme();
         }
     );
@@ -65,10 +69,15 @@ window.Load += () =>
     window.Resize += (x) => UserScreenConfiguration.UpdateWindowSize(new Vector2(x.X, x.Y));
     window.Size = new Silk.NET.Maths.Vector2D<int>(screenWidth, screenHeight);
     window.Position = new Silk.NET.Maths.Vector2D<int>(0, 0);
-    //the window may not have been granted the size we asked for (tiling WMs, DPI scaling)
-    UserScreenConfiguration.UpdateWindowSize(new Vector2(window.Size.X, window.Size.Y));
+        Logger Logger = LogManager.GetCurrentClassLogger();
+Logger.Info($"Window Size -> ({screenWidth},{screenHeight})");
+    UserScreenConfiguration.UpdateWindowSize(new Vector2(screenWidth,screenHeight));
+     ImGui.GetIO().FontGlobalScale = 1.4f * UserScreenConfiguration.GetDefaultScaleSize().X;
+            
 };
 
+    window.Resize+= (x) =>
+      UserScreenConfiguration.UpdateWindowSize(new Vector2(screenWidth,screenHeight));
 // Handle resizes
 window.FramebufferResize += s =>
 {
